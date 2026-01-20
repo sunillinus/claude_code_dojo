@@ -1,0 +1,98 @@
+{
+  "id": "05-003",
+  "module": "debugging",
+  "title": "Debug with Logs",
+  "description": "Learn to add strategic logging to trace program execution. Good logging reveals where things go wrong.",
+  "difficulty": "intermediate",
+  "xpReward": 200,
+  "estimatedMinutes": 8,
+  "skills": ["logging", "debugging-strategy"],
+
+  "setup": {
+    "workingDir": "~/dojo-workspace/challenge-05-003",
+    "initialFiles": [
+      {
+        "path": "README.md",
+        "content": "# Challenge: Debug with Logs\n\nThe order processing isn't working correctly. Add logging to find out why!\n\n## Objectives\n1. Add console.log statements to trace execution\n2. Find where the process fails\n3. Fix the issue once you understand it\n"
+      },
+      {
+        "path": "orderProcessor.js",
+        "content": "// Order processor - something's wrong but what?\n\nasync function processOrder(order) {\n  const validated = await validateOrder(order);\n  const priced = await calculatePricing(validated);\n  const result = await submitOrder(priced);\n  return result;\n}\n\nasync function validateOrder(order) {\n  if (!order.items || order.items.length === 0) {\n    return { valid: false, error: 'No items' };\n  }\n  return { ...order, valid: true };\n}\n\nasync function calculatePricing(order) {\n  if (!order.valid) {\n    return order;\n  }\n  \n  let total = 0;\n  for (const item of order.items) {\n    total += item.price * item.qty; // Note: qty not quantity\n  }\n  \n  return { ...order, total };\n}\n\nasync function submitOrder(order) {\n  if (!order.valid) {\n    return { success: false, error: order.error };\n  }\n  if (order.total === 0 || isNaN(order.total)) {\n    return { success: false, error: 'Invalid total' };\n  }\n  return { success: true, orderId: 'ORD-' + Date.now() };\n}\n\n// Test order\nconst testOrder = {\n  customerId: '123',\n  items: [\n    { name: 'Widget', price: 10, quantity: 2 },\n    { name: 'Gadget', price: 25, quantity: 1 }\n  ]\n};\n\nprocessOrder(testOrder).then(console.log);\n\nmodule.exports = { processOrder, validateOrder, calculatePricing, submitOrder };\n"
+      }
+    ],
+    "cleanBefore": true
+  },
+
+  "objectives": [
+    {
+      "id": "obj-1",
+      "description": "Add logging statements",
+      "type": "file_contains",
+      "target": "orderProcessor.js",
+      "pattern": "console\\.log",
+      "required": true
+    },
+    {
+      "id": "obj-2",
+      "description": "Fix the qty/quantity mismatch",
+      "type": "file_contains",
+      "target": "orderProcessor.js",
+      "pattern": "item\\.quantity|quantity",
+      "required": true
+    },
+    {
+      "id": "obj-3",
+      "description": "Order processes successfully (no NaN)",
+      "type": "file_not_contains",
+      "target": "orderProcessor.js",
+      "pattern": "item\\.qty[^u]",
+      "required": true
+    }
+  ],
+
+  "bonusObjectives": [
+    {
+      "id": "bonus-1",
+      "description": "Log includes function names or step indicators",
+      "type": "file_contains",
+      "target": "orderProcessor.js",
+      "pattern": "validateOrder|calculatePricing|submitOrder|Step|\\[.*\\]",
+      "xpBonus": 50
+    }
+  ],
+
+  "hints": [
+    {
+      "level": 1,
+      "text": "Add console.log at the start of each function to trace execution.",
+      "xpCost": 15
+    },
+    {
+      "level": 2,
+      "text": "Try: 'Add logging to trace the order through each step. Log the order state after each function.'",
+      "xpCost": 40
+    },
+    {
+      "level": 3,
+      "text": "Ask: 'Add console.log to each function in orderProcessor.js to see the order state at each step. Find why the total is NaN and fix it.'",
+      "xpCost": 75
+    }
+  ],
+
+  "solution": {
+    "approach": "Add logging to trace execution, find the bug, and fix it.",
+    "example": "Add logging to orderProcessor.js to find where it fails, then fix the bug",
+    "alternativeApproaches": [
+      "Debug the order processor by adding trace logs",
+      "Find why order total is wrong using logging"
+    ]
+  },
+
+  "learningPoints": [
+    "Strategic logging reveals execution flow",
+    "Log variable values to spot data issues",
+    "Property name mismatches are a common bug"
+  ],
+
+  "nextChallenge": "05-004"
+}

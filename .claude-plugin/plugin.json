@@ -1,0 +1,8 @@
+{
+  "name": "claude-code-dojo",
+  "description": "Learn Claude Code through hands-on challenges with progress tracking and gamification",
+  "version": "1.0.0",
+  "author": {
+    "name": "Sunil"
+  }
+}

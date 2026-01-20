@@ -1,0 +1,98 @@
+{
+  "id": "05-002",
+  "module": "debugging",
+  "title": "Fix Type Error",
+  "description": "Learn to identify and fix type-related bugs. Understanding data types prevents runtime errors.",
+  "difficulty": "intermediate",
+  "xpReward": 225,
+  "estimatedMinutes": 10,
+  "skills": ["type-debugging", "data-validation"],
+
+  "setup": {
+    "workingDir": "~/dojo-workspace/challenge-05-002",
+    "initialFiles": [
+      {
+        "path": "README.md",
+        "content": "# Challenge: Fix Type Error\n\nThe user formatter is crashing with 'Cannot read property of undefined'. Fix it!\n\n## Objectives\n1. Find where the type error occurs\n2. Add proper null/undefined checks\n3. Handle edge cases gracefully\n"
+      },
+      {
+        "path": "userFormatter.js",
+        "content": "// User formatting utilities\n\nfunction formatUserName(user) {\n  return user.firstName.toUpperCase() + ' ' + user.lastName.toUpperCase();\n}\n\nfunction formatUserEmail(user) {\n  return user.email.toLowerCase().trim();\n}\n\nfunction formatUserAddress(user) {\n  const addr = user.address;\n  return `${addr.street}, ${addr.city}, ${addr.state} ${addr.zip}`;\n}\n\nfunction formatUserDisplay(user) {\n  return {\n    name: formatUserName(user),\n    email: formatUserEmail(user),\n    address: formatUserAddress(user)\n  };\n}\n\n// Test with incomplete data\nconst user1 = { firstName: 'John', lastName: 'Doe', email: 'john@example.com' };\nconst user2 = { firstName: 'Jane' };\nconst user3 = null;\n\nconsole.log(formatUserDisplay(user1)); // May crash\nconsole.log(formatUserDisplay(user2)); // Will crash\nconsole.log(formatUserDisplay(user3)); // Will crash\n\nmodule.exports = { formatUserName, formatUserEmail, formatUserAddress, formatUserDisplay };\n"
+      }
+    ],
+    "cleanBefore": true
+  },
+
+  "objectives": [
+    {
+      "id": "obj-1",
+      "description": "Add null check for user parameter",
+      "type": "file_contains",
+      "target": "userFormatter.js",
+      "pattern": "!user|user\\s*===?\\s*null|user\\s*\\?\\.|if.*user",
+      "required": true
+    },
+    {
+      "id": "obj-2",
+      "description": "Handle missing properties (firstName, lastName, etc.)",
+      "type": "file_contains",
+      "target": "userFormatter.js",
+      "pattern": "user\\.firstName\\s*\\?|\\|\\||\\?\\?|firstName.*\\||if.*firstName",
+      "required": true
+    },
+    {
+      "id": "obj-3",
+      "description": "Handle missing address object",
+      "type": "file_contains",
+      "target": "userFormatter.js",
+      "pattern": "user\\.address\\s*\\?|!.*address|address.*\\?\\.|if.*address",
+      "required": true
+    }
+  ],
+
+  "bonusObjectives": [
+    {
+      "id": "bonus-1",
+      "description": "Return sensible defaults instead of crashing",
+      "type": "file_contains",
+      "target": "userFormatter.js",
+      "pattern": "Unknown|N/A|''|\"\"",
+      "xpBonus": 50
+    }
+  ],
+
+  "hints": [
+    {
+      "level": 1,
+      "text": "Ask Claude Code to find what's causing the crashes with incomplete user data.",
+      "xpCost": 15
+    },
+    {
+      "level": 2,
+      "text": "Try: 'This code crashes when user data is incomplete. Add null checks and handle missing fields.'",
+      "xpCost": 45
+    },
+    {
+      "level": 3,
+      "text": "Ask: 'Fix the type errors in userFormatter.js. Add checks for null users, missing properties (firstName, lastName, email, address), and return safe defaults.'",
+      "xpCost": 85
+    }
+  ],
+
+  "solution": {
+    "approach": "Add defensive checks for null/undefined at each access point.",
+    "example": "Fix the null/undefined errors in userFormatter.js with proper checks",
+    "alternativeApproaches": [
+      "Add defensive coding to handle missing user properties",
+      "Make the formatter functions handle incomplete data"
+    ]
+  },
+
+  "learningPoints": [
+    "Always validate data before accessing properties",
+    "Defensive coding prevents runtime crashes",
+    "Claude Code can identify potential null/undefined issues"
+  ],
+
+  "nextChallenge": "05-003"
+}

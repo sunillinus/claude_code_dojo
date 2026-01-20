@@ -1,0 +1,98 @@
+{
+  "id": "04-002",
+  "module": "code-editing",
+  "title": "Refactor Variable Names",
+  "description": "Learn to rename variables consistently across a file. Good naming makes code self-documenting.",
+  "difficulty": "intermediate",
+  "xpReward": 200,
+  "estimatedMinutes": 7,
+  "skills": ["refactoring", "naming-conventions"],
+
+  "setup": {
+    "workingDir": "~/dojo-workspace/challenge-04-002",
+    "initialFiles": [
+      {
+        "path": "README.md",
+        "content": "# Challenge: Refactor Variable Names\n\nThis code has poor variable names. Improve them!\n\n## Objectives\n1. Rename `d` to `data` or `userData`\n2. Rename `cb` to `callback` or `onComplete`\n3. Rename `x` to something meaningful (like `user` or `item`)\n"
+      },
+      {
+        "path": "userService.js",
+        "content": "// User service with poor variable names\n\nasync function fetchUsers(cb) {\n  const d = await fetch('/api/users');\n  const x = await d.json();\n  \n  for (const x of x.users) {\n    console.log(x.name);\n  }\n  \n  if (cb) {\n    cb(x);\n  }\n  \n  return x;\n}\n\nfunction processUser(d) {\n  const x = d.name.toUpperCase();\n  return { ...d, displayName: x };\n}\n\nmodule.exports = { fetchUsers, processUser };\n"
+      }
+    ],
+    "cleanBefore": true
+  },
+
+  "objectives": [
+    {
+      "id": "obj-1",
+      "description": "No single-letter variable 'd' for data",
+      "type": "file_not_contains",
+      "target": "userService.js",
+      "pattern": "const d\\s*=|let d\\s*=|var d\\s*=",
+      "required": true
+    },
+    {
+      "id": "obj-2",
+      "description": "No 'cb' - should be 'callback' or similar",
+      "type": "file_not_contains",
+      "target": "userService.js",
+      "pattern": "\\(cb\\)|cb\\(|if.*cb",
+      "required": true
+    },
+    {
+      "id": "obj-3",
+      "description": "Uses descriptive names (data, response, user, callback, etc.)",
+      "type": "file_contains",
+      "target": "userService.js",
+      "pattern": "data|response|user|callback|onComplete|result",
+      "required": true
+    }
+  ],
+
+  "bonusObjectives": [
+    {
+      "id": "bonus-1",
+      "description": "Fix the loop variable shadowing issue",
+      "type": "file_not_contains",
+      "target": "userService.js",
+      "pattern": "for.*const.*of.*\\.users",
+      "xpBonus": 50
+    }
+  ],
+
+  "hints": [
+    {
+      "level": 1,
+      "text": "Ask Claude Code to rename variables to more descriptive names.",
+      "xpCost": 15
+    },
+    {
+      "level": 2,
+      "text": "Try: 'Refactor userService.js to use meaningful variable names instead of single letters'",
+      "xpCost": 40
+    },
+    {
+      "level": 3,
+      "text": "Ask: 'In userService.js, rename d to response or data, cb to callback, and x to appropriate names based on context (user, result, etc.)'",
+      "xpCost": 75
+    }
+  ],
+
+  "solution": {
+    "approach": "Ask Claude Code to rename variables to be more descriptive.",
+    "example": "Refactor the variable names in userService.js to be more descriptive",
+    "alternativeApproaches": [
+      "Improve the naming in this file - d, cb, and x are not clear",
+      "Make the variable names self-documenting"
+    ]
+  },
+
+  "learningPoints": [
+    "Claude Code understands context and suggests appropriate names",
+    "Good variable names make code self-documenting",
+    "Refactoring improves code without changing behavior"
+  ],
+
+  "nextChallenge": "04-003"
+}

@@ -1,0 +1,107 @@
+{
+  "id": "15-001",
+  "module": "background-tasks",
+  "title": "Run Tasks in Background",
+  "description": "Learn to run long-running commands in the background while continuing to work.",
+  "difficulty": "intermediate",
+  "xpReward": 200,
+  "estimatedMinutes": 10,
+  "skills": ["background-execution", "async-workflows"],
+
+  "setup": {
+    "workingDir": "~/dojo-workspace/challenge-15-001",
+    "initialFiles": [
+      {
+        "path": "README.md",
+        "content": "# Challenge: Run Tasks in Background\n\nLearn to run long-running tasks in the background.\n\n## Objectives\n1. Start a long-running build process in the background\n2. Continue working on other tasks while it runs\n3. Check on the background task's progress\n"
+      },
+      {
+        "path": "package.json",
+        "content": "{\n  \"name\": \"background-tasks\",\n  \"scripts\": {\n    \"build\": \"echo 'Starting build...' && sleep 3 && echo 'Compiling...' && sleep 2 && echo 'Build complete!'\",\n    \"lint\": \"echo 'Linting...' && sleep 1 && echo 'No errors found!'\"\n  }\n}\n"
+      },
+      {
+        "path": "src/index.js",
+        "content": "// Main application file\nconsole.log('Hello World');\n"
+      }
+    ],
+    "cleanBefore": true
+  },
+
+  "objectives": [
+    {
+      "id": "obj-1",
+      "description": "Start build in background",
+      "type": "file_exists",
+      "target": "README.md",
+      "required": true
+    },
+    {
+      "id": "obj-2",
+      "description": "Create a new file while build runs",
+      "type": "file_exists",
+      "target": "src/utils.js",
+      "required": true
+    },
+    {
+      "id": "obj-3",
+      "description": "Document background task workflow",
+      "type": "file_exists",
+      "target": "workflow.md",
+      "required": true
+    },
+    {
+      "id": "obj-4",
+      "description": "Document explains background execution",
+      "type": "file_contains",
+      "target": "workflow.md",
+      "pattern": "[Bb]ackground|[Pp]arallel|[Cc]oncurrent|[Ww]hile|[Ss]ame time",
+      "required": true
+    }
+  ],
+
+  "bonusObjectives": [
+    {
+      "id": "bonus-1",
+      "description": "Run lint in background too",
+      "type": "file_contains",
+      "target": "workflow.md",
+      "pattern": "lint|multiple|both",
+      "xpBonus": 40
+    }
+  ],
+
+  "hints": [
+    {
+      "level": 1,
+      "text": "Ask Claude to run a command in the background. Use the run_in_background parameter.",
+      "xpCost": 15
+    },
+    {
+      "level": 2,
+      "text": "Try: 'Run npm run build in the background, then while it's running, create src/utils.js with a helper function'",
+      "xpCost": 40
+    },
+    {
+      "level": 3,
+      "text": "Ask: 'Start npm run build in the background. While it runs, create src/utils.js with a formatDate helper. Then create workflow.md explaining how background tasks let you work on multiple things concurrently.'",
+      "xpCost": 80
+    }
+  ],
+
+  "solution": {
+    "approach": "Run long tasks in background, continue with other work, check results later.",
+    "example": "Run build in background while creating other files",
+    "alternativeApproaches": [
+      "Start multiple background tasks",
+      "Check task status periodically"
+    ]
+  },
+
+  "learningPoints": [
+    "Background tasks run without blocking your work",
+    "Use for builds, tests, and long-running processes",
+    "Check on background tasks when needed"
+  ],
+
+  "nextChallenge": "15-002"
+}

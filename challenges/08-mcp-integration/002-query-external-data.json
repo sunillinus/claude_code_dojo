@@ -1,0 +1,124 @@
+{
+  "id": "08-002",
+  "module": "mcp-integration",
+  "title": "Query External Data",
+  "description": "Learn to use MCP tools to query external data sources. MCP enables Claude to interact with databases, APIs, and services.",
+  "difficulty": "advanced",
+  "xpReward": 350,
+  "estimatedMinutes": 18,
+  "skills": ["mcp-tools", "external-data"],
+
+  "setup": {
+    "workingDir": "~/dojo-workspace/challenge-08-002",
+    "initialFiles": [
+      {
+        "path": "README.md",
+        "content": "# Challenge: Query External Data\n\nUse MCP to query external data and create a report.\n\n## Objectives\n1. Configure an MCP server that provides data access\n2. Use the MCP tools to fetch information\n3. Create a data-report.md with the fetched data\n\nNote: For this challenge, we'll simulate MCP by creating a mock data server.\n"
+      },
+      {
+        "path": "plugin.json",
+        "content": "{\n  \"name\": \"data-tools\",\n  \"version\": \"1.0.0\",\n  \"description\": \"Data query tools via MCP\"\n}\n"
+      },
+      {
+        "path": "mock-data/users.json",
+        "content": "[\n  { \"id\": 1, \"name\": \"Alice\", \"role\": \"admin\", \"active\": true },\n  { \"id\": 2, \"name\": \"Bob\", \"role\": \"user\", \"active\": true },\n  { \"id\": 3, \"name\": \"Charlie\", \"role\": \"user\", \"active\": false },\n  { \"id\": 4, \"name\": \"Diana\", \"role\": \"moderator\", \"active\": true }\n]\n"
+      },
+      {
+        "path": "mock-data/products.json",
+        "content": "[\n  { \"id\": 1, \"name\": \"Widget\", \"price\": 29.99, \"stock\": 150 },\n  { \"id\": 2, \"name\": \"Gadget\", \"price\": 49.99, \"stock\": 75 },\n  { \"id\": 3, \"name\": \"Gizmo\", \"price\": 19.99, \"stock\": 0 },\n  { \"id\": 4, \"name\": \"Doohickey\", \"price\": 99.99, \"stock\": 25 }\n]\n"
+      },
+      {
+        "path": "mock-data/orders.json",
+        "content": "[\n  { \"id\": 1, \"userId\": 1, \"productId\": 2, \"quantity\": 2, \"status\": \"shipped\" },\n  { \"id\": 2, \"userId\": 2, \"productId\": 1, \"quantity\": 5, \"status\": \"pending\" },\n  { \"id\": 3, \"userId\": 4, \"productId\": 4, \"quantity\": 1, \"status\": \"delivered\" }\n]\n"
+      }
+    ],
+    "cleanBefore": true
+  },
+
+  "objectives": [
+    {
+      "id": "obj-1",
+      "description": "Create .mcp.json configuration",
+      "type": "file_exists",
+      "target": ".mcp.json",
+      "required": true
+    },
+    {
+      "id": "obj-2",
+      "description": "Create data-report.md",
+      "type": "file_exists",
+      "target": "data-report.md",
+      "required": true
+    },
+    {
+      "id": "obj-3",
+      "description": "Report includes user data",
+      "type": "file_contains",
+      "target": "data-report.md",
+      "pattern": "Alice|Bob|Charlie|Diana|[Uu]ser",
+      "required": true
+    },
+    {
+      "id": "obj-4",
+      "description": "Report includes product data",
+      "type": "file_contains",
+      "target": "data-report.md",
+      "pattern": "Widget|Gadget|[Pp]roduct|stock",
+      "required": true
+    }
+  ],
+
+  "bonusObjectives": [
+    {
+      "id": "bonus-1",
+      "description": "Report includes order analysis",
+      "type": "file_contains",
+      "target": "data-report.md",
+      "pattern": "[Oo]rder|shipped|pending|delivered",
+      "xpBonus": 75
+    },
+    {
+      "id": "bonus-2",
+      "description": "Report includes insights or recommendations",
+      "type": "file_contains",
+      "target": "data-report.md",
+      "pattern": "[Ii]nsight|[Rr]ecommend|[Ss]ummary|[Aa]nalysis",
+      "xpBonus": 75
+    }
+  ],
+
+  "hints": [
+    {
+      "level": 1,
+      "text": "Read the mock-data files and use that data to create your report.",
+      "xpCost": 25
+    },
+    {
+      "level": 2,
+      "text": "Try: 'Configure MCP access to the mock-data folder, read the data files, and create a summary report'",
+      "xpCost": 70
+    },
+    {
+      "level": 3,
+      "text": "Ask: 'Create .mcp.json for filesystem access to mock-data/. Then read users.json, products.json, and orders.json to create data-report.md with: user counts by role, products by stock status, and order statistics.'",
+      "xpCost": 130
+    }
+  ],
+
+  "solution": {
+    "approach": "Configure MCP for data access, query the data, and create an analytical report.",
+    "example": "Set up MCP, read the mock data files, and create a comprehensive data report",
+    "alternativeApproaches": [
+      "Use MCP tools to fetch and analyze the mock data",
+      "Query the external data sources and summarize findings"
+    ]
+  },
+
+  "learningPoints": [
+    "MCP tools can access external data sources",
+    "Claude can use MCP to read databases, APIs, and files",
+    "Combining data from multiple sources creates insights"
+  ],
+
+  "nextChallenge": "08-003"
+}

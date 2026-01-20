@@ -1,0 +1,116 @@
+{
+  "id": "15-004",
+  "module": "background-tasks",
+  "title": "Orchestrate Parallel Workflows",
+  "description": "Combine background tasks and parallel execution to orchestrate complex workflows.",
+  "difficulty": "advanced",
+  "xpReward": 300,
+  "estimatedMinutes": 15,
+  "skills": ["workflow-orchestration", "complex-tasks"],
+
+  "setup": {
+    "workingDir": "~/dojo-workspace/challenge-15-004",
+    "initialFiles": [
+      {
+        "path": "README.md",
+        "content": "# Challenge: Orchestrate Parallel Workflows\n\nOrchestrate a complex build and deploy workflow using parallel execution.\n\n## Workflow Requirements\n1. Run linting and tests in parallel (they're independent)\n2. If both pass, run build\n3. Generate deployment report\n\n## Available Scripts\n- lint: Runs ESLint\n- test: Runs tests\n- build: Builds the project\n"
+      },
+      {
+        "path": "package.json",
+        "content": "{\n  \"name\": \"parallel-workflow\",\n  \"scripts\": {\n    \"lint\": \"echo 'Linting...' && sleep 2 && echo 'Lint passed!'\",\n    \"test\": \"echo 'Testing...' && sleep 3 && echo 'All tests passed!'\",\n    \"build\": \"echo 'Building...' && sleep 2 && echo 'Build successful!'\"\n  }\n}\n"
+      },
+      {
+        "path": "src/index.js",
+        "content": "console.log('Application');\n"
+      }
+    ],
+    "cleanBefore": true
+  },
+
+  "objectives": [
+    {
+      "id": "obj-1",
+      "description": "Create workflow orchestration script",
+      "type": "file_exists",
+      "target": "workflow.js",
+      "required": true
+    },
+    {
+      "id": "obj-2",
+      "description": "Script runs tasks in parallel where possible",
+      "type": "file_contains",
+      "target": "workflow.js",
+      "pattern": "Promise\\.all|parallel|concurrent|await.*\\[",
+      "required": true
+    },
+    {
+      "id": "obj-3",
+      "description": "Generate deployment report",
+      "type": "file_exists",
+      "target": "deploy-report.md",
+      "required": true
+    },
+    {
+      "id": "obj-4",
+      "description": "Report shows all steps",
+      "type": "file_contains",
+      "target": "deploy-report.md",
+      "pattern": "[Ll]int|[Tt]est|[Bb]uild",
+      "required": true
+    }
+  ],
+
+  "bonusObjectives": [
+    {
+      "id": "bonus-1",
+      "description": "Script handles failures gracefully",
+      "type": "file_contains",
+      "target": "workflow.js",
+      "pattern": "try|catch|error|fail|Error",
+      "xpBonus": 60
+    },
+    {
+      "id": "bonus-2",
+      "description": "Report includes timing information",
+      "type": "file_contains",
+      "target": "deploy-report.md",
+      "pattern": "[Tt]ime|[Dd]uration|seconds|ms|minutes",
+      "xpBonus": 50
+    }
+  ],
+
+  "hints": [
+    {
+      "level": 1,
+      "text": "Think about which tasks can run simultaneously and which must wait for others.",
+      "xpCost": 20
+    },
+    {
+      "level": 2,
+      "text": "Try: 'Create a workflow that runs lint and test in parallel, then build if both pass. Generate a report.'",
+      "xpCost": 60
+    },
+    {
+      "level": 3,
+      "text": "Ask: 'Create workflow.js that: 1) Runs npm lint and npm test in parallel using Promise.all, 2) If both succeed, runs npm build, 3) Records timing for each step. Then create deploy-report.md showing the workflow execution summary with all steps and their results.'",
+      "xpCost": 120
+    }
+  ],
+
+  "solution": {
+    "approach": "Create a workflow that maximizes parallelism while respecting dependencies.",
+    "example": "Create an orchestrated CI/CD-style workflow",
+    "alternativeApproaches": [
+      "Use Promise.all for parallel tasks",
+      "Chain sequential tasks with async/await"
+    ]
+  },
+
+  "learningPoints": [
+    "Parallel execution speeds up independent tasks",
+    "Sequential execution ensures dependencies",
+    "Good orchestration combines both patterns"
+  ],
+
+  "nextChallenge": "16-001"
+}

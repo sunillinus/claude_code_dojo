@@ -1,0 +1,110 @@
+{
+  "id": "10-002",
+  "module": "project-config",
+  "title": "Customize Claude's Behavior",
+  "description": "Learn to add rules and preferences to CLAUDE.md that change how Claude Code behaves in your project.",
+  "difficulty": "beginner",
+  "xpReward": 125,
+  "estimatedMinutes": 7,
+  "skills": ["behavior-customization", "coding-standards"],
+
+  "setup": {
+    "workingDir": "~/dojo-workspace/challenge-10-002",
+    "initialFiles": [
+      {
+        "path": "README.md",
+        "content": "# Challenge: Customize Claude's Behavior\n\nYour team has specific coding standards. Configure Claude Code to follow them.\n\n## Objectives\n1. Add coding style preferences to CLAUDE.md\n2. Specify that TypeScript should be used\n3. Add rules about error handling\n"
+      },
+      {
+        "path": "CLAUDE.md",
+        "content": "# My Project\n\nA web application built with Node.js.\n\n## Commands\n- `npm run dev` - Start development server\n- `npm run build` - Build for production\n"
+      },
+      {
+        "path": "src/index.ts",
+        "content": "import express from 'express';\n\nconst app = express();\n\napp.get('/', (req, res) => {\n  res.json({ message: 'Hello World' });\n});\n\napp.listen(3000);\n"
+      }
+    ],
+    "cleanBefore": true
+  },
+
+  "objectives": [
+    {
+      "id": "obj-1",
+      "description": "Add TypeScript preference",
+      "type": "file_contains",
+      "target": "CLAUDE.md",
+      "pattern": "[Tt]ype[Ss]cript|\\.[Tt]s|\\.tsx",
+      "required": true
+    },
+    {
+      "id": "obj-2",
+      "description": "Add coding style rules",
+      "type": "file_contains",
+      "target": "CLAUDE.md",
+      "pattern": "[Ss]tyle|[Cc]onvention|[Pp]refer|[Aa]lways|[Nn]ever|[Rr]ule",
+      "required": true
+    },
+    {
+      "id": "obj-3",
+      "description": "Add error handling guidelines",
+      "type": "file_contains",
+      "target": "CLAUDE.md",
+      "pattern": "[Ee]rror|try|catch|[Hh]andl|[Ee]xception",
+      "required": true
+    }
+  ],
+
+  "bonusObjectives": [
+    {
+      "id": "bonus-1",
+      "description": "Add naming conventions",
+      "type": "file_contains",
+      "target": "CLAUDE.md",
+      "pattern": "camelCase|PascalCase|snake_case|naming|[Nn]ame",
+      "xpBonus": 25
+    },
+    {
+      "id": "bonus-2",
+      "description": "Add import organization rules",
+      "type": "file_contains",
+      "target": "CLAUDE.md",
+      "pattern": "import|[Oo]rder|[Gg]roup",
+      "xpBonus": 25
+    }
+  ],
+
+  "hints": [
+    {
+      "level": 1,
+      "text": "Add a section to CLAUDE.md with coding preferences and rules Claude should follow.",
+      "xpCost": 10
+    },
+    {
+      "level": 2,
+      "text": "Try: 'Update CLAUDE.md to specify we use TypeScript and add rules for error handling'",
+      "xpCost": 25
+    },
+    {
+      "level": 3,
+      "text": "Ask: 'Update CLAUDE.md to add: 1) A coding standards section 2) Rule to always use TypeScript (.ts, .tsx files) 3) Rule to wrap async operations in try/catch 4) Prefer explicit types over any'",
+      "xpCost": 50
+    }
+  ],
+
+  "solution": {
+    "approach": "Add sections to CLAUDE.md with specific rules and preferences.",
+    "example": "Update CLAUDE.md with TypeScript requirements and error handling rules",
+    "alternativeApproaches": [
+      "Add coding standards to the project documentation",
+      "Configure Claude to follow team conventions"
+    ]
+  },
+
+  "learningPoints": [
+    "CLAUDE.md rules directly influence Claude's code generation",
+    "Be specific about what you want (and don't want)",
+    "Rules like 'always use TypeScript' are followed consistently"
+  ],
+
+  "nextChallenge": "10-003"
+}

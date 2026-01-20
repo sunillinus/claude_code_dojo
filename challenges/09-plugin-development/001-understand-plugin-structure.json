@@ -1,0 +1,139 @@
+{
+  "id": "09-001",
+  "module": "plugin-development",
+  "title": "Understand Plugin Structure",
+  "description": "Learn the anatomy of a Claude Code plugin. Understanding the structure is essential before building your own.",
+  "difficulty": "beginner",
+  "xpReward": 150,
+  "estimatedMinutes": 10,
+  "skills": ["plugin-anatomy", "component-types"],
+
+  "setup": {
+    "workingDir": "~/dojo-workspace/challenge-09-001",
+    "initialFiles": [
+      {
+        "path": "README.md",
+        "content": "# Challenge: Understand Plugin Structure\n\nExplore this example plugin and document its components.\n\n## Objectives\n1. Identify all plugin components (skills, hooks, agents, commands)\n2. Understand what each component does\n3. Create plugin-analysis.md documenting the structure\n"
+      },
+      {
+        "path": "plugin.json",
+        "content": "{\n  \"name\": \"productivity-tools\",\n  \"version\": \"1.0.0\",\n  \"description\": \"A collection of developer productivity tools\",\n  \"author\": {\n    \"name\": \"DevTools Team\"\n  }\n}\n"
+      },
+      {
+        "path": "skills/summarize/SKILL.md",
+        "content": "---\nname: summarize\ndescription: Summarize code, documents, or conversations concisely\nuser-invocable: true\n---\n\nYou are a summarization expert. When invoked:\n\n1. Analyze the content provided or the current context\n2. Extract the key points and main ideas\n3. Present a concise summary in bullet points\n4. Keep the summary under 10 bullet points\n\nFocus on actionable insights and important details.\n"
+      },
+      {
+        "path": "skills/explain/SKILL.md",
+        "content": "---\nname: explain\ndescription: Explain code or concepts in simple terms\nuser-invocable: true\nallowed-tools:\n  - Read\n  - Glob\n  - Grep\n---\n\nYou are a patient teacher. When asked to explain something:\n\n1. Start with a high-level overview\n2. Break down complex parts into simple concepts\n3. Use analogies when helpful\n4. Provide examples to illustrate points\n\nAvoid jargon unless you explain it first.\n"
+      },
+      {
+        "path": "hooks/log-writes.md",
+        "content": "---\ndescription: Log all file write operations\nevent: PostToolUse\ntools:\n  - Write\n  - Edit\ncommand: echo \"[$(date)] File modified: $TOOL_INPUT_FILE_PATH\" >> ~/.claude-file-log.txt\n---\n"
+      },
+      {
+        "path": "hooks/protect-main.md",
+        "content": "---\ndescription: Prevent direct commits to main branch\nevent: PreToolUse\ntools:\n  - Bash\n---\n\nCheck if this bash command is attempting to commit directly to the main or master branch.\n\nIf the command contains 'git commit' and we're on main/master branch (not a feature branch), respond with:\n{\"decision\": \"block\", \"reason\": \"Direct commits to main/master are not allowed. Please create a feature branch.\"}\n\nOtherwise, respond with:\n{\"decision\": \"allow\"}\n"
+      },
+      {
+        "path": "agents/reviewer.md",
+        "content": "---\ndescription: Code review specialist that analyzes code quality\nallowed-tools:\n  - Read\n  - Glob\n  - Grep\n---\n\nYou are an experienced code reviewer. Your job is to:\n\n1. Analyze code for potential bugs and issues\n2. Check for security vulnerabilities\n3. Evaluate code style and best practices\n4. Suggest improvements with specific examples\n\nBe constructive and explain the \"why\" behind each suggestion.\n"
+      },
+      {
+        "path": "commands/quick-test.md",
+        "content": "---\ndescription: Run tests for the current project quickly\n---\n\nDetect the project type and run the appropriate test command:\n\n- Node.js: Look for package.json and run `npm test`\n- Python: Look for pytest.ini, setup.py, or pyproject.toml and run `pytest`\n- Go: Look for go.mod and run `go test ./...`\n- Rust: Look for Cargo.toml and run `cargo test`\n\nReport the test results concisely.\n"
+      }
+    ],
+    "cleanBefore": true
+  },
+
+  "objectives": [
+    {
+      "id": "obj-1",
+      "description": "Create plugin-analysis.md",
+      "type": "file_exists",
+      "target": "plugin-analysis.md",
+      "required": true
+    },
+    {
+      "id": "obj-2",
+      "description": "Document the skills (summarize, explain)",
+      "type": "file_contains",
+      "target": "plugin-analysis.md",
+      "pattern": "[Ss]kill|summarize|explain",
+      "required": true
+    },
+    {
+      "id": "obj-3",
+      "description": "Document the hooks (log-writes, protect-main)",
+      "type": "file_contains",
+      "target": "plugin-analysis.md",
+      "pattern": "[Hh]ook|log.writes|protect.main|PreToolUse|PostToolUse",
+      "required": true
+    },
+    {
+      "id": "obj-4",
+      "description": "Document the agent (reviewer)",
+      "type": "file_contains",
+      "target": "plugin-analysis.md",
+      "pattern": "[Aa]gent|reviewer",
+      "required": true
+    }
+  ],
+
+  "bonusObjectives": [
+    {
+      "id": "bonus-1",
+      "description": "Document the command (quick-test)",
+      "type": "file_contains",
+      "target": "plugin-analysis.md",
+      "pattern": "[Cc]ommand|quick.test",
+      "xpBonus": 25
+    },
+    {
+      "id": "bonus-2",
+      "description": "Explain the difference between components",
+      "type": "file_contains",
+      "target": "plugin-analysis.md",
+      "pattern": "difference|purpose|when to use|vs\\.|versus",
+      "xpBonus": 50
+    }
+  ],
+
+  "hints": [
+    {
+      "level": 1,
+      "text": "Explore each folder (skills, hooks, agents, commands) and read the files inside.",
+      "xpCost": 10
+    },
+    {
+      "level": 2,
+      "text": "Try: 'Analyze this plugin structure and explain what each component (skills, hooks, agents, commands) does'",
+      "xpCost": 30
+    },
+    {
+      "level": 3,
+      "text": "Ask: 'Read all the plugin files and create plugin-analysis.md documenting: the plugin.json metadata, each skill and what it does, each hook and when it triggers, the agent and its purpose, and the command.'",
+      "xpCost": 55
+    }
+  ],
+
+  "solution": {
+    "approach": "Explore the plugin structure and document each component type.",
+    "example": "Analyze this plugin and create a comprehensive document explaining its structure",
+    "alternativeApproaches": [
+      "What does this plugin contain? Document all its parts.",
+      "Give me a breakdown of this plugin's components"
+    ]
+  },
+
+  "learningPoints": [
+    "Plugins have a plugin.json manifest with metadata",
+    "Skills are user-invocable commands (/name)",
+    "Hooks run automatically on events (PreToolUse, PostToolUse)",
+    "Agents are specialized subagents for specific tasks",
+    "Commands are simpler than skills, often without frontmatter complexity"
+  ],
+
+  "nextChallenge": "09-002"
+}

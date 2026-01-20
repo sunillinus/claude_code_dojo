@@ -1,0 +1,106 @@
+{
+  "id": "11-002",
+  "module": "testing-tdd",
+  "title": "Test-Driven Development",
+  "description": "Practice TDD: write the test first, watch it fail, then implement the code to make it pass.",
+  "difficulty": "intermediate",
+  "xpReward": 200,
+  "estimatedMinutes": 12,
+  "skills": ["tdd", "red-green-refactor"],
+
+  "setup": {
+    "workingDir": "~/dojo-workspace/challenge-11-002",
+    "initialFiles": [
+      {
+        "path": "README.md",
+        "content": "# Challenge: Test-Driven Development\n\nPractice the TDD workflow: Red → Green → Refactor\n\n## Objectives\n1. Tests are provided - they currently FAIL\n2. Implement the functions to make tests PASS\n3. Do NOT modify the tests!\n"
+      },
+      {
+        "path": "package.json",
+        "content": "{\n  \"name\": \"tdd-challenge\",\n  \"scripts\": {\n    \"test\": \"node --test\"\n  }\n}\n"
+      },
+      {
+        "path": "validator.js",
+        "content": "// TODO: Implement these functions to make the tests pass\n\nfunction isValidEmail(email) {\n  // Your implementation here\n}\n\nfunction isValidPassword(password) {\n  // Your implementation here\n}\n\nfunction isValidUsername(username) {\n  // Your implementation here\n}\n\nmodule.exports = { isValidEmail, isValidPassword, isValidUsername };\n"
+      },
+      {
+        "path": "validator.test.js",
+        "content": "const { test } = require('node:test');\nconst assert = require('node:assert');\nconst { isValidEmail, isValidPassword, isValidUsername } = require('./validator');\n\ntest('isValidEmail should validate email format', () => {\n  assert.strictEqual(isValidEmail('user@example.com'), true);\n  assert.strictEqual(isValidEmail('invalid-email'), false);\n  assert.strictEqual(isValidEmail('no@domain'), false);\n  assert.strictEqual(isValidEmail(''), false);\n});\n\ntest('isValidPassword should require 8+ chars with number', () => {\n  assert.strictEqual(isValidPassword('password123'), true);\n  assert.strictEqual(isValidPassword('short1'), false);\n  assert.strictEqual(isValidPassword('nodigits'), false);\n  assert.strictEqual(isValidPassword('12345678'), true);\n});\n\ntest('isValidUsername should allow alphanumeric and underscore', () => {\n  assert.strictEqual(isValidUsername('john_doe'), true);\n  assert.strictEqual(isValidUsername('user123'), true);\n  assert.strictEqual(isValidUsername('bad-name'), false);\n  assert.strictEqual(isValidUsername('has space'), false);\n  assert.strictEqual(isValidUsername('ab'), false); // too short\n});\n"
+      }
+    ],
+    "cleanBefore": true
+  },
+
+  "objectives": [
+    {
+      "id": "obj-1",
+      "description": "Implement isValidEmail",
+      "type": "file_contains",
+      "target": "validator.js",
+      "pattern": "isValidEmail.*\\{[^}]*(@|includes|match|regex|test)[^}]*\\}",
+      "required": true
+    },
+    {
+      "id": "obj-2",
+      "description": "Implement isValidPassword",
+      "type": "file_contains",
+      "target": "validator.js",
+      "pattern": "isValidPassword.*\\{[^}]*(length|\\d|[0-9]|match)[^}]*\\}",
+      "required": true
+    },
+    {
+      "id": "obj-3",
+      "description": "Implement isValidUsername",
+      "type": "file_contains",
+      "target": "validator.js",
+      "pattern": "isValidUsername.*\\{[^}]*(regex|match|test|\\^\\[)[^}]*\\}",
+      "required": true
+    }
+  ],
+
+  "bonusObjectives": [
+    {
+      "id": "bonus-1",
+      "description": "All tests pass",
+      "type": "command_output_contains",
+      "command": "cd ~/dojo-workspace/challenge-11-002 && npm test 2>&1 | tail -5",
+      "pattern": "pass|ok",
+      "xpBonus": 75
+    }
+  ],
+
+  "hints": [
+    {
+      "level": 1,
+      "text": "Run npm test first to see what the tests expect. Read the assertions carefully.",
+      "xpCost": 15
+    },
+    {
+      "level": 2,
+      "text": "Try: 'Run the tests, see what fails, then implement the validator functions to make them pass'",
+      "xpCost": 40
+    },
+    {
+      "level": 3,
+      "text": "Ask: 'Implement isValidEmail (check for @ and domain), isValidPassword (8+ chars with digit), and isValidUsername (alphanumeric/underscore, 3+ chars) to pass the tests'",
+      "xpCost": 80
+    }
+  ],
+
+  "solution": {
+    "approach": "Read the tests to understand requirements, then implement each function.",
+    "example": "Implement the validator functions to make all tests pass",
+    "alternativeApproaches": [
+      "Use regex for email and username validation",
+      "Use string methods for password validation"
+    ]
+  },
+
+  "learningPoints": [
+    "TDD means writing tests before implementation",
+    "Tests serve as specifications for the code",
+    "The Red-Green-Refactor cycle improves code quality"
+  ],
+
+  "nextChallenge": "11-003"
+}

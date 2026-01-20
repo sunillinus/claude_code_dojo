@@ -1,0 +1,109 @@
+{
+  "id": "12-001",
+  "module": "effective-prompting",
+  "title": "Specific vs General Requests",
+  "description": "Learn how specific, detailed requests get better results than vague, general ones.",
+  "difficulty": "beginner",
+  "xpReward": 125,
+  "estimatedMinutes": 8,
+  "skills": ["prompt-specificity", "clear-communication"],
+
+  "setup": {
+    "workingDir": "~/dojo-workspace/challenge-12-001",
+    "initialFiles": [
+      {
+        "path": "README.md",
+        "content": "# Challenge: Specific vs General Requests\n\nLearn the difference between vague and specific prompts.\n\n## Objectives\n1. Complete Task A with a VAGUE prompt (see what happens)\n2. Complete Task B with a SPECIFIC prompt (better results!)\n3. Document what you learned in notes.md\n"
+      },
+      {
+        "path": "task-a.js",
+        "content": "// Task A: This function needs improvement\n// Try asking Claude with a VAGUE request like:\n// \"make this better\" or \"improve this code\"\n\nfunction process(d) {\n  var r = [];\n  for (var i = 0; i < d.length; i++) {\n    if (d[i] > 0) {\n      r.push(d[i] * 2);\n    }\n  }\n  return r;\n}\n\nmodule.exports = { process };\n"
+      },
+      {
+        "path": "task-b.js",
+        "content": "// Task B: This function also needs improvement\n// Try asking Claude with a SPECIFIC request like:\n// \"Rename this function to 'doublePositiveNumbers', use descriptive\n// variable names, convert to arrow function with filter/map\"\n\nfunction proc(arr) {\n  var out = [];\n  for (var j = 0; j < arr.length; j++) {\n    if (arr[j] > 0) {\n      out.push(arr[j] * 2);\n    }\n  }\n  return out;\n}\n\nmodule.exports = { proc };\n"
+      }
+    ],
+    "cleanBefore": true
+  },
+
+  "objectives": [
+    {
+      "id": "obj-1",
+      "description": "Improve task-a.js (any improvement counts)",
+      "type": "file_contains",
+      "target": "task-a.js",
+      "pattern": "const|let|=>|filter|map|forEach",
+      "required": true
+    },
+    {
+      "id": "obj-2",
+      "description": "Improve task-b.js with specific naming",
+      "type": "file_contains",
+      "target": "task-b.js",
+      "pattern": "doublePositive|numbers|items|values",
+      "required": true
+    },
+    {
+      "id": "obj-3",
+      "description": "Create notes.md documenting what you learned",
+      "type": "file_exists",
+      "target": "notes.md",
+      "required": true
+    },
+    {
+      "id": "obj-4",
+      "description": "Notes discuss specific vs general prompts",
+      "type": "file_contains",
+      "target": "notes.md",
+      "pattern": "[Ss]pecific|[Vv]ague|[Gg]eneral|[Dd]etail|[Bb]etter",
+      "required": true
+    }
+  ],
+
+  "bonusObjectives": [
+    {
+      "id": "bonus-1",
+      "description": "task-b.js uses modern array methods",
+      "type": "file_contains",
+      "target": "task-b.js",
+      "pattern": "\\.filter\\(.*\\)\\.map\\(",
+      "xpBonus": 25
+    }
+  ],
+
+  "hints": [
+    {
+      "level": 1,
+      "text": "Try both approaches and compare the results. Which gives you more control?",
+      "xpCost": 10
+    },
+    {
+      "level": 2,
+      "text": "For task-a, try 'improve this'. For task-b, try 'rename to doublePositiveNumbers, use const, convert to filter().map()'",
+      "xpCost": 25
+    },
+    {
+      "level": 3,
+      "text": "Complete both tasks, then create notes.md explaining how specific prompts give you more predictable, controlled results.",
+      "xpCost": 50
+    }
+  ],
+
+  "solution": {
+    "approach": "Compare vague vs specific prompts, then document the difference.",
+    "example": "Refactor both files and document your learnings about prompt specificity",
+    "alternativeApproaches": [
+      "Try multiple vague prompts to see variation in results",
+      "Be very specific about naming, style, and patterns"
+    ]
+  },
+
+  "learningPoints": [
+    "Specific prompts give predictable, controlled results",
+    "Vague prompts may give good results but are less controllable",
+    "Include details: names, patterns, style preferences"
+  ],
+
+  "nextChallenge": "12-002"
+}

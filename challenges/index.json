@@ -1,0 +1,615 @@
+{
+  "version": "1.0.0",
+  "totalChallenges": 70,
+  "modules": [
+    {
+      "id": "fundamentals",
+      "name": "Fundamentals",
+      "description": "Master the basics of file operations with Claude Code",
+      "order": 1,
+      "unlockCondition": "always",
+      "challenges": [
+        "01-001",
+        "01-002",
+        "01-003",
+        "01-004",
+        "01-005"
+      ]
+    },
+    {
+      "id": "search-navigation",
+      "name": "Search & Navigation",
+      "description": "Learn to find files and search codebases efficiently",
+      "order": 2,
+      "unlockCondition": "always",
+      "challenges": [
+        "02-001",
+        "02-002",
+        "02-003",
+        "02-004",
+        "02-005"
+      ]
+    },
+    {
+      "id": "git-basics",
+      "name": "Git Basics",
+      "description": "Version control fundamentals with Claude Code",
+      "order": 3,
+      "unlockCondition": {
+        "type": "challenges_completed",
+        "module": "fundamentals",
+        "count": 3
+      },
+      "challenges": [
+        "03-001",
+        "03-002",
+        "03-003",
+        "03-004",
+        "03-005"
+      ]
+    },
+    {
+      "id": "code-editing",
+      "name": "Code Editing",
+      "description": "Modify and refactor code with precision",
+      "order": 4,
+      "unlockCondition": {
+        "type": "module_completed",
+        "module": "git-basics"
+      },
+      "challenges": [
+        "04-001",
+        "04-002",
+        "04-003",
+        "04-004",
+        "04-005"
+      ]
+    },
+    {
+      "id": "debugging",
+      "name": "Debugging",
+      "description": "Find and fix bugs efficiently",
+      "order": 5,
+      "unlockCondition": {
+        "type": "module_completed",
+        "module": "code-editing"
+      },
+      "challenges": [
+        "05-001",
+        "05-002",
+        "05-003",
+        "05-004"
+      ]
+    },
+    {
+      "id": "testing-tdd",
+      "name": "Testing & TDD",
+      "description": "Write tests, practice test-driven development, and improve test coverage",
+      "order": 6,
+      "unlockCondition": {
+        "type": "module_completed",
+        "module": "debugging"
+      },
+      "challenges": [
+        "11-001",
+        "11-002",
+        "11-003",
+        "11-004",
+        "11-005"
+      ]
+    },
+    {
+      "id": "project-config",
+      "name": "Project Configuration",
+      "description": "Configure Claude Code for your project with CLAUDE.md and settings",
+      "order": 7,
+      "unlockCondition": {
+        "type": "module_completed",
+        "module": "testing-tdd"
+      },
+      "challenges": [
+        "10-001",
+        "10-002",
+        "10-003",
+        "10-004",
+        "10-005"
+      ]
+    },
+    {
+      "id": "effective-prompting",
+      "name": "Effective Prompting",
+      "description": "Learn to communicate effectively with Claude for better results",
+      "order": 8,
+      "unlockCondition": {
+        "type": "module_completed",
+        "module": "project-config"
+      },
+      "challenges": [
+        "12-001",
+        "12-002",
+        "12-003",
+        "12-004"
+      ]
+    },
+    {
+      "id": "code-generation",
+      "name": "Code Generation & Scaffolding",
+      "description": "Generate components, scaffold projects, and create code from specifications",
+      "order": 9,
+      "unlockCondition": {
+        "type": "module_completed",
+        "module": "effective-prompting"
+      },
+      "challenges": [
+        "13-001",
+        "13-002",
+        "13-003",
+        "13-004"
+      ]
+    },
+    {
+      "id": "web-research",
+      "name": "Web Research Tools",
+      "description": "Use web search and fetch to find documentation, solutions, and current information",
+      "order": 10,
+      "unlockCondition": {
+        "type": "module_completed",
+        "module": "code-generation"
+      },
+      "challenges": [
+        "14-001",
+        "14-002",
+        "14-003",
+        "14-004"
+      ]
+    },
+    {
+      "id": "subagents",
+      "name": "Subagents",
+      "description": "Master Claude Code's subagent system for complex tasks",
+      "order": 11,
+      "unlockCondition": {
+        "type": "module_completed",
+        "module": "web-research"
+      },
+      "challenges": [
+        "06-001",
+        "06-002",
+        "06-003",
+        "06-004"
+      ]
+    },
+    {
+      "id": "background-tasks",
+      "name": "Background Tasks & Parallelism",
+      "description": "Run tasks in background, execute in parallel, and orchestrate workflows",
+      "order": 12,
+      "unlockCondition": {
+        "type": "module_completed",
+        "module": "subagents"
+      },
+      "challenges": [
+        "15-001",
+        "15-002",
+        "15-003",
+        "15-004"
+      ]
+    },
+    {
+      "id": "agentic-loops",
+      "name": "Agentic Loops (Ralph Loop)",
+      "description": "Use Ralph Loop for autonomous, iterative work on complex tasks",
+      "order": 13,
+      "unlockCondition": {
+        "type": "module_completed",
+        "module": "background-tasks"
+      },
+      "challenges": [
+        "16-001",
+        "16-002",
+        "16-003",
+        "16-004"
+      ]
+    },
+    {
+      "id": "skills-hooks",
+      "name": "Skills & Hooks",
+      "description": "Extend Claude Code with custom skills and automation",
+      "order": 14,
+      "unlockCondition": {
+        "type": "module_completed",
+        "module": "agentic-loops"
+      },
+      "challenges": [
+        "07-001",
+        "07-002",
+        "07-003",
+        "07-004"
+      ]
+    },
+    {
+      "id": "mcp-integration",
+      "name": "MCP Integration",
+      "description": "Connect Claude Code to external tools and services",
+      "order": 15,
+      "unlockCondition": {
+        "type": "module_completed",
+        "module": "skills-hooks"
+      },
+      "challenges": [
+        "08-001",
+        "08-002",
+        "08-003"
+      ]
+    },
+    {
+      "id": "plugin-development",
+      "name": "Plugin Development",
+      "description": "Build and publish your own Claude Code plugins",
+      "order": 16,
+      "unlockCondition": {
+        "type": "module_completed",
+        "module": "skills-hooks"
+      },
+      "challenges": [
+        "09-001",
+        "09-002",
+        "09-003",
+        "09-004",
+        "09-005"
+      ]
+    }
+  ],
+  "challengeDetails": {
+    "01-001": {
+      "title": "Create Your First File",
+      "difficulty": "beginner",
+      "xpReward": 100
+    },
+    "01-002": {
+      "title": "Read and Understand Code",
+      "difficulty": "beginner",
+      "xpReward": 100
+    },
+    "01-003": {
+      "title": "Edit an Existing File",
+      "difficulty": "beginner",
+      "xpReward": 100
+    },
+    "01-004": {
+      "title": "Create Multiple Files",
+      "difficulty": "beginner",
+      "xpReward": 125
+    },
+    "01-005": {
+      "title": "Delete and Rename Files",
+      "difficulty": "beginner",
+      "xpReward": 125
+    },
+    "02-001": {
+      "title": "Find Files by Name",
+      "difficulty": "beginner",
+      "xpReward": 100
+    },
+    "02-002": {
+      "title": "Search File Contents",
+      "difficulty": "beginner",
+      "xpReward": 125
+    },
+    "02-003": {
+      "title": "Navigate Large Codebase",
+      "difficulty": "intermediate",
+      "xpReward": 200
+    },
+    "02-004": {
+      "title": "Find Function Definitions",
+      "difficulty": "intermediate",
+      "xpReward": 200
+    },
+    "02-005": {
+      "title": "Cross-Reference Search",
+      "difficulty": "intermediate",
+      "xpReward": 225
+    },
+    "03-001": {
+      "title": "Initialize and First Commit",
+      "difficulty": "beginner",
+      "xpReward": 125
+    },
+    "03-002": {
+      "title": "Create Feature Branch",
+      "difficulty": "beginner",
+      "xpReward": 125
+    },
+    "03-003": {
+      "title": "Stage and Commit Changes",
+      "difficulty": "intermediate",
+      "xpReward": 175
+    },
+    "03-004": {
+      "title": "View History and Diff",
+      "difficulty": "intermediate",
+      "xpReward": 175
+    },
+    "03-005": {
+      "title": "Resolve Simple Conflict",
+      "difficulty": "intermediate",
+      "xpReward": 250
+    },
+    "04-001": {
+      "title": "Add a Function",
+      "difficulty": "intermediate",
+      "xpReward": 200
+    },
+    "04-002": {
+      "title": "Refactor Variable Names",
+      "difficulty": "intermediate",
+      "xpReward": 200
+    },
+    "04-003": {
+      "title": "Extract to New File",
+      "difficulty": "intermediate",
+      "xpReward": 225
+    },
+    "04-004": {
+      "title": "Add Error Handling",
+      "difficulty": "intermediate",
+      "xpReward": 225
+    },
+    "04-005": {
+      "title": "Multi-file Refactor",
+      "difficulty": "advanced",
+      "xpReward": 350
+    },
+    "05-001": {
+      "title": "Find the Bug",
+      "difficulty": "intermediate",
+      "xpReward": 200
+    },
+    "05-002": {
+      "title": "Fix Type Error",
+      "difficulty": "intermediate",
+      "xpReward": 225
+    },
+    "05-003": {
+      "title": "Debug with Logs",
+      "difficulty": "intermediate",
+      "xpReward": 200
+    },
+    "05-004": {
+      "title": "Fix Failing Tests",
+      "difficulty": "advanced",
+      "xpReward": 300
+    },
+    "06-001": {
+      "title": "Use Explore Subagent",
+      "difficulty": "intermediate",
+      "xpReward": 225
+    },
+    "06-002": {
+      "title": "Parallel Research",
+      "difficulty": "intermediate",
+      "xpReward": 250
+    },
+    "06-003": {
+      "title": "Create Custom Subagent",
+      "difficulty": "advanced",
+      "xpReward": 350
+    },
+    "06-004": {
+      "title": "Chain Subagents",
+      "difficulty": "advanced",
+      "xpReward": 400
+    },
+    "07-001": {
+      "title": "Create Your First Skill",
+      "difficulty": "intermediate",
+      "xpReward": 250
+    },
+    "07-002": {
+      "title": "Skill with Tool Restrictions",
+      "difficulty": "advanced",
+      "xpReward": 325
+    },
+    "07-003": {
+      "title": "Add a PreToolUse Hook",
+      "difficulty": "advanced",
+      "xpReward": 350
+    },
+    "07-004": {
+      "title": "Auto-format with Hooks",
+      "difficulty": "advanced",
+      "xpReward": 375
+    },
+    "08-001": {
+      "title": "Add an MCP Server",
+      "difficulty": "intermediate",
+      "xpReward": 275
+    },
+    "08-002": {
+      "title": "Query External Data",
+      "difficulty": "advanced",
+      "xpReward": 350
+    },
+    "08-003": {
+      "title": "Build Custom MCP Tool",
+      "difficulty": "expert",
+      "xpReward": 500
+    },
+    "09-001": {
+      "title": "Understand Plugin Structure",
+      "difficulty": "beginner",
+      "xpReward": 150
+    },
+    "09-002": {
+      "title": "Create Your First Plugin",
+      "difficulty": "intermediate",
+      "xpReward": 275
+    },
+    "09-003": {
+      "title": "Plugin with All Components",
+      "difficulty": "intermediate",
+      "xpReward": 325
+    },
+    "09-004": {
+      "title": "Plugin Configuration & Settings",
+      "difficulty": "intermediate",
+      "xpReward": 300
+    },
+    "09-005": {
+      "title": "Prepare for Marketplace",
+      "difficulty": "advanced",
+      "xpReward": 400
+    },
+    "10-001": {
+      "title": "Create Your First CLAUDE.md",
+      "difficulty": "beginner",
+      "xpReward": 100
+    },
+    "10-002": {
+      "title": "Customize Claude's Behavior",
+      "difficulty": "beginner",
+      "xpReward": 125
+    },
+    "10-003": {
+      "title": "Advanced CLAUDE.md Patterns",
+      "difficulty": "intermediate",
+      "xpReward": 175
+    },
+    "10-004": {
+      "title": "Settings and Permissions",
+      "difficulty": "intermediate",
+      "xpReward": 200
+    },
+    "10-005": {
+      "title": "Team Configuration",
+      "difficulty": "intermediate",
+      "xpReward": 200
+    },
+    "11-001": {
+      "title": "Write Your First Test",
+      "difficulty": "beginner",
+      "xpReward": 150
+    },
+    "11-002": {
+      "title": "Test-Driven Development",
+      "difficulty": "intermediate",
+      "xpReward": 200
+    },
+    "11-003": {
+      "title": "Testing Async Code",
+      "difficulty": "intermediate",
+      "xpReward": 225
+    },
+    "11-004": {
+      "title": "Add Tests to Legacy Code",
+      "difficulty": "intermediate",
+      "xpReward": 250
+    },
+    "11-005": {
+      "title": "Test Coverage Analysis",
+      "difficulty": "advanced",
+      "xpReward": 300
+    },
+    "12-001": {
+      "title": "Specific vs General Requests",
+      "difficulty": "beginner",
+      "xpReward": 125
+    },
+    "12-002": {
+      "title": "Iterative Refinement",
+      "difficulty": "intermediate",
+      "xpReward": 175
+    },
+    "12-003": {
+      "title": "Context and Constraints",
+      "difficulty": "intermediate",
+      "xpReward": 200
+    },
+    "12-004": {
+      "title": "Breaking Down Complex Tasks",
+      "difficulty": "intermediate",
+      "xpReward": 225
+    },
+    "13-001": {
+      "title": "Generate a Component",
+      "difficulty": "beginner",
+      "xpReward": 150
+    },
+    "13-002": {
+      "title": "Scaffold Project Structure",
+      "difficulty": "intermediate",
+      "xpReward": 200
+    },
+    "13-003": {
+      "title": "Generate from Specifications",
+      "difficulty": "intermediate",
+      "xpReward": 225
+    },
+    "13-004": {
+      "title": "Template-Based Generation",
+      "difficulty": "advanced",
+      "xpReward": 275
+    },
+    "14-001": {
+      "title": "Fetch Documentation",
+      "difficulty": "beginner",
+      "xpReward": 150
+    },
+    "14-002": {
+      "title": "Search for Solutions",
+      "difficulty": "intermediate",
+      "xpReward": 175
+    },
+    "14-003": {
+      "title": "Research API Integration",
+      "difficulty": "intermediate",
+      "xpReward": 225
+    },
+    "14-004": {
+      "title": "Verify Current Best Practices",
+      "difficulty": "intermediate",
+      "xpReward": 200
+    },
+    "15-001": {
+      "title": "Run Tasks in Background",
+      "difficulty": "intermediate",
+      "xpReward": 200
+    },
+    "15-002": {
+      "title": "Parallel Tool Execution",
+      "difficulty": "intermediate",
+      "xpReward": 225
+    },
+    "15-003": {
+      "title": "Monitor Long-Running Tasks",
+      "difficulty": "intermediate",
+      "xpReward": 200
+    },
+    "15-004": {
+      "title": "Orchestrate Parallel Workflows",
+      "difficulty": "advanced",
+      "xpReward": 300
+    },
+    "16-001": {
+      "title": "Understanding Ralph Loop",
+      "difficulty": "intermediate",
+      "xpReward": 200
+    },
+    "16-002": {
+      "title": "Start Your First Loop",
+      "difficulty": "intermediate",
+      "xpReward": 225
+    },
+    "16-003": {
+      "title": "Completion Promises",
+      "difficulty": "advanced",
+      "xpReward": 275
+    },
+    "16-004": {
+      "title": "Complex Iterative Tasks",
+      "difficulty": "advanced",
+      "xpReward": 350
+    }
+  }
+}

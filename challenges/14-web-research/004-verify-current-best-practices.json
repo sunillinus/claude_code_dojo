@@ -1,0 +1,117 @@
+{
+  "id": "14-004",
+  "module": "web-research",
+  "title": "Verify Current Best Practices",
+  "description": "Use web research to verify that code follows current best practices.",
+  "difficulty": "intermediate",
+  "xpReward": 200,
+  "estimatedMinutes": 12,
+  "skills": ["best-practices", "code-review"],
+
+  "setup": {
+    "workingDir": "~/dojo-workspace/challenge-14-004",
+    "initialFiles": [
+      {
+        "path": "README.md",
+        "content": "# Challenge: Verify Current Best Practices\n\nReview the code and update it to follow current best practices.\n\n## Objectives\n1. Review the existing React code\n2. Research current React best practices (React 18+)\n3. Update the code to follow modern patterns\n4. Document what changed and why\n"
+      },
+      {
+        "path": "package.json",
+        "content": "{\n  \"name\": \"best-practices\",\n  \"dependencies\": {\n    \"react\": \"^18.0.0\"\n  }\n}\n"
+      },
+      {
+        "path": "DataFetcher.jsx",
+        "content": "import React from 'react';\n\n// This code uses older patterns - update to modern React 18+ best practices\n\nclass DataFetcher extends React.Component {\n  constructor(props) {\n    super(props);\n    this.state = {\n      data: null,\n      loading: true,\n      error: null\n    };\n  }\n\n  componentDidMount() {\n    fetch(this.props.url)\n      .then(res => res.json())\n      .then(data => this.setState({ data, loading: false }))\n      .catch(error => this.setState({ error, loading: false }));\n  }\n\n  componentDidUpdate(prevProps) {\n    if (prevProps.url !== this.props.url) {\n      this.setState({ loading: true });\n      fetch(this.props.url)\n        .then(res => res.json())\n        .then(data => this.setState({ data, loading: false }))\n        .catch(error => this.setState({ error, loading: false }));\n    }\n  }\n\n  render() {\n    const { data, loading, error } = this.state;\n    \n    if (loading) return <div>Loading...</div>;\n    if (error) return <div>Error: {error.message}</div>;\n    \n    return this.props.render(data);\n  }\n}\n\nexport default DataFetcher;\n"
+      }
+    ],
+    "cleanBefore": true
+  },
+
+  "objectives": [
+    {
+      "id": "obj-1",
+      "description": "Convert to functional component",
+      "type": "file_contains",
+      "target": "DataFetcher.jsx",
+      "pattern": "function DataFetcher|const DataFetcher|=>.*\\{",
+      "required": true
+    },
+    {
+      "id": "obj-2",
+      "description": "Use React hooks",
+      "type": "file_contains",
+      "target": "DataFetcher.jsx",
+      "pattern": "useState|useEffect",
+      "required": true
+    },
+    {
+      "id": "obj-3",
+      "description": "Document the changes",
+      "type": "file_exists",
+      "target": "changes.md",
+      "required": true
+    },
+    {
+      "id": "obj-4",
+      "description": "Explain why the changes are better",
+      "type": "file_contains",
+      "target": "changes.md",
+      "pattern": "[Ff]unctional|[Hh]ook|[Mm]odern|[Bb]est [Pp]ractice|[Ss]impler|[Rr]eadable",
+      "required": true
+    }
+  ],
+
+  "bonusObjectives": [
+    {
+      "id": "bonus-1",
+      "description": "Add cleanup for effect",
+      "type": "file_contains",
+      "target": "DataFetcher.jsx",
+      "pattern": "return.*=>|cleanup|AbortController|cancel",
+      "xpBonus": 40
+    },
+    {
+      "id": "bonus-2",
+      "description": "Create a custom useFetch hook",
+      "type": "file_contains",
+      "target": "DataFetcher.jsx",
+      "pattern": "function useFetch|const useFetch|export.*useFetch",
+      "xpBonus": 50
+    }
+  ],
+
+  "hints": [
+    {
+      "level": 1,
+      "text": "Research React 18 best practices. Class components have been replaced by functional components with hooks.",
+      "xpCost": 15
+    },
+    {
+      "level": 2,
+      "text": "Try: 'Look up React 18 best practices and convert DataFetcher from class to functional component with hooks'",
+      "xpCost": 40
+    },
+    {
+      "level": 3,
+      "text": "Ask: 'Research current React 18 best practices. Convert DataFetcher.jsx from class component to functional component using useState and useEffect. Add cleanup to handle component unmounting. Create changes.md explaining why this is better.'",
+      "xpCost": 80
+    }
+  ],
+
+  "solution": {
+    "approach": "Research current best practices and update the code accordingly.",
+    "example": "Modernize the React component to follow current best practices",
+    "alternativeApproaches": [
+      "Search for 'React class to functional component migration'",
+      "Look up specific React 18 patterns"
+    ]
+  },
+
+  "learningPoints": [
+    "Best practices evolve - research current standards",
+    "Document why changes are improvements",
+    "Modern React prefers functional components with hooks"
+  ],
+
+  "nextChallenge": "06-001"
+}

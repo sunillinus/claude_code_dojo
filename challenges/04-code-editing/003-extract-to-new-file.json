@@ -1,0 +1,97 @@
+{
+  "id": "04-003",
+  "module": "code-editing",
+  "title": "Extract to New File",
+  "description": "Learn to extract code into a separate module. Good separation of concerns keeps code maintainable.",
+  "difficulty": "intermediate",
+  "xpReward": 225,
+  "estimatedMinutes": 10,
+  "skills": ["code-extraction", "module-organization"],
+
+  "setup": {
+    "workingDir": "~/dojo-workspace/challenge-04-003",
+    "initialFiles": [
+      {
+        "path": "README.md",
+        "content": "# Challenge: Extract to New File\n\nThis file does too much. Extract the validation logic!\n\n## Objectives\n1. Extract validation functions to a new file `validators.js`\n2. Update the original file to import from validators.js\n3. Keep everything working\n"
+      },
+      {
+        "path": "userController.js",
+        "content": "// User controller - does too much!\n\n// Validation functions (should be extracted)\nfunction validateEmail(email) {\n  const emailRegex = /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/;\n  return emailRegex.test(email);\n}\n\nfunction validatePassword(password) {\n  if (!password || password.length < 8) return false;\n  if (!/[A-Z]/.test(password)) return false;\n  if (!/[a-z]/.test(password)) return false;\n  if (!/[0-9]/.test(password)) return false;\n  return true;\n}\n\nfunction validateUsername(username) {\n  if (!username || username.length < 3) return false;\n  return /^[a-zA-Z0-9_]+$/.test(username);\n}\n\n// Controller functions\nasync function createUser(req, res) {\n  const { email, password, username } = req.body;\n  \n  if (!validateEmail(email)) {\n    return res.status(400).json({ error: 'Invalid email' });\n  }\n  if (!validatePassword(password)) {\n    return res.status(400).json({ error: 'Invalid password' });\n  }\n  if (!validateUsername(username)) {\n    return res.status(400).json({ error: 'Invalid username' });\n  }\n  \n  // Create user logic...\n  res.json({ success: true });\n}\n\nasync function updateUser(req, res) {\n  const { email } = req.body;\n  if (email && !validateEmail(email)) {\n    return res.status(400).json({ error: 'Invalid email' });\n  }\n  // Update logic...\n  res.json({ success: true });\n}\n\nmodule.exports = { createUser, updateUser };\n"
+      }
+    ],
+    "cleanBefore": true
+  },
+
+  "objectives": [
+    {
+      "id": "obj-1",
+      "description": "Create validators.js file",
+      "type": "file_exists",
+      "target": "validators.js",
+      "required": true
+    },
+    {
+      "id": "obj-2",
+      "description": "validators.js contains validateEmail",
+      "type": "file_contains",
+      "target": "validators.js",
+      "pattern": "function validateEmail|validateEmail.*=",
+      "required": true
+    },
+    {
+      "id": "obj-3",
+      "description": "userController.js imports from validators",
+      "type": "file_contains",
+      "target": "userController.js",
+      "pattern": "require.*validators|from.*validators",
+      "required": true
+    }
+  ],
+
+  "bonusObjectives": [
+    {
+      "id": "bonus-1",
+      "description": "All three validators moved to validators.js",
+      "type": "file_contains",
+      "target": "validators.js",
+      "pattern": "validateEmail.*validatePassword.*validateUsername|validatePassword.*validateEmail",
+      "xpBonus": 50
+    }
+  ],
+
+  "hints": [
+    {
+      "level": 1,
+      "text": "Ask Claude Code to extract specific functions to a new file.",
+      "xpCost": 15
+    },
+    {
+      "level": 2,
+      "text": "Try: 'Extract the validation functions from userController.js into a new validators.js file'",
+      "xpCost": 45
+    },
+    {
+      "level": 3,
+      "text": "Ask: 'Move validateEmail, validatePassword, and validateUsername to a new validators.js file and update userController.js to import them'",
+      "xpCost": 85
+    }
+  ],
+
+  "solution": {
+    "approach": "Extract functions to a new module and update imports.",
+    "example": "Extract the validation functions to validators.js and update the imports",
+    "alternativeApproaches": [
+      "Move the validate* functions to their own file",
+      "Separate the validation logic from the controller"
+    ]
+  },
+
+  "learningPoints": [
+    "Claude Code can extract code to new files",
+    "Imports are automatically updated",
+    "Good separation keeps files focused and testable"
+  ],
+
+  "nextChallenge": "04-004"
+}

@@ -1,0 +1,104 @@
+{
+  "id": "14-001",
+  "module": "web-research",
+  "title": "Fetch Documentation",
+  "description": "Learn to use WebFetch to retrieve documentation and get up-to-date information.",
+  "difficulty": "beginner",
+  "xpReward": 150,
+  "estimatedMinutes": 8,
+  "skills": ["web-fetch", "documentation"],
+
+  "setup": {
+    "workingDir": "~/dojo-workspace/challenge-14-001",
+    "initialFiles": [
+      {
+        "path": "README.md",
+        "content": "# Challenge: Fetch Documentation\n\nUse Claude's web tools to fetch documentation for a library.\n\n## Objectives\n1. Ask Claude to look up the React useState hook documentation\n2. Create a summary of what you learned in notes.md\n3. Create a simple example component using useState\n"
+      },
+      {
+        "path": "package.json",
+        "content": "{\n  \"name\": \"web-research\",\n  \"dependencies\": {\n    \"react\": \"^18.0.0\"\n  }\n}\n"
+      }
+    ],
+    "cleanBefore": true
+  },
+
+  "objectives": [
+    {
+      "id": "obj-1",
+      "description": "Create notes.md with documentation summary",
+      "type": "file_exists",
+      "target": "notes.md",
+      "required": true
+    },
+    {
+      "id": "obj-2",
+      "description": "Notes explain useState",
+      "type": "file_contains",
+      "target": "notes.md",
+      "pattern": "useState|state|hook",
+      "required": true
+    },
+    {
+      "id": "obj-3",
+      "description": "Create example component",
+      "type": "file_exists",
+      "target": "Counter.jsx",
+      "required": true
+    },
+    {
+      "id": "obj-4",
+      "description": "Component uses useState",
+      "type": "file_contains",
+      "target": "Counter.jsx",
+      "pattern": "useState|setCount|setState",
+      "required": true
+    }
+  ],
+
+  "bonusObjectives": [
+    {
+      "id": "bonus-1",
+      "description": "Notes mention rules of hooks",
+      "type": "file_contains",
+      "target": "notes.md",
+      "pattern": "[Rr]ule|[Tt]op level|[Cc]onditional|[Oo]nly call",
+      "xpBonus": 30
+    }
+  ],
+
+  "hints": [
+    {
+      "level": 1,
+      "text": "Ask Claude to look up and explain React's useState hook, then create examples based on what it finds.",
+      "xpCost": 10
+    },
+    {
+      "level": 2,
+      "text": "Try: 'Look up React useState documentation, summarize it in notes.md, and create a Counter component example'",
+      "xpCost": 30
+    },
+    {
+      "level": 3,
+      "text": "Ask: 'Fetch the React useState documentation, then: 1) Create notes.md explaining how useState works, 2) Create Counter.jsx showing a working example with increment/decrement buttons'",
+      "xpCost": 60
+    }
+  ],
+
+  "solution": {
+    "approach": "Ask Claude to fetch documentation and create summary and examples.",
+    "example": "Look up useState docs, create notes and example component",
+    "alternativeApproaches": [
+      "Ask for specific aspects of the documentation",
+      "Request multiple examples showing different use cases"
+    ]
+  },
+
+  "learningPoints": [
+    "Claude can fetch and summarize documentation",
+    "Web research provides current, accurate information",
+    "Always verify information with official sources"
+  ],
+
+  "nextChallenge": "14-002"
+}

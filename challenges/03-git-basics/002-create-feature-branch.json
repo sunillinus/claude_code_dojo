@@ -1,0 +1,101 @@
+{
+  "id": "03-002",
+  "module": "git-basics",
+  "title": "Create Feature Branch",
+  "description": "Learn to create and switch to a new branch for feature development. Branches keep your work organized.",
+  "difficulty": "beginner",
+  "xpReward": 125,
+  "estimatedMinutes": 5,
+  "skills": ["git-branch", "git-checkout"],
+
+  "setup": {
+    "workingDir": "~/dojo-workspace/challenge-03-002",
+    "initialFiles": [
+      {
+        "path": "README.md",
+        "content": "# Challenge: Create Feature Branch\n\nYou're about to add a new feature. Create a branch for it!\n\n## Objectives\n1. Create a new branch called 'feature/add-login'\n2. Switch to that branch\n3. Make a small change and commit it\n"
+      },
+      {
+        "path": "app.js",
+        "content": "// Main application\nfunction main() {\n  console.log('App starting...');\n}\n\nmain();\n"
+      }
+    ],
+    "cleanBefore": true,
+    "postSetup": [
+      "cd ~/dojo-workspace/challenge-03-002 && git init && git add . && git commit -m 'Initial commit'"
+    ]
+  },
+
+  "objectives": [
+    {
+      "id": "obj-1",
+      "description": "Create branch 'feature/add-login'",
+      "type": "command_output_contains",
+      "command": "git branch 2>/dev/null",
+      "pattern": "feature/add-login",
+      "required": true
+    },
+    {
+      "id": "obj-2",
+      "description": "Currently on the feature branch",
+      "type": "command_output_contains",
+      "command": "git branch --show-current 2>/dev/null",
+      "pattern": "feature/add-login",
+      "required": true
+    },
+    {
+      "id": "obj-3",
+      "description": "Made at least one commit on the branch",
+      "type": "command_output_contains",
+      "command": "git log --oneline feature/add-login 2>/dev/null | wc -l | tr -d ' '",
+      "pattern": "^[2-9]|^[1-9][0-9]",
+      "required": true
+    }
+  ],
+
+  "bonusObjectives": [
+    {
+      "id": "bonus-1",
+      "description": "Commit message mentions 'login' or 'feature'",
+      "type": "command_output_contains",
+      "command": "git log --format='%s' -1 2>/dev/null",
+      "pattern": "[Ll]ogin|[Ff]eature",
+      "xpBonus": 25
+    }
+  ],
+
+  "hints": [
+    {
+      "level": 1,
+      "text": "Ask Claude Code to create a new branch and switch to it.",
+      "xpCost": 10
+    },
+    {
+      "level": 2,
+      "text": "Try: 'Create a branch called feature/add-login and switch to it'",
+      "xpCost": 25
+    },
+    {
+      "level": 3,
+      "text": "Ask: 'Create and checkout branch feature/add-login, then add a comment to app.js and commit it'",
+      "xpCost": 50
+    }
+  ],
+
+  "solution": {
+    "approach": "Use Claude Code to create a branch, make changes, and commit.",
+    "example": "Create branch feature/add-login, switch to it, add a login placeholder to app.js, and commit",
+    "alternativeApproaches": [
+      "Start a new feature branch for login functionality",
+      "Branch off main for the add-login feature"
+    ]
+  },
+
+  "learningPoints": [
+    "Branches isolate feature development",
+    "Claude Code can create and switch branches",
+    "Feature branches typically follow naming conventions like feature/*"
+  ],
+
+  "nextChallenge": "03-003"
+}

@@ -1,0 +1,109 @@
+{
+  "id": "14-002",
+  "module": "web-research",
+  "title": "Search for Solutions",
+  "description": "Use web search to find solutions to programming problems and errors.",
+  "difficulty": "intermediate",
+  "xpReward": 175,
+  "estimatedMinutes": 10,
+  "skills": ["web-search", "problem-solving"],
+
+  "setup": {
+    "workingDir": "~/dojo-workspace/challenge-14-002",
+    "initialFiles": [
+      {
+        "path": "README.md",
+        "content": "# Challenge: Search for Solutions\n\nUse web search to find and fix issues in the code.\n\n## Objectives\n1. The code has a common React error\n2. Search for the solution online\n3. Fix the code and document the solution\n"
+      },
+      {
+        "path": "package.json",
+        "content": "{\n  \"name\": \"error-fix\",\n  \"dependencies\": {\n    \"react\": \"^18.0.0\"\n  }\n}\n"
+      },
+      {
+        "path": "UserList.jsx",
+        "content": "import { useState, useEffect } from 'react';\n\nexport function UserList() {\n  const [users, setUsers] = useState([]);\n  const [loading, setLoading] = useState(true);\n\n  useEffect(() => {\n    fetchUsers();\n  }, []);\n\n  async function fetchUsers() {\n    const response = await fetch('/api/users');\n    const data = await response.json();\n    setUsers(data);\n    setLoading(false);\n  }\n\n  if (loading) return <div>Loading...</div>;\n\n  return (\n    <ul>\n      {users.map(user => (\n        <li>{user.name}</li>\n      ))}\n    </ul>\n  );\n}\n\n// Error: Warning: Each child in a list should have a unique \"key\" prop.\n"
+      }
+    ],
+    "cleanBefore": true
+  },
+
+  "objectives": [
+    {
+      "id": "obj-1",
+      "description": "Fix the key prop warning",
+      "type": "file_contains",
+      "target": "UserList.jsx",
+      "pattern": "key=|key:",
+      "required": true
+    },
+    {
+      "id": "obj-2",
+      "description": "Create solution documentation",
+      "type": "file_exists",
+      "target": "solution.md",
+      "required": true
+    },
+    {
+      "id": "obj-3",
+      "description": "Document explains the error",
+      "type": "file_contains",
+      "target": "solution.md",
+      "pattern": "key|unique|list|array|map",
+      "required": true
+    }
+  ],
+
+  "bonusObjectives": [
+    {
+      "id": "bonus-1",
+      "description": "Explain why keys matter for React performance",
+      "type": "file_contains",
+      "target": "solution.md",
+      "pattern": "[Pp]erformance|[Rr]econciliation|[Vv]irtual DOM|[Dd]iff|[Rr]e-render",
+      "xpBonus": 40
+    },
+    {
+      "id": "bonus-2",
+      "description": "Show what NOT to use as keys",
+      "type": "file_contains",
+      "target": "solution.md",
+      "pattern": "index|[Dd]on't|[Aa]void|[Ss]hould not",
+      "xpBonus": 35
+    }
+  ],
+
+  "hints": [
+    {
+      "level": 1,
+      "text": "The error message tells you what's wrong. Ask Claude to search for why React needs key props.",
+      "xpCost": 10
+    },
+    {
+      "level": 2,
+      "text": "Try: 'Search for \"React Each child in a list should have a unique key prop\" and fix the code. Explain the solution.'",
+      "xpCost": 35
+    },
+    {
+      "level": 3,
+      "text": "Ask: 'Search for the React key prop warning, fix UserList.jsx by adding key={user.id} to the list items, and create solution.md explaining why keys are needed and best practices.'",
+      "xpCost": 70
+    }
+  ],
+
+  "solution": {
+    "approach": "Search for the error message to understand and fix the issue.",
+    "example": "Search for the key prop error, fix it, and document the solution",
+    "alternativeApproaches": [
+      "Look up React list rendering best practices",
+      "Search for common React warnings and fixes"
+    ]
+  },
+
+  "learningPoints": [
+    "Error messages make great search queries",
+    "Understanding why leads to better fixes",
+    "Document solutions for future reference"
+  ],
+
+  "nextChallenge": "14-003"
+}

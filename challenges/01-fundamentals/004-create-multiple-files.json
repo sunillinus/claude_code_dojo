@@ -1,0 +1,100 @@
+{
+  "id": "01-004",
+  "module": "fundamentals",
+  "title": "Create Multiple Files",
+  "description": "Learn to create multiple related files at once. Claude Code can scaffold entire project structures from a single description.",
+  "difficulty": "beginner",
+  "xpReward": 125,
+  "estimatedMinutes": 7,
+  "skills": ["file-creation", "project-scaffolding"],
+
+  "setup": {
+    "workingDir": "~/dojo-workspace/challenge-01-004",
+    "initialFiles": [
+      {
+        "path": "README.md",
+        "content": "# Challenge: Create Multiple Files\n\nYour task: Create a basic Express.js project structure\n\n## Objectives\n1. Create `package.json` with project metadata\n2. Create `index.js` with a basic Express server\n3. Create `routes/health.js` with a health check route\n"
+      }
+    ],
+    "cleanBefore": true
+  },
+
+  "objectives": [
+    {
+      "id": "obj-1",
+      "description": "Create package.json with name and dependencies",
+      "type": "file_exists",
+      "target": "package.json",
+      "required": true
+    },
+    {
+      "id": "obj-2",
+      "description": "package.json should have express as a dependency",
+      "type": "file_contains",
+      "target": "package.json",
+      "pattern": "\"express\"",
+      "required": true
+    },
+    {
+      "id": "obj-3",
+      "description": "Create index.js with Express app",
+      "type": "file_contains",
+      "target": "index.js",
+      "pattern": "require\\(['\"]express['\"]\\)|from ['\"]express['\"]",
+      "required": true
+    },
+    {
+      "id": "obj-4",
+      "description": "Create routes/health.js",
+      "type": "file_exists",
+      "target": "routes/health.js",
+      "required": true
+    }
+  ],
+
+  "bonusObjectives": [
+    {
+      "id": "bonus-1",
+      "description": "Add a start script to package.json",
+      "type": "file_contains",
+      "target": "package.json",
+      "pattern": "\"start\"\\s*:",
+      "xpBonus": 25
+    }
+  ],
+
+  "hints": [
+    {
+      "level": 1,
+      "text": "You can ask Claude Code to create multiple files in one request. Describe the project structure you need.",
+      "xpCost": 10
+    },
+    {
+      "level": 2,
+      "text": "Try: 'Create a basic Express.js project with package.json, index.js, and a routes folder with health.js'",
+      "xpCost": 25
+    },
+    {
+      "level": 3,
+      "text": "Ask Claude Code to scaffold an Express project with: package.json (with express dependency), index.js (basic server), and routes/health.js (health endpoint returning OK)",
+      "xpCost": 50
+    }
+  ],
+
+  "solution": {
+    "approach": "Describe the entire project structure and Claude Code will create all files.",
+    "example": "Create a basic Express.js project with package.json, index.js entry point, and routes/health.js for health checks",
+    "alternativeApproaches": [
+      "Scaffold an Express API with a health endpoint",
+      "Set up a Node.js project with Express and create the basic file structure"
+    ]
+  },
+
+  "learningPoints": [
+    "Claude Code can create multiple files from a single description",
+    "Describing the overall structure helps Claude Code understand relationships",
+    "You can scaffold entire project structures quickly"
+  ],
+
+  "nextChallenge": "01-005"
+}

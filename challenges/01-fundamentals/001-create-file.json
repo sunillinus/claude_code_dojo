@@ -1,0 +1,85 @@
+{
+  "id": "01-001",
+  "module": "fundamentals",
+  "title": "Create Your First File",
+  "description": "Learn to create files using natural language commands. This is the foundation of working with Claude Code - simply describe what you want, and Claude Code makes it happen.",
+  "difficulty": "beginner",
+  "xpReward": 100,
+  "estimatedMinutes": 5,
+  "skills": ["file-creation"],
+
+  "setup": {
+    "workingDir": "~/dojo-workspace/challenge-01-001",
+    "initialFiles": [
+      {
+        "path": "README.md",
+        "content": "# Challenge Workspace\n\nWelcome to your first Claude Code Dojo challenge!\n\nYour task: Create a configuration file for a new project.\n\n## Objectives\n1. Create a file named `config.json`\n2. It should contain valid JSON with a `name` property\n\n## Bonus\n- Add a `version` field for extra XP!\n"
+      }
+    ],
+    "cleanBefore": true
+  },
+
+  "objectives": [
+    {
+      "id": "obj-1",
+      "description": "Create a file named `config.json` in the workspace",
+      "type": "file_exists",
+      "target": "config.json",
+      "required": true
+    },
+    {
+      "id": "obj-2",
+      "description": "The file should contain valid JSON with a `name` property",
+      "type": "file_contains",
+      "target": "config.json",
+      "pattern": "\"name\"\\s*:\\s*\"[^\"]+\"",
+      "required": true
+    }
+  ],
+
+  "bonusObjectives": [
+    {
+      "id": "bonus-1",
+      "description": "Add a `version` field to the config",
+      "type": "file_contains",
+      "target": "config.json",
+      "pattern": "\"version\"",
+      "xpBonus": 25
+    }
+  ],
+
+  "hints": [
+    {
+      "level": 1,
+      "text": "Claude Code can create files when you describe what you want. Think about how you'd ask a colleague to create a file for you.",
+      "xpCost": 10
+    },
+    {
+      "level": 2,
+      "text": "Try being specific about the filename and what content you want inside. For example: 'Create a file called X with content Y'",
+      "xpCost": 25
+    },
+    {
+      "level": 3,
+      "text": "Type: 'Create a config.json file with { \"name\": \"my-project\" }' - Claude Code will create the file exactly as described.",
+      "xpCost": 50
+    }
+  ],
+
+  "solution": {
+    "approach": "Claude Code understands natural language requests for file operations. Simply describe the file you want to create and its contents.",
+    "example": "Create a config.json file with the following content: { \"name\": \"my-project\", \"version\": \"1.0.0\" }",
+    "alternativeApproaches": [
+      "Write a JSON configuration file named config.json for a project called my-app",
+      "Initialize a new config.json with project metadata including name and version"
+    ]
+  },
+
+  "learningPoints": [
+    "Claude Code can create files from natural language descriptions",
+    "You don't need to know specific commands - just describe what you want",
+    "Being specific about filenames and content helps Claude Code be accurate"
+  ],
+
+  "nextChallenge": "01-002"
+}

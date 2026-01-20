@@ -1,0 +1,120 @@
+{
+  "id": "08-003",
+  "module": "mcp-integration",
+  "title": "Build Custom MCP Tool",
+  "description": "Learn to build your own MCP server with custom tools. This is the ultimate way to extend Claude Code's capabilities.",
+  "difficulty": "expert",
+  "xpReward": 500,
+  "estimatedMinutes": 30,
+  "skills": ["mcp-development", "server-creation"],
+
+  "setup": {
+    "workingDir": "~/dojo-workspace/challenge-08-003",
+    "initialFiles": [
+      {
+        "path": "README.md",
+        "content": "# Challenge: Build Custom MCP Tool\n\nCreate your own MCP server with custom tools!\n\n## Objectives\n1. Create a simple MCP server in Python or Node.js\n2. Implement at least one custom tool\n3. Configure .mcp.json to use your server\n4. Document how to use it in usage.md\n"
+      },
+      {
+        "path": "plugin.json",
+        "content": "{\n  \"name\": \"custom-mcp\",\n  \"version\": \"1.0.0\",\n  \"description\": \"Custom MCP server development\"\n}\n"
+      }
+    ],
+    "cleanBefore": true
+  },
+
+  "objectives": [
+    {
+      "id": "obj-1",
+      "description": "Create MCP server file",
+      "type": "file_exists",
+      "target": "server.py",
+      "alternateTarget": "server.js",
+      "required": true
+    },
+    {
+      "id": "obj-2",
+      "description": "Server imports MCP SDK",
+      "type": "file_contains",
+      "target": "server.py",
+      "pattern": "from mcp|import.*mcp|require.*mcp|@anthropic/sdk",
+      "required": true
+    },
+    {
+      "id": "obj-3",
+      "description": "Server defines at least one tool",
+      "type": "file_contains",
+      "target": "server.py",
+      "pattern": "@tool|tool|Tool|def.*\\(|function.*\\(",
+      "required": true
+    },
+    {
+      "id": "obj-4",
+      "description": "Configure .mcp.json to use custom server",
+      "type": "file_exists",
+      "target": ".mcp.json",
+      "required": true
+    },
+    {
+      "id": "obj-5",
+      "description": "Create usage documentation",
+      "type": "file_exists",
+      "target": "usage.md",
+      "required": true
+    }
+  ],
+
+  "bonusObjectives": [
+    {
+      "id": "bonus-1",
+      "description": "Tool has proper input schema",
+      "type": "file_contains",
+      "target": "server.py",
+      "pattern": "schema|parameters|inputSchema|properties",
+      "xpBonus": 100
+    },
+    {
+      "id": "bonus-2",
+      "description": "Implement multiple tools",
+      "type": "file_contains",
+      "target": "server.py",
+      "pattern": "@tool.*@tool|tool.*tool|def.*def|function.*function",
+      "xpBonus": 100
+    }
+  ],
+
+  "hints": [
+    {
+      "level": 1,
+      "text": "MCP servers can be built in Python or Node.js using the official SDKs.",
+      "xpCost": 35
+    },
+    {
+      "level": 2,
+      "text": "Try: 'Create a Python MCP server with a tool that converts text to uppercase'",
+      "xpCost": 100
+    },
+    {
+      "level": 3,
+      "text": "Ask: 'Create server.py using the MCP Python SDK (pip install mcp). Define a simple tool like \"convert_case\" that takes text and a direction (upper/lower). Create .mcp.json to configure this server, and usage.md explaining how to use the tool.'",
+      "xpCost": 185
+    }
+  ],
+
+  "solution": {
+    "approach": "Build an MCP server with the official SDK and expose custom tools.",
+    "example": "Create a Python MCP server with custom tools and configure Claude Code to use it",
+    "alternativeApproaches": [
+      "Build a Node.js MCP server with custom functionality",
+      "Create your own tools that Claude Code can use via MCP"
+    ]
+  },
+
+  "learningPoints": [
+    "MCP servers expose tools that Claude can call",
+    "Python and Node.js SDKs make MCP development easy",
+    "Custom MCP tools can do anything: API calls, database queries, system operations"
+  ],
+
+  "nextChallenge": "09-001"
+}

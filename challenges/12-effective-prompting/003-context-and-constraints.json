@@ -1,0 +1,117 @@
+{
+  "id": "12-003",
+  "module": "effective-prompting",
+  "title": "Context and Constraints",
+  "description": "Learn to provide context and constraints for better results that fit your project.",
+  "difficulty": "intermediate",
+  "xpReward": 200,
+  "estimatedMinutes": 12,
+  "skills": ["context-setting", "constraints"],
+
+  "setup": {
+    "workingDir": "~/dojo-workspace/challenge-12-003",
+    "initialFiles": [
+      {
+        "path": "README.md",
+        "content": "# Challenge: Context and Constraints\n\nLearn to provide context that shapes Claude's responses.\n\n## Project Context\n- This is a healthcare application\n- We use TypeScript with strict mode\n- We follow functional programming principles\n- Error handling must be comprehensive\n- All user data must be validated\n\n## Objectives\n1. Create a patient data validator WITH context\n2. The code should reflect the constraints above\n"
+      },
+      {
+        "path": "tsconfig.json",
+        "content": "{\n  \"compilerOptions\": {\n    \"strict\": true,\n    \"noImplicitAny\": true,\n    \"target\": \"ES2020\"\n  }\n}\n"
+      },
+      {
+        "path": "types.ts",
+        "content": "export interface Patient {\n  id: string;\n  firstName: string;\n  lastName: string;\n  dateOfBirth: string;\n  email: string;\n  phone?: string;\n  medicalRecordNumber: string;\n}\n\nexport type ValidationResult = \n  | { success: true; data: Patient }\n  | { success: false; errors: string[] };\n"
+      }
+    ],
+    "cleanBefore": true
+  },
+
+  "objectives": [
+    {
+      "id": "obj-1",
+      "description": "Create a patient validator file",
+      "type": "file_exists",
+      "target": "patientValidator.ts",
+      "required": true
+    },
+    {
+      "id": "obj-2",
+      "description": "Use TypeScript types",
+      "type": "file_contains",
+      "target": "patientValidator.ts",
+      "pattern": "Patient|ValidationResult|: string|: boolean",
+      "required": true
+    },
+    {
+      "id": "obj-3",
+      "description": "Include comprehensive validation",
+      "type": "file_contains",
+      "target": "patientValidator.ts",
+      "pattern": "email|dateOfBirth|medicalRecordNumber",
+      "required": true
+    },
+    {
+      "id": "obj-4",
+      "description": "Return validation errors",
+      "type": "file_contains",
+      "target": "patientValidator.ts",
+      "pattern": "errors|success.*false|invalid|Invalid",
+      "required": true
+    }
+  ],
+
+  "bonusObjectives": [
+    {
+      "id": "bonus-1",
+      "description": "Use functional programming style (pure functions, no mutations)",
+      "type": "file_contains",
+      "target": "patientValidator.ts",
+      "pattern": "const.*=.*=>|readonly|Readonly",
+      "xpBonus": 40
+    },
+    {
+      "id": "bonus-2",
+      "description": "Validate date format (ISO or specific format)",
+      "type": "file_contains",
+      "target": "patientValidator.ts",
+      "pattern": "Date|ISO|YYYY|\\d{4}-\\d{2}-\\d{2}",
+      "xpBonus": 40
+    }
+  ],
+
+  "hints": [
+    {
+      "level": 1,
+      "text": "Include the project context in your request. Mention TypeScript, healthcare, validation requirements.",
+      "xpCost": 15
+    },
+    {
+      "level": 2,
+      "text": "Try: 'Create a patient validator using the Patient and ValidationResult types. Use strict TypeScript, functional style, validate all fields.'",
+      "xpCost": 40
+    },
+    {
+      "level": 3,
+      "text": "Ask: 'Create patientValidator.ts for a healthcare app. Use the types from types.ts. Requirements: strict TypeScript, pure functions, validate email format, validate dateOfBirth is valid date, validate medicalRecordNumber format, return all validation errors.'",
+      "xpCost": 80
+    }
+  ],
+
+  "solution": {
+    "approach": "Provide context about the project and constraints in your request.",
+    "example": "Create a patient validator with healthcare context and TypeScript constraints",
+    "alternativeApproaches": [
+      "Reference the existing types and ask for validation functions",
+      "Specify each validation rule in detail"
+    ]
+  },
+
+  "learningPoints": [
+    "Context helps Claude understand your project's needs",
+    "Constraints like 'strict TypeScript' shape the output",
+    "Reference existing code for consistent style"
+  ],
+
+  "nextChallenge": "12-004"
+}

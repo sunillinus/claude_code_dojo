@@ -1,0 +1,104 @@
+{
+  "id": "03-004",
+  "module": "git-basics",
+  "title": "View History and Diff",
+  "description": "Learn to explore git history and see what changed between commits. Understanding history is key to debugging.",
+  "difficulty": "intermediate",
+  "xpReward": 175,
+  "estimatedMinutes": 8,
+  "skills": ["git-log", "git-diff", "history-exploration"],
+
+  "setup": {
+    "workingDir": "~/dojo-workspace/challenge-03-004",
+    "initialFiles": [
+      {
+        "path": "README.md",
+        "content": "# Challenge: View History and Diff\n\nExplore the git history of this project.\n\n## Objectives\n1. Find out how many commits exist\n2. Find what changed in the most recent commit\n3. Create history-report.md documenting your findings\n"
+      },
+      {
+        "path": "server.js",
+        "content": "const express = require('express');\nconst app = express();\nconst PORT = process.env.PORT || 3000;\n\napp.get('/', (req, res) => {\n  res.json({ message: 'Hello World', version: '1.2.0' });\n});\n\napp.get('/health', (req, res) => {\n  res.json({ status: 'healthy' });\n});\n\napp.listen(PORT, () => console.log(`Server on port ${PORT}`));\n"
+      }
+    ],
+    "cleanBefore": true,
+    "postSetup": [
+      "cd ~/dojo-workspace/challenge-03-004 && git init",
+      "cd ~/dojo-workspace/challenge-03-004 && echo \"const app = require('express')(); app.listen(3000);\" > server.js && git add . && git commit -m 'Initial server setup'",
+      "cd ~/dojo-workspace/challenge-03-004 && echo \"const express = require('express'); const app = express(); app.get('/', (req, res) => res.send('Hello')); app.listen(3000);\" > server.js && git add . && git commit -m 'Add root endpoint'",
+      "cd ~/dojo-workspace/challenge-03-004 && echo \"const express = require('express'); const app = express(); app.get('/', (req, res) => res.json({ message: 'Hello World' })); app.listen(3000);\" > server.js && git add . && git commit -m 'Return JSON from root endpoint'",
+      "cd ~/dojo-workspace/challenge-03-004 && echo \"const express = require('express');\\nconst app = express();\\nconst PORT = process.env.PORT || 3000;\\n\\napp.get('/', (req, res) => {\\n  res.json({ message: 'Hello World', version: '1.2.0' });\\n});\\n\\napp.get('/health', (req, res) => {\\n  res.json({ status: 'healthy' });\\n});\\n\\napp.listen(PORT, () => console.log(\\`Server on port \\${PORT}\\`));\" > server.js && git add . && git commit -m 'Add health endpoint and version'"
+    ]
+  },
+
+  "objectives": [
+    {
+      "id": "obj-1",
+      "description": "Create history-report.md",
+      "type": "file_exists",
+      "target": "history-report.md",
+      "required": true
+    },
+    {
+      "id": "obj-2",
+      "description": "Report mentions the number of commits (4)",
+      "type": "file_contains",
+      "target": "history-report.md",
+      "pattern": "4|four",
+      "required": true
+    },
+    {
+      "id": "obj-3",
+      "description": "Report describes recent changes (health endpoint or version)",
+      "type": "file_contains",
+      "target": "history-report.md",
+      "pattern": "[Hh]ealth|[Vv]ersion|endpoint",
+      "required": true
+    }
+  ],
+
+  "bonusObjectives": [
+    {
+      "id": "bonus-1",
+      "description": "Include commit hashes or dates in report",
+      "type": "file_contains",
+      "target": "history-report.md",
+      "pattern": "[a-f0-9]{7}|[0-9]{4}-[0-9]{2}-[0-9]{2}",
+      "xpBonus": 50
+    }
+  ],
+
+  "hints": [
+    {
+      "level": 1,
+      "text": "Ask Claude Code to show you the git history and explain recent changes.",
+      "xpCost": 15
+    },
+    {
+      "level": 2,
+      "text": "Try: 'Show me the git log and what changed in the last commit'",
+      "xpCost": 35
+    },
+    {
+      "level": 3,
+      "text": "Ask: 'Look at the git history, count the commits, and describe what the most recent commit changed. Save findings to history-report.md'",
+      "xpCost": 65
+    }
+  ],
+
+  "solution": {
+    "approach": "Use git log and git diff to explore history and document findings.",
+    "example": "Show me the commit history and create history-report.md with what you find",
+    "alternativeApproaches": [
+      "What changes were made in this project? Document the history.",
+      "Explore git history and report on the commits"
+    ]
+  },
+
+  "learningPoints": [
+    "git log shows commit history",
+    "git diff shows what changed between commits",
+    "Claude Code can interpret and explain git history"
+  ],
+
+  "nextChallenge": "03-005"
+}

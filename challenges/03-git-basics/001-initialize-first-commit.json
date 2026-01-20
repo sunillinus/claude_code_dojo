@@ -1,0 +1,101 @@
+{
+  "id": "03-001",
+  "module": "git-basics",
+  "title": "Initialize and First Commit",
+  "description": "Learn to initialize a git repository and make your first commit. Claude Code can help you with git commands naturally.",
+  "difficulty": "beginner",
+  "xpReward": 125,
+  "estimatedMinutes": 5,
+  "skills": ["git-init", "git-commit"],
+
+  "setup": {
+    "workingDir": "~/dojo-workspace/challenge-03-001",
+    "initialFiles": [
+      {
+        "path": "README.md",
+        "content": "# Challenge: Initialize and First Commit\n\nStart tracking this project with git!\n\n## Objectives\n1. Initialize a git repository\n2. Add all files\n3. Create your first commit with message 'Initial commit'\n"
+      },
+      {
+        "path": "index.js",
+        "content": "// My first tracked project\nconsole.log('Hello, Git!');\n"
+      },
+      {
+        "path": "package.json",
+        "content": "{\n  \"name\": \"my-project\",\n  \"version\": \"1.0.0\"\n}\n"
+      }
+    ],
+    "cleanBefore": true
+  },
+
+  "objectives": [
+    {
+      "id": "obj-1",
+      "description": "Initialize git repository (.git folder exists)",
+      "type": "file_exists",
+      "target": ".git/HEAD",
+      "required": true
+    },
+    {
+      "id": "obj-2",
+      "description": "Make at least one commit",
+      "type": "command_output_contains",
+      "command": "git log --oneline 2>/dev/null | head -1",
+      "pattern": ".",
+      "required": true
+    },
+    {
+      "id": "obj-3",
+      "description": "Commit message contains 'Initial' or 'first'",
+      "type": "command_output_contains",
+      "command": "git log --format='%s' -1 2>/dev/null",
+      "pattern": "[Ii]nitial|[Ff]irst",
+      "required": true
+    }
+  ],
+
+  "bonusObjectives": [
+    {
+      "id": "bonus-1",
+      "description": "All files are committed (clean working directory)",
+      "type": "command_output_contains",
+      "command": "git status --porcelain 2>/dev/null | wc -l | tr -d ' '",
+      "pattern": "^0$",
+      "xpBonus": 25
+    }
+  ],
+
+  "hints": [
+    {
+      "level": 1,
+      "text": "Ask Claude Code to help you initialize a git repo and make your first commit.",
+      "xpCost": 10
+    },
+    {
+      "level": 2,
+      "text": "Try: 'Initialize a git repository and commit all files'",
+      "xpCost": 25
+    },
+    {
+      "level": 3,
+      "text": "Ask: 'Initialize git in this folder, add all files, and create a commit with message Initial commit'",
+      "xpCost": 50
+    }
+  ],
+
+  "solution": {
+    "approach": "Use natural language to ask Claude Code to perform git operations.",
+    "example": "Initialize git here and create an initial commit with all files",
+    "alternativeApproaches": [
+      "Set up version control and commit everything",
+      "Start tracking this project with git"
+    ]
+  },
+
+  "learningPoints": [
+    "Claude Code can execute git commands for you",
+    "Natural language works for version control tasks",
+    "git init, git add, and git commit are the basics"
+  ],
+
+  "nextChallenge": "03-002"
+}

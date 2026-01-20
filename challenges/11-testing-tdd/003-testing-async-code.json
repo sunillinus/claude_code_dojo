@@ -1,0 +1,117 @@
+{
+  "id": "11-003",
+  "module": "testing-tdd",
+  "title": "Testing Async Code",
+  "description": "Learn to test asynchronous functions including promises and async/await patterns.",
+  "difficulty": "intermediate",
+  "xpReward": 225,
+  "estimatedMinutes": 12,
+  "skills": ["async-testing", "promises"],
+
+  "setup": {
+    "workingDir": "~/dojo-workspace/challenge-11-003",
+    "initialFiles": [
+      {
+        "path": "README.md",
+        "content": "# Challenge: Testing Async Code\n\nWrite tests for asynchronous functions.\n\n## Objectives\n1. Create tests for the async API functions\n2. Handle promise resolution and rejection\n3. Test timeout and delay behavior\n"
+      },
+      {
+        "path": "package.json",
+        "content": "{\n  \"name\": \"async-testing\",\n  \"scripts\": {\n    \"test\": \"node --test\"\n  }\n}\n"
+      },
+      {
+        "path": "api.js",
+        "content": "// Simulated async API functions\n\nasync function fetchUser(id) {\n  await delay(100);\n  if (id <= 0) throw new Error('Invalid user ID');\n  return { id, name: `User ${id}`, email: `user${id}@example.com` };\n}\n\nasync function fetchPosts(userId) {\n  await delay(50);\n  return [\n    { id: 1, userId, title: 'First Post' },\n    { id: 2, userId, title: 'Second Post' }\n  ];\n}\n\nfunction delay(ms) {\n  return new Promise(resolve => setTimeout(resolve, ms));\n}\n\nmodule.exports = { fetchUser, fetchPosts, delay };\n"
+      }
+    ],
+    "cleanBefore": true
+  },
+
+  "objectives": [
+    {
+      "id": "obj-1",
+      "description": "Create a test file",
+      "type": "file_exists",
+      "target": "api.test.js",
+      "required": true
+    },
+    {
+      "id": "obj-2",
+      "description": "Use async/await in tests",
+      "type": "file_contains",
+      "target": "api.test.js",
+      "pattern": "async.*=>|async function",
+      "required": true
+    },
+    {
+      "id": "obj-3",
+      "description": "Test fetchUser returns correct data",
+      "type": "file_contains",
+      "target": "api.test.js",
+      "pattern": "fetchUser|user.*name|user.*email",
+      "required": true
+    },
+    {
+      "id": "obj-4",
+      "description": "Test error handling",
+      "type": "file_contains",
+      "target": "api.test.js",
+      "pattern": "rejects|throws|catch|Error",
+      "required": true
+    }
+  ],
+
+  "bonusObjectives": [
+    {
+      "id": "bonus-1",
+      "description": "Test fetchPosts function",
+      "type": "file_contains",
+      "target": "api.test.js",
+      "pattern": "fetchPosts|posts",
+      "xpBonus": 40
+    },
+    {
+      "id": "bonus-2",
+      "description": "All tests pass",
+      "type": "command_output_contains",
+      "command": "cd ~/dojo-workspace/challenge-11-003 && npm test 2>&1 | tail -3",
+      "pattern": "pass|ok",
+      "xpBonus": 50
+    }
+  ],
+
+  "hints": [
+    {
+      "level": 1,
+      "text": "Use async/await in your test functions. Node test runner supports async tests natively.",
+      "xpCost": 15
+    },
+    {
+      "level": 2,
+      "text": "Try: 'Write tests for the async API functions, including error cases'",
+      "xpCost": 45
+    },
+    {
+      "level": 3,
+      "text": "Ask: 'Create api.test.js with async tests: test fetchUser returns user object, test fetchUser throws for invalid ID, test fetchPosts returns array of posts'",
+      "xpCost": 90
+    }
+  ],
+
+  "solution": {
+    "approach": "Write async test functions that await the API calls and verify results.",
+    "example": "Create tests for the async API functions",
+    "alternativeApproaches": [
+      "Use assert.rejects() for testing promise rejections",
+      "Test both success and error paths"
+    ]
+  },
+
+  "learningPoints": [
+    "Async tests use async/await just like regular code",
+    "Use assert.rejects() to test promise rejections",
+    "Always test both happy path and error cases"
+  ],
+
+  "nextChallenge": "11-004"
+}

@@ -1,0 +1,117 @@
+{
+  "id": "13-003",
+  "module": "code-generation",
+  "title": "Generate from Specifications",
+  "description": "Generate code from detailed specifications or requirements documents.",
+  "difficulty": "intermediate",
+  "xpReward": 225,
+  "estimatedMinutes": 15,
+  "skills": ["spec-to-code", "requirements"],
+
+  "setup": {
+    "workingDir": "~/dojo-workspace/challenge-13-003",
+    "initialFiles": [
+      {
+        "path": "README.md",
+        "content": "# Challenge: Generate from Specifications\n\nImplement code based on the API specification provided.\n\n## Objectives\n1. Read the API spec in api-spec.md\n2. Generate the implementation\n3. Ensure all endpoints match the spec\n"
+      },
+      {
+        "path": "api-spec.md",
+        "content": "# Task API Specification\n\n## Data Model\n```\nTask {\n  id: string (UUID)\n  title: string (required, max 100 chars)\n  description: string (optional)\n  status: 'todo' | 'in_progress' | 'done'\n  priority: 'low' | 'medium' | 'high'\n  dueDate: ISO date string (optional)\n  createdAt: ISO date string\n  updatedAt: ISO date string\n}\n```\n\n## Endpoints\n\n### GET /tasks\nReturns all tasks. Supports query params:\n- status: filter by status\n- priority: filter by priority\n\n### GET /tasks/:id\nReturns single task or 404\n\n### POST /tasks\nCreate task. Required: title. Returns 201 with created task.\n\n### PUT /tasks/:id\nUpdate task. Returns updated task or 404.\n\n### DELETE /tasks/:id\nDelete task. Returns 204 or 404.\n"
+      },
+      {
+        "path": "package.json",
+        "content": "{\n  \"name\": \"task-api\",\n  \"type\": \"module\",\n  \"dependencies\": {\n    \"express\": \"^4.18.0\",\n    \"uuid\": \"^9.0.0\"\n  }\n}\n"
+      }
+    ],
+    "cleanBefore": true
+  },
+
+  "objectives": [
+    {
+      "id": "obj-1",
+      "description": "Create task routes file",
+      "type": "file_exists",
+      "target": "routes/tasks.js",
+      "required": true
+    },
+    {
+      "id": "obj-2",
+      "description": "Implement GET /tasks endpoint",
+      "type": "file_contains",
+      "target": "routes/tasks.js",
+      "pattern": "get\\(['\"]/?['\"]|router\\.get",
+      "required": true
+    },
+    {
+      "id": "obj-3",
+      "description": "Implement POST /tasks endpoint",
+      "type": "file_contains",
+      "target": "routes/tasks.js",
+      "pattern": "post\\(['\"]/?['\"]|router\\.post",
+      "required": true
+    },
+    {
+      "id": "obj-4",
+      "description": "Include status filtering",
+      "type": "file_contains",
+      "target": "routes/tasks.js",
+      "pattern": "status|query\\.status|filter",
+      "required": true
+    }
+  ],
+
+  "bonusObjectives": [
+    {
+      "id": "bonus-1",
+      "description": "Implement all CRUD operations",
+      "type": "file_contains",
+      "target": "routes/tasks.js",
+      "pattern": "put\\(|delete\\(",
+      "xpBonus": 50
+    },
+    {
+      "id": "bonus-2",
+      "description": "Add input validation",
+      "type": "file_contains",
+      "target": "routes/tasks.js",
+      "pattern": "valid|required|title.*length|!title",
+      "xpBonus": 50
+    }
+  ],
+
+  "hints": [
+    {
+      "level": 1,
+      "text": "Reference the spec file in your request. Ask Claude to implement exactly what's specified.",
+      "xpCost": 15
+    },
+    {
+      "level": 2,
+      "text": "Try: 'Read api-spec.md and implement the Task API routes. Follow the spec exactly.'",
+      "xpCost": 45
+    },
+    {
+      "level": 3,
+      "text": "Ask: 'Implement routes/tasks.js based on api-spec.md. Include: GET /tasks with status/priority filtering, GET /tasks/:id, POST /tasks with validation, PUT /tasks/:id, DELETE /tasks/:id. Use an in-memory array for storage.'",
+      "xpCost": 90
+    }
+  ],
+
+  "solution": {
+    "approach": "Reference the specification file and ask for exact implementation.",
+    "example": "Implement the Task API based on api-spec.md",
+    "alternativeApproaches": [
+      "Copy spec details into your request",
+      "Ask for one endpoint at a time"
+    ]
+  },
+
+  "learningPoints": [
+    "Specifications guide accurate code generation",
+    "Reference existing files for context",
+    "Claude can follow detailed requirements"
+  ],
+
+  "nextChallenge": "13-004"
+}

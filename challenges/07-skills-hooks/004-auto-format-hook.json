@@ -1,0 +1,125 @@
+{
+  "id": "07-004",
+  "module": "skills-hooks",
+  "title": "Auto-format with Hooks",
+  "description": "Learn to create PostToolUse hooks that automatically process results. Auto-formatting keeps code consistent.",
+  "difficulty": "advanced",
+  "xpReward": 375,
+  "estimatedMinutes": 18,
+  "skills": ["posttooluse-hooks", "automation"],
+
+  "setup": {
+    "workingDir": "~/dojo-workspace/challenge-07-004",
+    "initialFiles": [
+      {
+        "path": "README.md",
+        "content": "# Challenge: Auto-format with Hooks\n\nCreate a hook that automatically formats code after writes.\n\n## Objectives\n1. Create a PostToolUse hook for the Write tool\n2. Hook should run a formatter (prettier/eslint) after JS files are written\n3. This creates an auto-format workflow\n"
+      },
+      {
+        "path": "plugin.json",
+        "content": "{\n  \"name\": \"auto-format\",\n  \"version\": \"1.0.0\",\n  \"description\": \"Automatic code formatting\"\n}\n"
+      },
+      {
+        "path": "package.json",
+        "content": "{\n  \"name\": \"formatted-project\",\n  \"scripts\": {\n    \"format\": \"prettier --write\"\n  },\n  \"devDependencies\": {\n    \"prettier\": \"^3.0.0\"\n  }\n}\n"
+      },
+      {
+        "path": ".prettierrc",
+        "content": "{\n  \"semi\": true,\n  \"singleQuote\": true,\n  \"tabWidth\": 2\n}\n"
+      },
+      {
+        "path": "src/example.js",
+        "content": "// Unformatted code\nfunction hello(name){return \"Hello, \"+name}\n"
+      }
+    ],
+    "cleanBefore": true
+  },
+
+  "objectives": [
+    {
+      "id": "obj-1",
+      "description": "Create auto-format hook",
+      "type": "file_exists",
+      "target": "hooks/auto-format.md",
+      "required": true
+    },
+    {
+      "id": "obj-2",
+      "description": "Hook triggers on PostToolUse event",
+      "type": "file_contains",
+      "target": "hooks/auto-format.md",
+      "pattern": "event:.*PostToolUse|PostToolUse",
+      "required": true
+    },
+    {
+      "id": "obj-3",
+      "description": "Hook targets Write tool",
+      "type": "file_contains",
+      "target": "hooks/auto-format.md",
+      "pattern": "Write|tools:",
+      "required": true
+    },
+    {
+      "id": "obj-4",
+      "description": "Hook runs formatter command",
+      "type": "file_contains",
+      "target": "hooks/auto-format.md",
+      "pattern": "prettier|eslint|format|npx",
+      "required": true
+    }
+  ],
+
+  "bonusObjectives": [
+    {
+      "id": "bonus-1",
+      "description": "Hook only formats JS/TS files",
+      "type": "file_contains",
+      "target": "hooks/auto-format.md",
+      "pattern": "\\.js|\\.ts|javascript|typescript|glob",
+      "xpBonus": 50
+    },
+    {
+      "id": "bonus-2",
+      "description": "Hook is a bash command (not prompt-based)",
+      "type": "file_contains",
+      "target": "hooks/auto-format.md",
+      "pattern": "command:|#!/|bash|sh",
+      "xpBonus": 50
+    }
+  ],
+
+  "hints": [
+    {
+      "level": 1,
+      "text": "PostToolUse hooks run after a tool completes. You can use bash commands or prompts.",
+      "xpCost": 25
+    },
+    {
+      "level": 2,
+      "text": "Try: 'Create a PostToolUse hook that runs prettier on JS files after they are written'",
+      "xpCost": 75
+    },
+    {
+      "level": 3,
+      "text": "Ask: 'Create hooks/auto-format.md with frontmatter (event: PostToolUse, tools: [Write]) that runs npx prettier --write on the file path when a .js or .ts file is written. Use a bash command hook.'",
+      "xpCost": 140
+    }
+  ],
+
+  "solution": {
+    "approach": "Create a PostToolUse hook that runs a formatter after file writes.",
+    "example": "Create an auto-format hook that runs prettier after writing JS files",
+    "alternativeApproaches": [
+      "Add automatic formatting after every file write",
+      "Build a PostToolUse hook for code style enforcement"
+    ]
+  },
+
+  "learningPoints": [
+    "PostToolUse hooks run after tool completion",
+    "Hooks can run bash commands for automation",
+    "Auto-formatting maintains code consistency"
+  ],
+
+  "nextChallenge": "08-001"
+}

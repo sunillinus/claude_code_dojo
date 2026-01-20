@@ -1,0 +1,141 @@
+{
+  "id": "06-002",
+  "module": "subagents",
+  "title": "Parallel Research",
+  "description": "Learn to request multiple research tasks that run in parallel. Parallel execution speeds up complex investigations.",
+  "difficulty": "intermediate",
+  "xpReward": 250,
+  "estimatedMinutes": 12,
+  "skills": ["parallel-subagents", "multi-task-research"],
+
+  "setup": {
+    "workingDir": "~/dojo-workspace/challenge-06-002",
+    "initialFiles": [
+      {
+        "path": "README.md",
+        "content": "# Challenge: Parallel Research\n\nResearch multiple aspects of this project simultaneously.\n\n## Objectives\n1. Research the authentication system\n2. Research the database layer\n3. Research the API structure\n4. Combine findings into architecture-overview.md\n"
+      },
+      {
+        "path": "src/index.js",
+        "content": "const express = require('express');\nconst { authMiddleware } = require('./auth/middleware');\nconst { connectDB } = require('./db/connection');\nconst routes = require('./routes');\n\nconst app = express();\n\napp.use(express.json());\napp.use('/api', authMiddleware, routes);\n\nconnectDB().then(() => {\n  app.listen(3000, () => console.log('Server running'));\n});\n\nmodule.exports = app;\n"
+      },
+      {
+        "path": "src/auth/middleware.js",
+        "content": "const jwt = require('jsonwebtoken');\nconst { SECRET } = require('./config');\n\nfunction authMiddleware(req, res, next) {\n  const token = req.headers.authorization?.split(' ')[1];\n  if (!token) return res.status(401).json({ error: 'No token' });\n  \n  try {\n    req.user = jwt.verify(token, SECRET);\n    next();\n  } catch {\n    res.status(401).json({ error: 'Invalid token' });\n  }\n}\n\nmodule.exports = { authMiddleware };\n"
+      },
+      {
+        "path": "src/auth/config.js",
+        "content": "module.exports = {\n  SECRET: process.env.JWT_SECRET || 'dev-secret',\n  TOKEN_EXPIRY: '24h'\n};\n"
+      },
+      {
+        "path": "src/auth/service.js",
+        "content": "const jwt = require('jsonwebtoken');\nconst { SECRET, TOKEN_EXPIRY } = require('./config');\nconst { User } = require('../db/models/User');\n\nasync function login(email, password) {\n  const user = await User.findByEmail(email);\n  if (!user || !user.checkPassword(password)) {\n    throw new Error('Invalid credentials');\n  }\n  return jwt.sign({ id: user.id, email }, SECRET, { expiresIn: TOKEN_EXPIRY });\n}\n\nmodule.exports = { login };\n"
+      },
+      {
+        "path": "src/db/connection.js",
+        "content": "const { Pool } = require('pg');\n\nconst pool = new Pool({\n  host: process.env.DB_HOST || 'localhost',\n  database: process.env.DB_NAME || 'app',\n  user: process.env.DB_USER || 'postgres',\n  password: process.env.DB_PASS || 'postgres'\n});\n\nasync function connectDB() {\n  await pool.connect();\n  console.log('Database connected');\n}\n\nasync function query(sql, params) {\n  return pool.query(sql, params);\n}\n\nmodule.exports = { connectDB, query, pool };\n"
+      },
+      {
+        "path": "src/db/models/User.js",
+        "content": "const { query } = require('../connection');\nconst bcrypt = require('bcrypt');\n\nclass User {\n  constructor(data) {\n    Object.assign(this, data);\n  }\n\n  static async findByEmail(email) {\n    const result = await query('SELECT * FROM users WHERE email = $1', [email]);\n    return result.rows[0] ? new User(result.rows[0]) : null;\n  }\n\n  static async create(data) {\n    const hash = await bcrypt.hash(data.password, 10);\n    const result = await query(\n      'INSERT INTO users (email, password_hash) VALUES ($1, $2) RETURNING *',\n      [data.email, hash]\n    );\n    return new User(result.rows[0]);\n  }\n\n  checkPassword(password) {\n    return bcrypt.compareSync(password, this.password_hash);\n  }\n}\n\nmodule.exports = { User };\n"
+      },
+      {
+        "path": "src/db/models/Product.js",
+        "content": "const { query } = require('../connection');\n\nclass Product {\n  constructor(data) {\n    Object.assign(this, data);\n  }\n\n  static async findAll() {\n    const result = await query('SELECT * FROM products');\n    return result.rows.map(r => new Product(r));\n  }\n\n  static async findById(id) {\n    const result = await query('SELECT * FROM products WHERE id = $1', [id]);\n    return result.rows[0] ? new Product(result.rows[0]) : null;\n  }\n}\n\nmodule.exports = { Product };\n"
+      },
+      {
+        "path": "src/routes/index.js",
+        "content": "const router = require('express').Router();\nrouter.use('/users', require('./users'));\nrouter.use('/products', require('./products'));\nmodule.exports = router;\n"
+      },
+      {
+        "path": "src/routes/users.js",
+        "content": "const router = require('express').Router();\nconst { User } = require('../db/models/User');\nconst { login } = require('../auth/service');\n\nrouter.post('/login', async (req, res) => {\n  try {\n    const token = await login(req.body.email, req.body.password);\n    res.json({ token });\n  } catch (e) {\n    res.status(401).json({ error: e.message });\n  }\n});\n\nrouter.post('/register', async (req, res) => {\n  const user = await User.create(req.body);\n  res.json({ id: user.id, email: user.email });\n});\n\nmodule.exports = router;\n"
+      },
+      {
+        "path": "src/routes/products.js",
+        "content": "const router = require('express').Router();\nconst { Product } = require('../db/models/Product');\n\nrouter.get('/', async (req, res) => {\n  const products = await Product.findAll();\n  res.json(products);\n});\n\nrouter.get('/:id', async (req, res) => {\n  const product = await Product.findById(req.params.id);\n  if (!product) return res.status(404).json({ error: 'Not found' });\n  res.json(product);\n});\n\nmodule.exports = router;\n"
+      }
+    ],
+    "cleanBefore": true
+  },
+
+  "objectives": [
+    {
+      "id": "obj-1",
+      "description": "Create architecture-overview.md",
+      "type": "file_exists",
+      "target": "architecture-overview.md",
+      "required": true
+    },
+    {
+      "id": "obj-2",
+      "description": "Document authentication (JWT, middleware)",
+      "type": "file_contains",
+      "target": "architecture-overview.md",
+      "pattern": "[Aa]uth|JWT|token|middleware",
+      "required": true
+    },
+    {
+      "id": "obj-3",
+      "description": "Document database (PostgreSQL, models)",
+      "type": "file_contains",
+      "target": "architecture-overview.md",
+      "pattern": "[Dd]atabase|[Pp]ostgres|[Mm]odel|User|Product",
+      "required": true
+    },
+    {
+      "id": "obj-4",
+      "description": "Document API structure (routes, endpoints)",
+      "type": "file_contains",
+      "target": "architecture-overview.md",
+      "pattern": "[Rr]oute|[Ee]ndpoint|API|/users|/products",
+      "required": true
+    }
+  ],
+
+  "bonusObjectives": [
+    {
+      "id": "bonus-1",
+      "description": "Include a visual diagram or clear section structure",
+      "type": "file_contains",
+      "target": "architecture-overview.md",
+      "pattern": "##|```|→|->|\\|",
+      "xpBonus": 50
+    }
+  ],
+
+  "hints": [
+    {
+      "level": 1,
+      "text": "Ask Claude Code to research multiple aspects of the codebase - it can run searches in parallel.",
+      "xpCost": 20
+    },
+    {
+      "level": 2,
+      "text": "Try: 'Research the auth system, database layer, and API routes, then create an architecture overview'",
+      "xpCost": 50
+    },
+    {
+      "level": 3,
+      "text": "Ask: 'I need to understand this codebase. Please research in parallel: 1) the authentication system 2) the database models and connection 3) the API route structure. Combine findings into architecture-overview.md'",
+      "xpCost": 95
+    }
+  ],
+
+  "solution": {
+    "approach": "Request multiple research tasks that Claude Code can execute in parallel.",
+    "example": "Research auth, database, and API structure in parallel, then combine into an overview",
+    "alternativeApproaches": [
+      "Explore the three main architectural areas and document them",
+      "Create a comprehensive architecture document covering auth, db, and routes"
+    ]
+  },
+
+  "learningPoints": [
+    "Claude Code can run multiple subagent tasks in parallel",
+    "Breaking research into focused areas gets better results",
+    "Combining findings creates comprehensive documentation"
+  ],
+
+  "nextChallenge": "06-003"
+}

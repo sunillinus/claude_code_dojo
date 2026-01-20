@@ -1,0 +1,89 @@
+{
+  "id": "01-002",
+  "module": "fundamentals",
+  "title": "Read and Understand Code",
+  "description": "Learn to read files and understand code using Claude Code. Ask questions about code, get explanations, and build your understanding of any codebase.",
+  "difficulty": "beginner",
+  "xpReward": 100,
+  "estimatedMinutes": 5,
+  "skills": ["file-reading", "code-understanding"],
+
+  "setup": {
+    "workingDir": "~/dojo-workspace/challenge-01-002",
+    "initialFiles": [
+      {
+        "path": "README.md",
+        "content": "# Challenge: Read and Understand Code\n\nYour task: Understand the mystery function in `mystery.js`\n\n## Objectives\n1. Read the `mystery.js` file\n2. Create a file explaining what the function does\n"
+      },
+      {
+        "path": "mystery.js",
+        "content": "function mystery(arr) {\n  if (arr.length <= 1) return arr;\n  const pivot = arr[Math.floor(arr.length / 2)];\n  const left = arr.filter(x => x < pivot);\n  const middle = arr.filter(x => x === pivot);\n  const right = arr.filter(x => x > pivot);\n  return [...mystery(left), ...middle, ...mystery(right)];\n}\n\nmodule.exports = { mystery };\n"
+      }
+    ],
+    "cleanBefore": true
+  },
+
+  "objectives": [
+    {
+      "id": "obj-1",
+      "description": "Create a file named `explanation.md` explaining the mystery function",
+      "type": "file_exists",
+      "target": "explanation.md",
+      "required": true
+    },
+    {
+      "id": "obj-2",
+      "description": "The explanation should mention 'sort' or 'quicksort'",
+      "type": "file_contains",
+      "target": "explanation.md",
+      "pattern": "[Ss]ort|[Qq]uicksort",
+      "required": true
+    }
+  ],
+
+  "bonusObjectives": [
+    {
+      "id": "bonus-1",
+      "description": "Mention the time complexity (O(n log n))",
+      "type": "file_contains",
+      "target": "explanation.md",
+      "pattern": "O\\(n\\s*log\\s*n\\)|n log n",
+      "xpBonus": 25
+    }
+  ],
+
+  "hints": [
+    {
+      "level": 1,
+      "text": "Ask Claude Code to read the mystery.js file and explain what it does.",
+      "xpCost": 10
+    },
+    {
+      "level": 2,
+      "text": "Look at the recursive pattern and how the array is being divided. What sorting algorithm uses a pivot?",
+      "xpCost": 25
+    },
+    {
+      "level": 3,
+      "text": "This is the QuickSort algorithm. Ask Claude Code to create explanation.md describing it as a sorting function.",
+      "xpCost": 50
+    }
+  ],
+
+  "solution": {
+    "approach": "Ask Claude Code to read and explain the code, then create a documentation file.",
+    "example": "Read mystery.js and explain what the function does. Then create explanation.md with your findings.",
+    "alternativeApproaches": [
+      "What does the mystery function in mystery.js do? Create a markdown file explaining it.",
+      "Analyze mystery.js and document the algorithm it implements"
+    ]
+  },
+
+  "learningPoints": [
+    "Claude Code can read and explain any code file",
+    "You can ask questions about code to understand it better",
+    "Claude Code can identify common algorithms and patterns"
+  ],
+
+  "nextChallenge": "01-003"
+}

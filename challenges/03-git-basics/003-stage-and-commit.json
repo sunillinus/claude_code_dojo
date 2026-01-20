@@ -1,0 +1,109 @@
+{
+  "id": "03-003",
+  "module": "git-basics",
+  "title": "Stage and Commit Changes",
+  "description": "Learn to selectively stage files and write meaningful commit messages. Good commits tell a story.",
+  "difficulty": "intermediate",
+  "xpReward": 175,
+  "estimatedMinutes": 7,
+  "skills": ["git-add", "git-commit", "commit-messages"],
+
+  "setup": {
+    "workingDir": "~/dojo-workspace/challenge-03-003",
+    "initialFiles": [
+      {
+        "path": "README.md",
+        "content": "# Challenge: Stage and Commit Changes\n\nYou have multiple changes. Create focused commits!\n\n## Objectives\n1. Commit the bug fix (calculator.js) separately\n2. Commit the new feature (greeting.js) separately\n3. Write descriptive commit messages\n"
+      },
+      {
+        "path": "calculator.js",
+        "content": "// Calculator module\nfunction add(a, b) {\n  return a + b;\n}\n\nfunction multiply(a, b) {\n  return a * b; // Fixed: was a + b\n}\n\nmodule.exports = { add, multiply };\n"
+      },
+      {
+        "path": "greeting.js",
+        "content": "// New greeting feature\nfunction greet(name) {\n  return `Hello, ${name}!`;\n}\n\nfunction farewell(name) {\n  return `Goodbye, ${name}!`;\n}\n\nmodule.exports = { greet, farewell };\n"
+      },
+      {
+        "path": "index.js",
+        "content": "const { add, multiply } = require('./calculator');\nconst { greet } = require('./greeting');\n\nconsole.log(greet('World'));\nconsole.log('2 * 3 =', multiply(2, 3));\n"
+      }
+    ],
+    "cleanBefore": true,
+    "postSetup": [
+      "cd ~/dojo-workspace/challenge-03-003 && git init && echo 'module.exports = { add: (a,b) => a+b, multiply: (a,b) => a+b };' > calculator.js && git add calculator.js index.js README.md && git commit -m 'Initial commit'"
+    ]
+  },
+
+  "objectives": [
+    {
+      "id": "obj-1",
+      "description": "Have at least 2 commits after initial",
+      "type": "command_output_contains",
+      "command": "git log --oneline 2>/dev/null | wc -l | tr -d ' '",
+      "pattern": "^[3-9]|^[1-9][0-9]",
+      "required": true
+    },
+    {
+      "id": "obj-2",
+      "description": "One commit mentions 'fix' or 'bug'",
+      "type": "command_output_contains",
+      "command": "git log --format='%s' 2>/dev/null",
+      "pattern": "[Ff]ix|[Bb]ug|[Mm]ultiply",
+      "required": true
+    },
+    {
+      "id": "obj-3",
+      "description": "One commit mentions 'add' or 'feature' or 'greeting'",
+      "type": "command_output_contains",
+      "command": "git log --format='%s' 2>/dev/null",
+      "pattern": "[Aa]dd|[Ff]eature|[Gg]reeting|[Nn]ew",
+      "required": true
+    }
+  ],
+
+  "bonusObjectives": [
+    {
+      "id": "bonus-1",
+      "description": "Commits are in logical order (fix before feature or vice versa)",
+      "type": "command_output_contains",
+      "command": "git log --oneline 2>/dev/null | head -3",
+      "pattern": ".",
+      "xpBonus": 25
+    }
+  ],
+
+  "hints": [
+    {
+      "level": 1,
+      "text": "Ask Claude Code to help you create separate commits for different changes.",
+      "xpCost": 15
+    },
+    {
+      "level": 2,
+      "text": "Try: 'Commit calculator.js with a message about fixing the multiply bug, then commit greeting.js as a new feature'",
+      "xpCost": 35
+    },
+    {
+      "level": 3,
+      "text": "Ask: 'Stage calculator.js and commit with message \"Fix multiply function bug\", then stage greeting.js and commit with message \"Add greeting feature\"'",
+      "xpCost": 65
+    }
+  ],
+
+  "solution": {
+    "approach": "Create focused commits by staging specific files with meaningful messages.",
+    "example": "Commit the calculator fix first, then commit the greeting feature separately",
+    "alternativeApproaches": [
+      "Make two separate commits: one for the bug fix, one for the new feature",
+      "Stage and commit files in logical groups"
+    ]
+  },
+
+  "learningPoints": [
+    "Atomic commits make history easier to understand",
+    "Claude Code can stage specific files",
+    "Good commit messages explain why, not just what"
+  ],
+
+  "nextChallenge": "03-004"
+}

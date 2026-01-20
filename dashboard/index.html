@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Claude Code Dojo - Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        dojo: {
+                            dark: '#1a1a2e',
+                            darker: '#16213e',
+                            accent: '#e94560',
+                            gold: '#ffd700',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        .progress-ring { transform: rotate(-90deg); }
+    </style>
+</head>
+<body class="bg-dojo-dark text-white min-h-screen">
+    <div class="container mx-auto px-4 py-8 max-w-6xl">
+        <!-- Header -->
+        <header class="text-center mb-12">
+            <h1 class="text-4xl font-bold mb-2">🥋 Claude Code Dojo</h1>
+            <p class="text-gray-400">Master Claude Code through hands-on challenges</p>
+        </header>
+
+        <!-- Stats Overview -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+            <!-- Level Card -->
+            <div class="bg-dojo-darker rounded-xl p-6 text-center">
+                <div class="text-5xl font-bold text-dojo-accent mb-2" id="level">1</div>
+                <div class="text-gray-400 text-sm">LEVEL</div>
+            </div>
+
+            <!-- XP Card -->
+            <div class="bg-dojo-darker rounded-xl p-6 text-center">
+                <div class="text-3xl font-bold mb-2">
+                    <span id="xp">0</span>
+                    <span class="text-gray-500 text-lg">/ <span id="xpNext">100</span></span>
+                </div>
+                <div class="text-gray-400 text-sm">EXPERIENCE</div>
+                <div class="w-full bg-gray-700 rounded-full h-2 mt-2">
+                    <div class="bg-dojo-accent h-2 rounded-full transition-all" id="xpBar" style="width: 0%"></div>
+                </div>
+            </div>
+
+            <!-- Streak Card -->
+            <div class="bg-dojo-darker rounded-xl p-6 text-center">
+                <div class="text-5xl font-bold text-orange-500 mb-2">🔥 <span id="streak">0</span></div>
+                <div class="text-gray-400 text-sm">DAY STREAK</div>
+            </div>
+
+            <!-- Challenges Card -->
+            <div class="bg-dojo-darker rounded-xl p-6 text-center">
+                <div class="text-3xl font-bold mb-2">
+                    <span id="completed">0</span>
+                    <span class="text-gray-500 text-lg">/ 35</span>
+                </div>
+                <div class="text-gray-400 text-sm">CHALLENGES</div>
+            </div>
+        </div>
+
+        <!-- Modules Grid -->
+        <h2 class="text-2xl font-bold mb-4">Modules</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8" id="modulesGrid">
+            <!-- Populated by JavaScript -->
+        </div>
+
+        <!-- Badges Section -->
+        <h2 class="text-2xl font-bold mb-4">Badges</h2>
+        <div class="bg-dojo-darker rounded-xl p-6 mb-8">
+            <div class="flex flex-wrap gap-4" id="badgesContainer">
+                <div class="text-gray-500" id="noBadges">Complete challenges to earn badges!</div>
+            </div>
+        </div>
+
+        <!-- Recent Activity -->
+        <h2 class="text-2xl font-bold mb-4">Skills Progress</h2>
+        <div class="bg-dojo-darker rounded-xl p-6" id="skillsContainer">
+            <div class="text-gray-500">Complete challenges to track skill progress!</div>
+        </div>
+    </div>
+
+    <script>
+        // Badge definitions
+        const BADGES = {
+            'first-challenge': { name: 'First Blood', icon: '⚔️', description: 'Complete your first challenge' },
+            'fundamentals-complete': { name: 'Foundation', icon: '🏗️', description: 'Complete Fundamentals module' },
+            'streak-7': { name: 'Week Warrior', icon: '🔥', description: '7-day streak' },
+            'streak-30': { name: 'Month Master', icon: '💫', description: '30-day streak' },
+            'no-hints-5': { name: 'Self-Reliant', icon: '🧠', description: 'Complete 5 challenges without hints' },
+            'speed-demon': { name: 'Speed Demon', icon: '⚡', description: 'Complete advanced challenge in under 2 minutes' },
+            'git-guru': { name: 'Git Guru', icon: '📚', description: 'Master all Git challenges' },
+            'all-complete': { name: 'Dojo Master', icon: '🥋', description: 'Complete all 35 challenges' }
+        };
+
+        // Module config
+        const MODULES = [
+            { id: 'fundamentals', name: 'Fundamentals', icon: '📁', total: 5 },
+            { id: 'search-navigation', name: 'Search & Nav', icon: '🔍', total: 5 },
+            { id: 'git-basics', name: 'Git Basics', icon: '📚', total: 5 },
+            { id: 'code-editing', name: 'Code Editing', icon: '✏️', total: 5 },
+            { id: 'debugging', name: 'Debugging', icon: '🐛', total: 4 },
+            { id: 'subagents', name: 'Subagents', icon: '🤖', total: 4 },
+            { id: 'skills-hooks', name: 'Skills & Hooks', icon: '🪝', total: 4 },
+            { id: 'mcp-integration', name: 'MCP', icon: '🔌', total: 3 }
+        ];
+
+        async function fetchData() {
+            try {
+                const progressRes = await fetch('/api/progress');
+                const progress = await progressRes.json();
+
+                const challengesRes = await fetch('/api/challenges');
+                const challenges = await challengesRes.json();
+
+                return { progress, challenges };
+            } catch (error) {
+                console.error('Failed to fetch data:', error);
+                return { progress: null, challenges: null };
+            }
+        }
+
+        function updateUI(data) {
+            const { progress, challenges } = data;
+
+            if (!progress) return;
+
+            // Update stats
+            document.getElementById('level').textContent = progress.xp?.level || 1;
+            document.getElementById('xp').textContent = progress.xp?.total || 0;
+            document.getElementById('xpNext').textContent = (progress.xp?.total || 0) + (progress.xp?.toNextLevel || 100);
+            document.getElementById('streak').textContent = progress.streak?.current || 0;
+            document.getElementById('completed').textContent = progress.stats?.totalChallengesCompleted || 0;
+
+            // XP bar
+            const xpPercent = progress.xp?.toNextLevel
+                ? Math.min(100, (progress.xp.total % (progress.xp.toNextLevel + progress.xp.total)) / (progress.xp.toNextLevel + progress.xp.total) * 100)
+                : 0;
+            document.getElementById('xpBar').style.width = `${xpPercent}%`;
+
+            // Modules
+            const modulesGrid = document.getElementById('modulesGrid');
+            modulesGrid.innerHTML = MODULES.map(mod => {
+                const moduleProgress = progress.modules?.[mod.id] || { completed: 0, total: mod.total, unlocked: mod.id === 'fundamentals' || mod.id === 'search-navigation' };
+                const percent = (moduleProgress.completed / mod.total) * 100;
+                const isLocked = !moduleProgress.unlocked;
+
+                return `
+                    <div class="bg-gray-800 rounded-xl p-4 ${isLocked ? 'opacity-50' : ''}">
+                        <div class="flex items-center justify-between mb-3">
+                            <span class="text-2xl">${mod.icon}</span>
+                            ${isLocked ? '<span class="text-xs bg-gray-700 px-2 py-1 rounded">🔒 Locked</span>' : ''}
+                        </div>
+                        <h3 class="font-semibold mb-1">${mod.name}</h3>
+                        <div class="text-sm text-gray-400 mb-2">${moduleProgress.completed}/${mod.total} complete</div>
+                        <div class="w-full bg-gray-700 rounded-full h-2">
+                            <div class="bg-green-500 h-2 rounded-full transition-all" style="width: ${percent}%"></div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            // Badges
+            const badgesContainer = document.getElementById('badgesContainer');
+            const earnedBadges = progress.badges || [];
+
+            if (earnedBadges.length > 0) {
+                document.getElementById('noBadges').style.display = 'none';
+                badgesContainer.innerHTML = earnedBadges.map(badgeId => {
+                    const badge = BADGES[badgeId] || { name: badgeId, icon: '🏆', description: '' };
+                    return `
+                        <div class="flex items-center gap-3 bg-gray-800 rounded-lg px-4 py-3">
+                            <span class="text-3xl">${badge.icon}</span>
+                            <div>
+                                <div class="font-semibold">${badge.name}</div>
+                                <div class="text-xs text-gray-400">${badge.description}</div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            // Skills
+            const skillsContainer = document.getElementById('skillsContainer');
+            const skills = progress.skills || {};
+
+            if (Object.keys(skills).length > 0) {
+                skillsContainer.innerHTML = `
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        ${Object.entries(skills).map(([skillId, data]) => `
+                            <div class="text-center">
+                                <div class="text-lg font-semibold">${skillId.replace(/-/g, ' ')}</div>
+                                <div class="text-3xl font-bold text-dojo-accent">Lv.${data.level || 1}</div>
+                                <div class="text-xs text-gray-400">${data.xp || 0} XP</div>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+            }
+        }
+
+        // Initial load
+        fetchData().then(updateUI);
+
+        // Auto-refresh every 5 seconds
+        setInterval(() => fetchData().then(updateUI), 5000);
+    </script>
+</body>
+</html>

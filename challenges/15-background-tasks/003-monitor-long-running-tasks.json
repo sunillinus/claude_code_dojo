@@ -1,0 +1,101 @@
+{
+  "id": "15-003",
+  "module": "background-tasks",
+  "title": "Monitor Long-Running Tasks",
+  "description": "Learn to monitor and manage background tasks, checking their status and output.",
+  "difficulty": "intermediate",
+  "xpReward": 200,
+  "estimatedMinutes": 12,
+  "skills": ["task-monitoring", "process-management"],
+
+  "setup": {
+    "workingDir": "~/dojo-workspace/challenge-15-003",
+    "initialFiles": [
+      {
+        "path": "README.md",
+        "content": "# Challenge: Monitor Long-Running Tasks\n\nLearn to monitor background tasks and check their progress.\n\n## Objectives\n1. Start a dev server in the background\n2. Monitor its output\n3. Document how to manage long-running processes\n"
+      },
+      {
+        "path": "package.json",
+        "content": "{\n  \"name\": \"task-monitoring\",\n  \"scripts\": {\n    \"dev\": \"node server.js\",\n    \"build\": \"echo 'Building...' && sleep 5 && echo 'Done!'\"\n  }\n}\n"
+      },
+      {
+        "path": "server.js",
+        "content": "const http = require('http');\n\nconst server = http.createServer((req, res) => {\n  console.log(`Request: ${req.url}`);\n  res.writeHead(200, { 'Content-Type': 'text/plain' });\n  res.end('Hello World');\n});\n\nconst PORT = 3456;\nserver.listen(PORT, () => {\n  console.log(`Server running at http://localhost:${PORT}`);\n});\n"
+      }
+    ],
+    "cleanBefore": true
+  },
+
+  "objectives": [
+    {
+      "id": "obj-1",
+      "description": "Document task monitoring commands",
+      "type": "file_exists",
+      "target": "monitoring-guide.md",
+      "required": true
+    },
+    {
+      "id": "obj-2",
+      "description": "Guide mentions checking task output",
+      "type": "file_contains",
+      "target": "monitoring-guide.md",
+      "pattern": "/tasks|output|status|TaskOutput|[Cc]heck",
+      "required": true
+    },
+    {
+      "id": "obj-3",
+      "description": "Guide mentions killing tasks",
+      "type": "file_contains",
+      "target": "monitoring-guide.md",
+      "pattern": "kill|stop|terminate|KillShell|[Cc]ancel",
+      "required": true
+    }
+  ],
+
+  "bonusObjectives": [
+    {
+      "id": "bonus-1",
+      "description": "Include practical examples",
+      "type": "file_contains",
+      "target": "monitoring-guide.md",
+      "pattern": "```|example|Example|npm run",
+      "xpBonus": 40
+    }
+  ],
+
+  "hints": [
+    {
+      "level": 1,
+      "text": "Learn about /tasks command to see running tasks, TaskOutput to get output, and KillShell to stop tasks.",
+      "xpCost": 15
+    },
+    {
+      "level": 2,
+      "text": "Try: 'Start the dev server in background, then explain how to monitor it and document this in monitoring-guide.md'",
+      "xpCost": 40
+    },
+    {
+      "level": 3,
+      "text": "Ask: 'Create monitoring-guide.md explaining how to: 1) Start background tasks in Claude Code, 2) Check on running tasks with /tasks, 3) Get task output with TaskOutput, 4) Stop tasks with KillShell. Include examples.'",
+      "xpCost": 80
+    }
+  ],
+
+  "solution": {
+    "approach": "Learn and document the task management commands available in Claude Code.",
+    "example": "Create a guide for monitoring and managing background tasks",
+    "alternativeApproaches": [
+      "Start an actual background task and demonstrate monitoring",
+      "Create a reference card for task management"
+    ]
+  },
+
+  "learningPoints": [
+    "Use /tasks to see running background tasks",
+    "TaskOutput retrieves output from background tasks",
+    "KillShell stops running background tasks"
+  ],
+
+  "nextChallenge": "15-004"
+}

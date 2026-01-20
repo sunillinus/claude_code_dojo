@@ -1,0 +1,113 @@
+{
+  "id": "06-004",
+  "module": "subagents",
+  "title": "Chain Subagents",
+  "description": "Learn to orchestrate multiple subagents in sequence. Complex tasks often require chaining specialized agents.",
+  "difficulty": "advanced",
+  "xpReward": 400,
+  "estimatedMinutes": 20,
+  "skills": ["agent-orchestration", "workflow-design"],
+
+  "setup": {
+    "workingDir": "~/dojo-workspace/challenge-06-004",
+    "initialFiles": [
+      {
+        "path": "README.md",
+        "content": "# Challenge: Chain Subagents\n\nOrchestrate multiple tasks: analyze → plan → implement.\n\n## Objectives\n1. First, analyze the existing code to understand it\n2. Then, plan improvements based on the analysis\n3. Finally, implement the planned changes\n4. Document the workflow in workflow-report.md\n"
+      },
+      {
+        "path": "src/userService.js",
+        "content": "// User service - needs improvement\n\nconst users = [];\n\nfunction addUser(name, email) {\n  users.push({ name, email });\n}\n\nfunction getUser(email) {\n  for (let i = 0; i < users.length; i++) {\n    if (users[i].email == email) {\n      return users[i];\n    }\n  }\n}\n\nfunction deleteUser(email) {\n  for (let i = 0; i < users.length; i++) {\n    if (users[i].email == email) {\n      users.splice(i, 1);\n    }\n  }\n}\n\nfunction listUsers() {\n  return users;\n}\n\nmodule.exports = { addUser, getUser, deleteUser, listUsers };\n"
+      }
+    ],
+    "cleanBefore": true
+  },
+
+  "objectives": [
+    {
+      "id": "obj-1",
+      "description": "Create workflow-report.md",
+      "type": "file_exists",
+      "target": "workflow-report.md",
+      "required": true
+    },
+    {
+      "id": "obj-2",
+      "description": "Report documents analysis phase",
+      "type": "file_contains",
+      "target": "workflow-report.md",
+      "pattern": "[Aa]nalysis|[Aa]nalyze|[Ff]indings|[Ii]ssues",
+      "required": true
+    },
+    {
+      "id": "obj-3",
+      "description": "Report documents plan/improvements",
+      "type": "file_contains",
+      "target": "workflow-report.md",
+      "pattern": "[Pp]lan|[Ii]mplement|[Ii]mprove|[Cc]hange",
+      "required": true
+    },
+    {
+      "id": "obj-4",
+      "description": "Code was actually improved",
+      "type": "file_contains",
+      "target": "src/userService.js",
+      "pattern": "===|find\\(|findIndex|return null|id:|ID",
+      "required": true
+    }
+  ],
+
+  "bonusObjectives": [
+    {
+      "id": "bonus-1",
+      "description": "Add proper ID generation to users",
+      "type": "file_contains",
+      "target": "src/userService.js",
+      "pattern": "id:|uuid|Date\\.now|crypto",
+      "xpBonus": 75
+    },
+    {
+      "id": "bonus-2",
+      "description": "Add input validation",
+      "type": "file_contains",
+      "target": "src/userService.js",
+      "pattern": "throw|Error|!name|!email|valid",
+      "xpBonus": 75
+    }
+  ],
+
+  "hints": [
+    {
+      "level": 1,
+      "text": "Break the task into phases: first analyze, then plan, then implement.",
+      "xpCost": 30
+    },
+    {
+      "level": 2,
+      "text": "Try: 'First analyze userService.js for issues. Then create an improvement plan. Finally implement the changes and document the workflow.'",
+      "xpCost": 80
+    },
+    {
+      "level": 3,
+      "text": "Ask: 'Execute a 3-phase workflow: Phase 1: Analyze userService.js (find issues like == vs ===, no IDs, no validation). Phase 2: Plan specific improvements. Phase 3: Implement the changes. Document all phases in workflow-report.md.'",
+      "xpCost": 150
+    }
+  ],
+
+  "solution": {
+    "approach": "Execute tasks in sequence, with each phase building on the previous.",
+    "example": "Analyze the code, plan improvements, implement changes, and document the workflow",
+    "alternativeApproaches": [
+      "Run analyze → plan → implement in sequence on the user service",
+      "Chain exploration, planning, and coding to improve the module"
+    ]
+  },
+
+  "learningPoints": [
+    "Complex tasks benefit from phased approaches",
+    "Analysis informs planning which guides implementation",
+    "Documenting workflows helps reproduce successful patterns"
+  ],
+
+  "nextChallenge": "15-001"
+}

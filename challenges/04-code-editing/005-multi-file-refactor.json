@@ -1,0 +1,122 @@
+{
+  "id": "04-005",
+  "module": "code-editing",
+  "title": "Multi-file Refactor",
+  "description": "Learn to refactor code across multiple files. Claude Code can coordinate changes across your entire codebase.",
+  "difficulty": "advanced",
+  "xpReward": 350,
+  "estimatedMinutes": 15,
+  "skills": ["multi-file-editing", "api-refactoring"],
+
+  "setup": {
+    "workingDir": "~/dojo-workspace/challenge-04-005",
+    "initialFiles": [
+      {
+        "path": "README.md",
+        "content": "# Challenge: Multi-file Refactor\n\nRename the API function and update all usages.\n\n## Objectives\n1. Rename `getUser` to `fetchUserById` in userApi.js\n2. Update ALL files that use this function\n3. Ensure nothing breaks\n"
+      },
+      {
+        "path": "api/userApi.js",
+        "content": "// User API module\n\nasync function getUser(id) {\n  const response = await fetch(`/api/users/${id}`);\n  return response.json();\n}\n\nasync function getUsers() {\n  const response = await fetch('/api/users');\n  return response.json();\n}\n\nasync function createUser(data) {\n  const response = await fetch('/api/users', {\n    method: 'POST',\n    body: JSON.stringify(data)\n  });\n  return response.json();\n}\n\nmodule.exports = { getUser, getUsers, createUser };\n"
+      },
+      {
+        "path": "services/profileService.js",
+        "content": "const { getUser } = require('../api/userApi');\n\nasync function loadProfile(userId) {\n  const user = await getUser(userId);\n  return {\n    displayName: user.name,\n    avatar: user.avatar,\n    bio: user.bio\n  };\n}\n\nmodule.exports = { loadProfile };\n"
+      },
+      {
+        "path": "services/dashboardService.js",
+        "content": "const { getUser, getUsers } = require('../api/userApi');\n\nasync function loadDashboard(currentUserId) {\n  const currentUser = await getUser(currentUserId);\n  const allUsers = await getUsers();\n  \n  return {\n    user: currentUser,\n    teamMembers: allUsers.filter(u => u.team === currentUser.team)\n  };\n}\n\nmodule.exports = { loadDashboard };\n"
+      },
+      {
+        "path": "components/UserProfile.js",
+        "content": "const { getUser } = require('../api/userApi');\n\nclass UserProfile {\n  constructor(userId) {\n    this.userId = userId;\n    this.user = null;\n  }\n\n  async load() {\n    this.user = await getUser(this.userId);\n    return this;\n  }\n\n  render() {\n    if (!this.user) return '<div>Loading...</div>';\n    return `<div class=\"profile\">${this.user.name}</div>`;\n  }\n}\n\nmodule.exports = UserProfile;\n"
+      },
+      {
+        "path": "tests/userApi.test.js",
+        "content": "const { getUser, getUsers } = require('../api/userApi');\n\ndescribe('User API', () => {\n  test('getUser fetches a single user', async () => {\n    const user = await getUser('123');\n    expect(user).toBeDefined();\n  });\n\n  test('getUsers fetches all users', async () => {\n    const users = await getUsers();\n    expect(Array.isArray(users)).toBe(true);\n  });\n});\n"
+      }
+    ],
+    "cleanBefore": true
+  },
+
+  "objectives": [
+    {
+      "id": "obj-1",
+      "description": "Function renamed in userApi.js",
+      "type": "file_contains",
+      "target": "api/userApi.js",
+      "pattern": "function fetchUserById|fetchUserById.*=",
+      "required": true
+    },
+    {
+      "id": "obj-2",
+      "description": "profileService.js uses new name",
+      "type": "file_contains",
+      "target": "services/profileService.js",
+      "pattern": "fetchUserById",
+      "required": true
+    },
+    {
+      "id": "obj-3",
+      "description": "dashboardService.js uses new name",
+      "type": "file_contains",
+      "target": "services/dashboardService.js",
+      "pattern": "fetchUserById",
+      "required": true
+    },
+    {
+      "id": "obj-4",
+      "description": "UserProfile.js uses new name",
+      "type": "file_contains",
+      "target": "components/UserProfile.js",
+      "pattern": "fetchUserById",
+      "required": true
+    }
+  ],
+
+  "bonusObjectives": [
+    {
+      "id": "bonus-1",
+      "description": "Tests updated to use new name",
+      "type": "file_contains",
+      "target": "tests/userApi.test.js",
+      "pattern": "fetchUserById",
+      "xpBonus": 75
+    }
+  ],
+
+  "hints": [
+    {
+      "level": 1,
+      "text": "Ask Claude Code to rename the function and update all files that use it.",
+      "xpCost": 25
+    },
+    {
+      "level": 2,
+      "text": "Try: 'Rename getUser to fetchUserById in userApi.js and update all files that import it'",
+      "xpCost": 70
+    },
+    {
+      "level": 3,
+      "text": "Ask: 'Refactor: rename the getUser function to fetchUserById. Find all files that use it (profileService, dashboardService, UserProfile, tests) and update the imports and usages.'",
+      "xpCost": 125
+    }
+  ],
+
+  "solution": {
+    "approach": "Rename the function and update all usages across the codebase.",
+    "example": "Rename getUser to fetchUserById and update all files that use it",
+    "alternativeApproaches": [
+      "Refactor getUser to fetchUserById across the entire project",
+      "Find and replace getUser with fetchUserById in all files"
+    ]
+  },
+
+  "learningPoints": [
+    "Claude Code can coordinate changes across multiple files",
+    "Refactoring requires finding all usages first",
+    "Tests should be updated along with source code"
+  ],
+
+  "nextChallenge": "05-001"
+}

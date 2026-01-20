@@ -1,0 +1,118 @@
+{
+  "id": "09-002",
+  "module": "plugin-development",
+  "title": "Create Your First Plugin",
+  "description": "Learn to scaffold a complete Claude Code plugin from scratch. This is your foundation for extending Claude Code.",
+  "difficulty": "intermediate",
+  "xpReward": 275,
+  "estimatedMinutes": 15,
+  "skills": ["plugin-scaffolding", "manifest-creation"],
+
+  "setup": {
+    "workingDir": "~/dojo-workspace/challenge-09-002",
+    "initialFiles": [
+      {
+        "path": "README.md",
+        "content": "# Challenge: Create Your First Plugin\n\nScaffold a new plugin called 'git-helper' from scratch.\n\n## Objectives\n1. Create plugin.json with proper metadata\n2. Create at least one skill (e.g., /git-status)\n3. Create at least one hook (e.g., commit message validator)\n4. Ensure the plugin follows the correct structure\n"
+      }
+    ],
+    "cleanBefore": true
+  },
+
+  "objectives": [
+    {
+      "id": "obj-1",
+      "description": "Create plugin.json with required fields",
+      "type": "file_contains",
+      "target": "plugin.json",
+      "pattern": "\"name\".*\"version\".*\"description\"|\"description\".*\"name\".*\"version\"",
+      "required": true
+    },
+    {
+      "id": "obj-2",
+      "description": "Plugin has author information",
+      "type": "file_contains",
+      "target": "plugin.json",
+      "pattern": "\"author\"",
+      "required": true
+    },
+    {
+      "id": "obj-3",
+      "description": "Create at least one skill",
+      "type": "file_exists",
+      "target": "skills/*/SKILL.md",
+      "required": true
+    },
+    {
+      "id": "obj-4",
+      "description": "Skill has proper frontmatter",
+      "type": "command_output_contains",
+      "command": "find ~/dojo-workspace/challenge-09-002/skills -name 'SKILL.md' -exec cat {} \\; 2>/dev/null | head -20",
+      "pattern": "name:|description:|user-invocable:",
+      "required": true
+    }
+  ],
+
+  "bonusObjectives": [
+    {
+      "id": "bonus-1",
+      "description": "Create a hook",
+      "type": "command_output_contains",
+      "command": "ls ~/dojo-workspace/challenge-09-002/hooks/*.md 2>/dev/null | wc -l | tr -d ' '",
+      "pattern": "[1-9]",
+      "xpBonus": 50
+    },
+    {
+      "id": "bonus-2",
+      "description": "Create an agent",
+      "type": "command_output_contains",
+      "command": "ls ~/dojo-workspace/challenge-09-002/agents/*.md 2>/dev/null | wc -l | tr -d ' '",
+      "pattern": "[1-9]",
+      "xpBonus": 50
+    },
+    {
+      "id": "bonus-3",
+      "description": "Add MCP configuration",
+      "type": "file_exists",
+      "target": ".mcp.json",
+      "xpBonus": 50
+    }
+  ],
+
+  "hints": [
+    {
+      "level": 1,
+      "text": "Start with plugin.json, then create folders for skills/, hooks/, agents/.",
+      "xpCost": 20
+    },
+    {
+      "level": 2,
+      "text": "Try: 'Create a git-helper plugin with a skill for git status and a hook for validating commits'",
+      "xpCost": 55
+    },
+    {
+      "level": 3,
+      "text": "Ask: 'Scaffold a complete git-helper plugin: 1) plugin.json with name, version, description, author 2) skills/git-status/SKILL.md that shows git status in a friendly way 3) hooks/commit-validator.md that checks commit messages follow conventional commits format'",
+      "xpCost": 105
+    }
+  ],
+
+  "solution": {
+    "approach": "Create the plugin manifest and add components following the standard structure.",
+    "example": "Create a git-helper plugin with plugin.json, a git-status skill, and a commit validator hook",
+    "alternativeApproaches": [
+      "Scaffold a new plugin from scratch with all the necessary files",
+      "Build a plugin for git workflow automation"
+    ]
+  },
+
+  "learningPoints": [
+    "plugin.json is required and defines plugin metadata",
+    "Skills go in skills/name/SKILL.md",
+    "Hooks go in hooks/name.md",
+    "Agents go in agents/name.md",
+    "Author should be an object with name property"
+  ],
+
+  "nextChallenge": "09-003"
+}

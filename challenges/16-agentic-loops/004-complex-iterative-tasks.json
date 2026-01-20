@@ -1,0 +1,131 @@
+{
+  "id": "16-004",
+  "module": "agentic-loops",
+  "title": "Complex Iterative Tasks",
+  "description": "Use Ralph Loop for complex, multi-phase tasks that require sustained autonomous work.",
+  "difficulty": "advanced",
+  "xpReward": 350,
+  "estimatedMinutes": 20,
+  "skills": ["complex-automation", "multi-phase-tasks"],
+
+  "setup": {
+    "workingDir": "~/dojo-workspace/challenge-16-004",
+    "initialFiles": [
+      {
+        "path": "README.md",
+        "content": "# Challenge: Complex Iterative Tasks\n\nUse Ralph Loop for a complex, multi-phase migration task.\n\n## Migration Task\nMigrate this JavaScript project to TypeScript:\n1. Create tsconfig.json\n2. Rename .js files to .ts\n3. Add type annotations\n4. Fix any type errors\n5. Ensure code still works\n"
+      },
+      {
+        "path": "package.json",
+        "content": "{\n  \"name\": \"ts-migration\",\n  \"scripts\": {\n    \"build\": \"tsc\",\n    \"test\": \"node --test dist/\"\n  },\n  \"devDependencies\": {\n    \"typescript\": \"^5.0.0\"\n  }\n}\n"
+      },
+      {
+        "path": "src/user.js",
+        "content": "class User {\n  constructor(name, email, age) {\n    this.name = name;\n    this.email = email;\n    this.age = age;\n  }\n\n  isAdult() {\n    return this.age >= 18;\n  }\n\n  getDisplayName() {\n    return `${this.name} <${this.email}>`;\n  }\n}\n\nmodule.exports = { User };\n"
+      },
+      {
+        "path": "src/userService.js",
+        "content": "const { User } = require('./user');\n\nclass UserService {\n  constructor() {\n    this.users = [];\n  }\n\n  addUser(name, email, age) {\n    const user = new User(name, email, age);\n    this.users.push(user);\n    return user;\n  }\n\n  findByEmail(email) {\n    return this.users.find(u => u.email === email);\n  }\n\n  getAdults() {\n    return this.users.filter(u => u.isAdult());\n  }\n\n  getAllUsers() {\n    return this.users;\n  }\n}\n\nmodule.exports = { UserService };\n"
+      },
+      {
+        "path": "src/index.js",
+        "content": "const { UserService } = require('./userService');\n\nfunction main() {\n  const service = new UserService();\n  \n  service.addUser('Alice', 'alice@example.com', 25);\n  service.addUser('Bob', 'bob@example.com', 17);\n  service.addUser('Charlie', 'charlie@example.com', 30);\n  \n  console.log('All users:', service.getAllUsers());\n  console.log('Adults:', service.getAdults());\n  console.log('Found:', service.findByEmail('alice@example.com'));\n}\n\nmain();\n"
+      }
+    ],
+    "cleanBefore": true
+  },
+
+  "objectives": [
+    {
+      "id": "obj-1",
+      "description": "Create tsconfig.json",
+      "type": "file_exists",
+      "target": "tsconfig.json",
+      "required": true
+    },
+    {
+      "id": "obj-2",
+      "description": "Convert user.js to user.ts with types",
+      "type": "file_contains",
+      "target": "src/user.ts",
+      "pattern": ": string|: number|interface|type ",
+      "required": true
+    },
+    {
+      "id": "obj-3",
+      "description": "Convert userService.js to userService.ts",
+      "type": "file_contains",
+      "target": "src/userService.ts",
+      "pattern": ": User|User\\[\\]|: string",
+      "required": true
+    },
+    {
+      "id": "obj-4",
+      "description": "Convert index.js to index.ts",
+      "type": "file_exists",
+      "target": "src/index.ts",
+      "required": true
+    }
+  ],
+
+  "bonusObjectives": [
+    {
+      "id": "bonus-1",
+      "description": "Create User interface",
+      "type": "file_contains",
+      "target": "src/user.ts",
+      "pattern": "interface User|type User",
+      "xpBonus": 60
+    },
+    {
+      "id": "bonus-2",
+      "description": "TypeScript builds without errors",
+      "type": "command_output_contains",
+      "command": "cd ~/dojo-workspace/challenge-16-004 && npx tsc --noEmit 2>&1 | tail -1 || echo 'success'",
+      "pattern": "success|^$",
+      "xpBonus": 75
+    },
+    {
+      "id": "bonus-3",
+      "description": "Create migration summary",
+      "type": "file_exists",
+      "target": "migration-summary.md",
+      "xpBonus": 40
+    }
+  ],
+
+  "hints": [
+    {
+      "level": 1,
+      "text": "This is a perfect Ralph Loop task - multiple files, multiple phases, needs iteration to get right.",
+      "xpCost": 25
+    },
+    {
+      "level": 2,
+      "text": "Try: '/ralph-loop Migrate this project to TypeScript: create tsconfig, rename files to .ts, add types, fix errors. COMPLETE when tsc compiles without errors.'",
+      "xpCost": 70
+    },
+    {
+      "level": 3,
+      "text": "Ask: '/ralph-loop Migrate to TypeScript: PHASE 1: Create tsconfig.json with strict mode. PHASE 2: Rename src/*.js to src/*.ts. PHASE 3: Add type annotations (interfaces for User, typed parameters/returns). PHASE 4: Fix any type errors. PHASE 5: Run tsc --noEmit to verify. COMPLETE when TypeScript compiles successfully. Create migration-summary.md documenting changes.'",
+      "xpCost": 140
+    }
+  ],
+
+  "solution": {
+    "approach": "Break complex tasks into phases and let Ralph Loop work through them.",
+    "example": "Use Ralph Loop for a complete TypeScript migration",
+    "alternativeApproaches": [
+      "Define each phase explicitly",
+      "Let Ralph determine the migration order"
+    ]
+  },
+
+  "learningPoints": [
+    "Ralph Loop excels at complex, multi-phase tasks",
+    "Break large tasks into clear phases",
+    "Use verification commands as completion criteria"
+  ],
+
+  "nextChallenge": "07-001"
+}

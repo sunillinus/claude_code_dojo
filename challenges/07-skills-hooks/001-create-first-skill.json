@@ -1,0 +1,105 @@
+{
+  "id": "07-001",
+  "module": "skills-hooks",
+  "title": "Create Your First Skill",
+  "description": "Learn to create a custom skill (slash command) for Claude Code. Skills are reusable prompt templates.",
+  "difficulty": "intermediate",
+  "xpReward": 250,
+  "estimatedMinutes": 12,
+  "skills": ["skill-creation", "command-definition"],
+
+  "setup": {
+    "workingDir": "~/dojo-workspace/challenge-07-001",
+    "initialFiles": [
+      {
+        "path": "README.md",
+        "content": "# Challenge: Create Your First Skill\n\nCreate a custom /changelog skill that generates changelogs from git history.\n\n## Objectives\n1. Create a skills folder with a changelog skill\n2. Define proper frontmatter (name, description, user-invocable)\n3. Write a prompt that analyzes git commits and generates a changelog\n"
+      },
+      {
+        "path": "plugin.json",
+        "content": "{\n  \"name\": \"dev-tools\",\n  \"version\": \"1.0.0\",\n  \"description\": \"Developer productivity tools\"\n}\n"
+      }
+    ],
+    "cleanBefore": true
+  },
+
+  "objectives": [
+    {
+      "id": "obj-1",
+      "description": "Create skills folder with changelog skill",
+      "type": "file_exists",
+      "target": "skills/changelog/SKILL.md",
+      "required": true
+    },
+    {
+      "id": "obj-2",
+      "description": "Skill has required frontmatter",
+      "type": "file_contains",
+      "target": "skills/changelog/SKILL.md",
+      "pattern": "name:.*changelog|description:",
+      "required": true
+    },
+    {
+      "id": "obj-3",
+      "description": "Skill is user-invocable",
+      "type": "file_contains",
+      "target": "skills/changelog/SKILL.md",
+      "pattern": "user-invocable:\\s*true",
+      "required": true
+    },
+    {
+      "id": "obj-4",
+      "description": "Prompt mentions git or commits",
+      "type": "file_contains",
+      "target": "skills/changelog/SKILL.md",
+      "pattern": "git|commit|log|history|change",
+      "required": true
+    }
+  ],
+
+  "bonusObjectives": [
+    {
+      "id": "bonus-1",
+      "description": "Include version/date parameters in the skill",
+      "type": "file_contains",
+      "target": "skills/changelog/SKILL.md",
+      "pattern": "version|date|since|from|range|\\$\\{",
+      "xpBonus": 50
+    }
+  ],
+
+  "hints": [
+    {
+      "level": 1,
+      "text": "Skills are markdown files in skills/skillname/SKILL.md with YAML frontmatter.",
+      "xpCost": 20
+    },
+    {
+      "level": 2,
+      "text": "Try: 'Create a /changelog skill that analyzes git history and generates a formatted changelog'",
+      "xpCost": 50
+    },
+    {
+      "level": 3,
+      "text": "Ask: 'Create skills/changelog/SKILL.md with frontmatter (name: changelog, description: Generate changelog from git commits, user-invocable: true) and a prompt that reads git log and formats commits into a readable changelog'",
+      "xpCost": 95
+    }
+  ],
+
+  "solution": {
+    "approach": "Create a skill definition file with proper frontmatter and a clear prompt.",
+    "example": "Create a changelog skill in the skills folder that generates changelogs from git history",
+    "alternativeApproaches": [
+      "Build a /changelog command that summarizes recent commits",
+      "Add a skill for generating release notes from git"
+    ]
+  },
+
+  "learningPoints": [
+    "Skills live in skills/name/SKILL.md",
+    "Frontmatter defines metadata (name, description, user-invocable)",
+    "The markdown body is the prompt template"
+  ],
+
+  "nextChallenge": "07-002"
+}

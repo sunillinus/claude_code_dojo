@@ -1,0 +1,117 @@
+{
+  "id": "11-004",
+  "module": "testing-tdd",
+  "title": "Add Tests to Legacy Code",
+  "description": "Add tests to existing code that has no tests. This is a common real-world scenario.",
+  "difficulty": "intermediate",
+  "xpReward": 250,
+  "estimatedMinutes": 15,
+  "skills": ["legacy-testing", "characterization-tests"],
+
+  "setup": {
+    "workingDir": "~/dojo-workspace/challenge-11-004",
+    "initialFiles": [
+      {
+        "path": "README.md",
+        "content": "# Challenge: Add Tests to Legacy Code\n\nThis shopping cart module has no tests. Add comprehensive test coverage.\n\n## Objectives\n1. Analyze the existing code to understand its behavior\n2. Write tests that document current functionality\n3. Achieve coverage of all major code paths\n"
+      },
+      {
+        "path": "package.json",
+        "content": "{\n  \"name\": \"legacy-testing\",\n  \"scripts\": {\n    \"test\": \"node --test\"\n  }\n}\n"
+      },
+      {
+        "path": "cart.js",
+        "content": "class ShoppingCart {\n  constructor() {\n    this.items = [];\n  }\n\n  addItem(product, quantity = 1) {\n    const existing = this.items.find(item => item.product.id === product.id);\n    if (existing) {\n      existing.quantity += quantity;\n    } else {\n      this.items.push({ product, quantity });\n    }\n  }\n\n  removeItem(productId) {\n    this.items = this.items.filter(item => item.product.id !== productId);\n  }\n\n  getTotal() {\n    return this.items.reduce((sum, item) => {\n      return sum + (item.product.price * item.quantity);\n    }, 0);\n  }\n\n  applyDiscount(percentage) {\n    if (percentage < 0 || percentage > 100) {\n      throw new Error('Invalid discount percentage');\n    }\n    const total = this.getTotal();\n    return total - (total * percentage / 100);\n  }\n\n  getItemCount() {\n    return this.items.reduce((count, item) => count + item.quantity, 0);\n  }\n\n  clear() {\n    this.items = [];\n  }\n}\n\nmodule.exports = { ShoppingCart };\n"
+      }
+    ],
+    "cleanBefore": true
+  },
+
+  "objectives": [
+    {
+      "id": "obj-1",
+      "description": "Create a test file",
+      "type": "file_exists",
+      "target": "cart.test.js",
+      "required": true
+    },
+    {
+      "id": "obj-2",
+      "description": "Test addItem functionality",
+      "type": "file_contains",
+      "target": "cart.test.js",
+      "pattern": "addItem",
+      "required": true
+    },
+    {
+      "id": "obj-3",
+      "description": "Test getTotal calculation",
+      "type": "file_contains",
+      "target": "cart.test.js",
+      "pattern": "getTotal|total",
+      "required": true
+    },
+    {
+      "id": "obj-4",
+      "description": "Test discount functionality",
+      "type": "file_contains",
+      "target": "cart.test.js",
+      "pattern": "applyDiscount|discount",
+      "required": true
+    }
+  ],
+
+  "bonusObjectives": [
+    {
+      "id": "bonus-1",
+      "description": "Test edge cases (empty cart, invalid discount)",
+      "type": "file_contains",
+      "target": "cart.test.js",
+      "pattern": "empty|invalid|Error|throws|0",
+      "xpBonus": 50
+    },
+    {
+      "id": "bonus-2",
+      "description": "Test removeItem and clear",
+      "type": "file_contains",
+      "target": "cart.test.js",
+      "pattern": "removeItem|clear",
+      "xpBonus": 50
+    }
+  ],
+
+  "hints": [
+    {
+      "level": 1,
+      "text": "Read the code first to understand what each method does. Then write tests for each method.",
+      "xpCost": 15
+    },
+    {
+      "level": 2,
+      "text": "Try: 'Analyze cart.js and write comprehensive tests for the ShoppingCart class'",
+      "xpCost": 50
+    },
+    {
+      "level": 3,
+      "text": "Ask: 'Create cart.test.js with tests for: addItem (new and existing), removeItem, getTotal, applyDiscount (valid and invalid), getItemCount, and clear methods'",
+      "xpCost": 100
+    }
+  ],
+
+  "solution": {
+    "approach": "Read the existing code, understand its behavior, then write tests for each method.",
+    "example": "Write comprehensive tests for the ShoppingCart class",
+    "alternativeApproaches": [
+      "Start with simple happy-path tests, then add edge cases",
+      "Use characterization tests to document current behavior"
+    ]
+  },
+
+  "learningPoints": [
+    "Legacy code often needs tests before refactoring",
+    "Characterization tests document existing behavior",
+    "Test edge cases and error conditions"
+  ],
+
+  "nextChallenge": "11-005"
+}

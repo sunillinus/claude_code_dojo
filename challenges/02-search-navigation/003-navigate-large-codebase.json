@@ -1,0 +1,157 @@
+{
+  "id": "02-003",
+  "module": "search-navigation",
+  "title": "Navigate Large Codebase",
+  "description": "Learn to efficiently navigate and understand a larger codebase structure. Claude Code can help you map out project architecture quickly.",
+  "difficulty": "intermediate",
+  "xpReward": 200,
+  "estimatedMinutes": 10,
+  "skills": ["codebase-exploration", "architecture-understanding"],
+
+  "setup": {
+    "workingDir": "~/dojo-workspace/challenge-02-003",
+    "initialFiles": [
+      {
+        "path": "README.md",
+        "content": "# Challenge: Navigate Large Codebase\n\nThis is an e-commerce backend project. Your task is to understand its structure.\n\n## Objectives\n1. Find all the API route files\n2. Identify the database models\n3. Create architecture.md documenting the project structure\n"
+      },
+      {
+        "path": "package.json",
+        "content": "{\n  \"name\": \"ecommerce-api\",\n  \"version\": \"1.0.0\",\n  \"main\": \"src/index.js\"\n}\n"
+      },
+      {
+        "path": "src/index.js",
+        "content": "const express = require('express');\nconst routes = require('./routes');\nconst db = require('./db');\n\nconst app = express();\napp.use('/api', routes);\n\nmodule.exports = app;\n"
+      },
+      {
+        "path": "src/routes/index.js",
+        "content": "const router = require('express').Router();\nconst products = require('./products');\nconst users = require('./users');\nconst orders = require('./orders');\n\nrouter.use('/products', products);\nrouter.use('/users', users);\nrouter.use('/orders', orders);\n\nmodule.exports = router;\n"
+      },
+      {
+        "path": "src/routes/products.js",
+        "content": "const router = require('express').Router();\nconst ProductController = require('../controllers/ProductController');\n\nrouter.get('/', ProductController.list);\nrouter.get('/:id', ProductController.get);\nrouter.post('/', ProductController.create);\n\nmodule.exports = router;\n"
+      },
+      {
+        "path": "src/routes/users.js",
+        "content": "const router = require('express').Router();\nconst UserController = require('../controllers/UserController');\n\nrouter.get('/', UserController.list);\nrouter.post('/register', UserController.register);\nrouter.post('/login', UserController.login);\n\nmodule.exports = router;\n"
+      },
+      {
+        "path": "src/routes/orders.js",
+        "content": "const router = require('express').Router();\nconst OrderController = require('../controllers/OrderController');\n\nrouter.get('/', OrderController.list);\nrouter.post('/', OrderController.create);\nrouter.get('/:id', OrderController.get);\n\nmodule.exports = router;\n"
+      },
+      {
+        "path": "src/controllers/ProductController.js",
+        "content": "const Product = require('../models/Product');\n\nclass ProductController {\n  static async list(req, res) {\n    const products = await Product.findAll();\n    res.json(products);\n  }\n  static async get(req, res) {\n    const product = await Product.findById(req.params.id);\n    res.json(product);\n  }\n  static async create(req, res) {\n    const product = await Product.create(req.body);\n    res.json(product);\n  }\n}\n\nmodule.exports = ProductController;\n"
+      },
+      {
+        "path": "src/controllers/UserController.js",
+        "content": "const User = require('../models/User');\n\nclass UserController {\n  static async list(req, res) {\n    const users = await User.findAll();\n    res.json(users);\n  }\n  static async register(req, res) {\n    const user = await User.create(req.body);\n    res.json(user);\n  }\n  static async login(req, res) {\n    const user = await User.authenticate(req.body);\n    res.json({ token: user.generateToken() });\n  }\n}\n\nmodule.exports = UserController;\n"
+      },
+      {
+        "path": "src/controllers/OrderController.js",
+        "content": "const Order = require('../models/Order');\n\nclass OrderController {\n  static async list(req, res) {\n    const orders = await Order.findAll();\n    res.json(orders);\n  }\n  static async create(req, res) {\n    const order = await Order.create(req.body);\n    res.json(order);\n  }\n  static async get(req, res) {\n    const order = await Order.findById(req.params.id);\n    res.json(order);\n  }\n}\n\nmodule.exports = OrderController;\n"
+      },
+      {
+        "path": "src/models/Product.js",
+        "content": "class Product {\n  static async findAll() { return []; }\n  static async findById(id) { return {}; }\n  static async create(data) { return data; }\n}\n\nmodule.exports = Product;\n"
+      },
+      {
+        "path": "src/models/User.js",
+        "content": "class User {\n  static async findAll() { return []; }\n  static async create(data) { return data; }\n  static async authenticate(credentials) { return {}; }\n  generateToken() { return 'token'; }\n}\n\nmodule.exports = User;\n"
+      },
+      {
+        "path": "src/models/Order.js",
+        "content": "class Order {\n  static async findAll() { return []; }\n  static async findById(id) { return {}; }\n  static async create(data) { return data; }\n}\n\nmodule.exports = Order;\n"
+      },
+      {
+        "path": "src/db/index.js",
+        "content": "// Database connection\nconst config = require('./config');\n\nmodule.exports = {\n  connect: () => console.log('Connected to', config.database)\n};\n"
+      },
+      {
+        "path": "src/db/config.js",
+        "content": "module.exports = {\n  host: 'localhost',\n  port: 5432,\n  database: 'ecommerce'\n};\n"
+      },
+      {
+        "path": "src/middleware/auth.js",
+        "content": "function authenticate(req, res, next) {\n  const token = req.headers.authorization;\n  if (!token) return res.status(401).json({ error: 'Unauthorized' });\n  next();\n}\n\nmodule.exports = authenticate;\n"
+      },
+      {
+        "path": "src/utils/validation.js",
+        "content": "function validateEmail(email) {\n  return /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email);\n}\n\nmodule.exports = { validateEmail };\n"
+      }
+    ],
+    "cleanBefore": true
+  },
+
+  "objectives": [
+    {
+      "id": "obj-1",
+      "description": "Create architecture.md",
+      "type": "file_exists",
+      "target": "architecture.md",
+      "required": true
+    },
+    {
+      "id": "obj-2",
+      "description": "Document the routes (products, users, orders)",
+      "type": "file_contains",
+      "target": "architecture.md",
+      "pattern": "[Pp]roducts.*[Uu]sers.*[Oo]rders|[Rr]outes",
+      "required": true
+    },
+    {
+      "id": "obj-3",
+      "description": "Document the models",
+      "type": "file_contains",
+      "target": "architecture.md",
+      "pattern": "[Mm]odels|Product.*User.*Order",
+      "required": true
+    }
+  ],
+
+  "bonusObjectives": [
+    {
+      "id": "bonus-1",
+      "description": "Include the MVC pattern explanation",
+      "type": "file_contains",
+      "target": "architecture.md",
+      "pattern": "MVC|[Cc]ontroller.*[Mm]odel.*[Vv]iew|[Mm]odel.*[Vv]iew.*[Cc]ontroller",
+      "xpBonus": 50
+    }
+  ],
+
+  "hints": [
+    {
+      "level": 1,
+      "text": "Ask Claude Code to explore the project structure and explain how it's organized.",
+      "xpCost": 15
+    },
+    {
+      "level": 2,
+      "text": "Try: 'What is the structure of this project? List all the main components.'",
+      "xpCost": 35
+    },
+    {
+      "level": 3,
+      "text": "Ask: 'Analyze this codebase structure and create architecture.md documenting the routes, models, and how they connect'",
+      "xpCost": 75
+    }
+  ],
+
+  "solution": {
+    "approach": "Use Claude Code's exploration capabilities to understand project structure.",
+    "example": "Explore this codebase and create architecture.md documenting the project structure, routes, and models",
+    "alternativeApproaches": [
+      "What's the architecture of this project? Document it in architecture.md",
+      "Map out this codebase structure and save to architecture.md"
+    ]
+  },
+
+  "learningPoints": [
+    "Claude Code can quickly map out unfamiliar codebases",
+    "Asking for architecture overviews helps understand project organization",
+    "Claude Code follows import/require chains to understand relationships"
+  ],
+
+  "nextChallenge": "02-004"
+}

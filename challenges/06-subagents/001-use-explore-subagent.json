@@ -1,0 +1,113 @@
+{
+  "id": "06-001",
+  "module": "subagents",
+  "title": "Use Explore Subagent",
+  "description": "Learn to use the Explore subagent for codebase exploration. Subagents can search and analyze code autonomously.",
+  "difficulty": "intermediate",
+  "xpReward": 225,
+  "estimatedMinutes": 10,
+  "skills": ["subagent-basics", "codebase-exploration"],
+
+  "setup": {
+    "workingDir": "~/dojo-workspace/challenge-06-001",
+    "initialFiles": [
+      {
+        "path": "README.md",
+        "content": "# Challenge: Use Explore Subagent\n\nUse Claude Code's exploration capabilities to understand this codebase.\n\n## Objectives\n1. Ask Claude to explore how error handling works in this project\n2. Create exploration-report.md with findings\n3. Include file locations and patterns discovered\n"
+      },
+      {
+        "path": "src/index.js",
+        "content": "const express = require('express');\nconst { errorHandler, notFoundHandler } = require('./middleware/errors');\nconst userRoutes = require('./routes/users');\nconst productRoutes = require('./routes/products');\n\nconst app = express();\n\napp.use('/users', userRoutes);\napp.use('/products', productRoutes);\n\napp.use(notFoundHandler);\napp.use(errorHandler);\n\nmodule.exports = app;\n"
+      },
+      {
+        "path": "src/middleware/errors.js",
+        "content": "const { AppError } = require('../utils/errors');\n\nfunction errorHandler(err, req, res, next) {\n  if (err instanceof AppError) {\n    return res.status(err.statusCode).json({\n      error: err.message,\n      code: err.code\n    });\n  }\n  \n  console.error('Unexpected error:', err);\n  res.status(500).json({ error: 'Internal server error' });\n}\n\nfunction notFoundHandler(req, res) {\n  res.status(404).json({ error: 'Not found' });\n}\n\nmodule.exports = { errorHandler, notFoundHandler };\n"
+      },
+      {
+        "path": "src/utils/errors.js",
+        "content": "class AppError extends Error {\n  constructor(message, statusCode, code) {\n    super(message);\n    this.statusCode = statusCode;\n    this.code = code;\n  }\n}\n\nclass NotFoundError extends AppError {\n  constructor(resource) {\n    super(`${resource} not found`, 404, 'NOT_FOUND');\n  }\n}\n\nclass ValidationError extends AppError {\n  constructor(message) {\n    super(message, 400, 'VALIDATION_ERROR');\n  }\n}\n\nclass AuthenticationError extends AppError {\n  constructor() {\n    super('Authentication required', 401, 'AUTH_REQUIRED');\n  }\n}\n\nmodule.exports = { AppError, NotFoundError, ValidationError, AuthenticationError };\n"
+      },
+      {
+        "path": "src/routes/users.js",
+        "content": "const router = require('express').Router();\nconst { NotFoundError, ValidationError } = require('../utils/errors');\n\nconst users = [{ id: '1', name: 'John' }];\n\nrouter.get('/:id', (req, res) => {\n  const user = users.find(u => u.id === req.params.id);\n  if (!user) throw new NotFoundError('User');\n  res.json(user);\n});\n\nrouter.post('/', (req, res) => {\n  if (!req.body.name) throw new ValidationError('Name is required');\n  const user = { id: String(users.length + 1), name: req.body.name };\n  users.push(user);\n  res.json(user);\n});\n\nmodule.exports = router;\n"
+      },
+      {
+        "path": "src/routes/products.js",
+        "content": "const router = require('express').Router();\nconst { NotFoundError } = require('../utils/errors');\n\nconst products = [{ id: '1', name: 'Widget', price: 10 }];\n\nrouter.get('/', (req, res) => {\n  res.json(products);\n});\n\nrouter.get('/:id', (req, res) => {\n  const product = products.find(p => p.id === req.params.id);\n  if (!product) throw new NotFoundError('Product');\n  res.json(product);\n});\n\nmodule.exports = router;\n"
+      }
+    ],
+    "cleanBefore": true
+  },
+
+  "objectives": [
+    {
+      "id": "obj-1",
+      "description": "Create exploration-report.md",
+      "type": "file_exists",
+      "target": "exploration-report.md",
+      "required": true
+    },
+    {
+      "id": "obj-2",
+      "description": "Report mentions the error classes",
+      "type": "file_contains",
+      "target": "exploration-report.md",
+      "pattern": "AppError|NotFoundError|ValidationError|AuthenticationError",
+      "required": true
+    },
+    {
+      "id": "obj-3",
+      "description": "Report mentions error middleware",
+      "type": "file_contains",
+      "target": "exploration-report.md",
+      "pattern": "errorHandler|middleware|errors\\.js",
+      "required": true
+    }
+  ],
+
+  "bonusObjectives": [
+    {
+      "id": "bonus-1",
+      "description": "Explain the error handling flow/architecture",
+      "type": "file_contains",
+      "target": "exploration-report.md",
+      "pattern": "flow|architecture|pattern|hierarchy|extends|catches|throws",
+      "xpBonus": 50
+    }
+  ],
+
+  "hints": [
+    {
+      "level": 1,
+      "text": "Ask Claude Code to explore the codebase - it will use subagents for thorough analysis.",
+      "xpCost": 15
+    },
+    {
+      "level": 2,
+      "text": "Try: 'Explore how error handling works in this project and document it'",
+      "xpCost": 45
+    },
+    {
+      "level": 3,
+      "text": "Ask: 'Use your exploration capabilities to understand the error handling architecture in this project. Create exploration-report.md documenting the error classes, middleware, and how errors flow through the app.'",
+      "xpCost": 85
+    }
+  ],
+
+  "solution": {
+    "approach": "Ask Claude Code to explore a specific aspect of the codebase.",
+    "example": "Explore how error handling works in this codebase and create a report",
+    "alternativeApproaches": [
+      "Help me understand the error handling pattern used here",
+      "Research how errors are managed in this project"
+    ]
+  },
+
+  "learningPoints": [
+    "Claude Code uses the Explore subagent for codebase research",
+    "Exploration requests analyze relationships between files",
+    "Asking for specific topics gets focused results"
+  ],
+
+  "nextChallenge": "06-002"
+}

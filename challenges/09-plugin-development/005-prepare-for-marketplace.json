@@ -1,0 +1,133 @@
+{
+  "id": "09-005",
+  "module": "plugin-development",
+  "title": "Prepare for Marketplace",
+  "description": "Learn to prepare your plugin for the Claude Code marketplace. Publishing shares your tools with the community.",
+  "difficulty": "advanced",
+  "xpReward": 400,
+  "estimatedMinutes": 20,
+  "skills": ["plugin-publishing", "marketplace-requirements"],
+
+  "setup": {
+    "workingDir": "~/dojo-workspace/challenge-09-005",
+    "initialFiles": [
+      {
+        "path": "README.md",
+        "content": "# Challenge: Prepare for Marketplace\n\nPrepare your plugin for publishing to a Claude Code marketplace.\n\n## Objectives\n1. Ensure plugin.json has all required marketplace fields\n2. Add a comprehensive README.md for users\n3. Add a LICENSE file\n4. Create a CHANGELOG.md\n5. Verify the plugin structure is complete\n"
+      },
+      {
+        "path": "plugin.json",
+        "content": "{\n  \"name\": \"awesome-toolbox\",\n  \"version\": \"0.1.0\",\n  \"description\": \"A collection of awesome tools\"\n}\n"
+      },
+      {
+        "path": "skills/hello/SKILL.md",
+        "content": "---\nname: hello\ndescription: A friendly greeting skill\nuser-invocable: true\n---\n\nGreet the user warmly and offer to help them with their coding tasks.\n"
+      }
+    ],
+    "cleanBefore": true
+  },
+
+  "objectives": [
+    {
+      "id": "obj-1",
+      "description": "plugin.json has author with name",
+      "type": "file_contains",
+      "target": "plugin.json",
+      "pattern": "\"author\".*\"name\"",
+      "required": true
+    },
+    {
+      "id": "obj-2",
+      "description": "plugin.json has repository or homepage",
+      "type": "file_contains",
+      "target": "plugin.json",
+      "pattern": "\"repository\"|\"homepage\"",
+      "required": true
+    },
+    {
+      "id": "obj-3",
+      "description": "README.md documents the plugin",
+      "type": "file_contains",
+      "target": "README.md",
+      "pattern": "##.*Install|##.*Usage|##.*Features|how to|getting started",
+      "required": true
+    },
+    {
+      "id": "obj-4",
+      "description": "LICENSE file exists",
+      "type": "file_exists",
+      "target": "LICENSE",
+      "required": true
+    },
+    {
+      "id": "obj-5",
+      "description": "CHANGELOG.md exists",
+      "type": "file_exists",
+      "target": "CHANGELOG.md",
+      "required": true
+    }
+  ],
+
+  "bonusObjectives": [
+    {
+      "id": "bonus-1",
+      "description": "README has badges or screenshots",
+      "type": "file_contains",
+      "target": "README.md",
+      "pattern": "!\\[|badge|shield|img\\.shields",
+      "xpBonus": 50
+    },
+    {
+      "id": "bonus-2",
+      "description": "plugin.json has keywords for discoverability",
+      "type": "file_contains",
+      "target": "plugin.json",
+      "pattern": "\"keywords\"",
+      "xpBonus": 50
+    },
+    {
+      "id": "bonus-3",
+      "description": "CHANGELOG follows Keep a Changelog format",
+      "type": "file_contains",
+      "target": "CHANGELOG.md",
+      "pattern": "\\[Unreleased\\]|\\[0\\.|Added|Changed|Fixed",
+      "xpBonus": 50
+    }
+  ],
+
+  "hints": [
+    {
+      "level": 1,
+      "text": "Marketplace plugins need complete metadata, documentation, and licensing.",
+      "xpCost": 25
+    },
+    {
+      "level": 2,
+      "text": "Try: 'Prepare this plugin for marketplace: add author info, repository URL, comprehensive README, LICENSE, and CHANGELOG'",
+      "xpCost": 80
+    },
+    {
+      "level": 3,
+      "text": "Ask: 'Make this plugin marketplace-ready: 1) Update plugin.json with author object, repository URL, and keywords 2) Rewrite README.md with Installation, Usage, Features, and Contributing sections 3) Add MIT LICENSE file 4) Create CHANGELOG.md following Keep a Changelog format'",
+      "xpCost": 150
+    }
+  ],
+
+  "solution": {
+    "approach": "Complete all marketplace requirements: metadata, documentation, licensing, and changelog.",
+    "example": "Prepare the plugin for marketplace with full metadata, README, LICENSE, and CHANGELOG",
+    "alternativeApproaches": [
+      "Make the plugin ready for publishing",
+      "Add all the files needed to share this plugin publicly"
+    ]
+  },
+
+  "learningPoints": [
+    "Marketplace plugins need complete plugin.json metadata",
+    "Good documentation helps users understand and adopt your plugin",
+    "Licensing clarifies how others can use your code",
+    "Changelogs communicate updates to users"
+  ],
+
+  "nextChallenge": null
+}

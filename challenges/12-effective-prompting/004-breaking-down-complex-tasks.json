@@ -1,0 +1,111 @@
+{
+  "id": "12-004",
+  "module": "effective-prompting",
+  "title": "Breaking Down Complex Tasks",
+  "description": "Learn to break down complex requests into smaller, manageable steps.",
+  "difficulty": "intermediate",
+  "xpReward": 225,
+  "estimatedMinutes": 15,
+  "skills": ["task-decomposition", "planning"],
+
+  "setup": {
+    "workingDir": "~/dojo-workspace/challenge-12-004",
+    "initialFiles": [
+      {
+        "path": "README.md",
+        "content": "# Challenge: Breaking Down Complex Tasks\n\nLearn to decompose complex tasks into smaller steps.\n\n## Complex Task\nBuild a complete authentication system with:\n- User registration\n- Login/logout\n- Password hashing\n- Session management\n- Input validation\n\n## Objectives\n1. First, create a plan (plan.md)\n2. Then implement step by step\n3. Each step should be a focused request\n"
+      },
+      {
+        "path": "package.json",
+        "content": "{\n  \"name\": \"auth-system\",\n  \"type\": \"module\"\n}\n"
+      }
+    ],
+    "cleanBefore": true
+  },
+
+  "objectives": [
+    {
+      "id": "obj-1",
+      "description": "Create a plan breaking down the task",
+      "type": "file_exists",
+      "target": "plan.md",
+      "required": true
+    },
+    {
+      "id": "obj-2",
+      "description": "Plan has multiple steps",
+      "type": "file_contains",
+      "target": "plan.md",
+      "pattern": "Step [123]|1\\.|2\\.|3\\.|##.*[Ss]tep",
+      "required": true
+    },
+    {
+      "id": "obj-3",
+      "description": "Create user management module",
+      "type": "file_exists",
+      "target": "auth/userStore.js",
+      "required": true
+    },
+    {
+      "id": "obj-4",
+      "description": "Create password hashing utility",
+      "type": "file_contains",
+      "target": "auth/userStore.js",
+      "pattern": "hash|bcrypt|crypto|password",
+      "required": true
+    }
+  ],
+
+  "bonusObjectives": [
+    {
+      "id": "bonus-1",
+      "description": "Create session management",
+      "type": "file_exists",
+      "target": "auth/session.js",
+      "xpBonus": 50
+    },
+    {
+      "id": "bonus-2",
+      "description": "Create input validation",
+      "type": "file_contains",
+      "target": "auth/userStore.js",
+      "pattern": "valid|email|password.*length|regex",
+      "xpBonus": 50
+    }
+  ],
+
+  "hints": [
+    {
+      "level": 1,
+      "text": "Start by asking Claude to help you create a plan. Break the auth system into logical components.",
+      "xpCost": 15
+    },
+    {
+      "level": 2,
+      "text": "Try: 'Help me break down building an auth system into steps. Create plan.md with: 1) User store, 2) Password hashing, 3) Session management, 4) Registration, 5) Login'",
+      "xpCost": 45
+    },
+    {
+      "level": 3,
+      "text": "Step 1: 'Create plan.md breaking auth into steps'. Step 2: 'Create auth/userStore.js with register/login and password hashing'. Step 3: 'Add auth/session.js for token management'",
+      "xpCost": 90
+    }
+  ],
+
+  "solution": {
+    "approach": "Plan first, then implement each component separately.",
+    "example": "Break down the auth system and implement it step by step",
+    "alternativeApproaches": [
+      "Ask for a plan, then ask to implement each step",
+      "Implement each layer of the system separately"
+    ]
+  },
+
+  "learningPoints": [
+    "Complex tasks become manageable when broken into steps",
+    "Planning helps identify dependencies and order",
+    "Smaller requests are easier to review and refine"
+  ],
+
+  "nextChallenge": "13-001"
+}

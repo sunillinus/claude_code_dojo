@@ -1,0 +1,118 @@
+{
+  "id": "12-002",
+  "module": "effective-prompting",
+  "title": "Iterative Refinement",
+  "description": "Learn to refine your requests through multiple iterations to get exactly what you need.",
+  "difficulty": "intermediate",
+  "xpReward": 175,
+  "estimatedMinutes": 10,
+  "skills": ["iteration", "feedback-loop"],
+
+  "setup": {
+    "workingDir": "~/dojo-workspace/challenge-12-002",
+    "initialFiles": [
+      {
+        "path": "README.md",
+        "content": "# Challenge: Iterative Refinement\n\nPractice refining requests through multiple iterations.\n\n## Objectives\n1. Start with a basic button component\n2. Iteratively add features through follow-up requests\n3. Track each iteration in changelog.md\n\n## Target Features\n- Multiple variants (primary, secondary, danger)\n- Different sizes (sm, md, lg)\n- Loading state with spinner\n- Disabled state\n"
+      },
+      {
+        "path": "Button.jsx",
+        "content": "// Start with: \"Create a basic React button component\"\n// Then iterate: \"Add variant prop\", \"Add size prop\", etc.\n\nexport function Button({ children }) {\n  return <button>{children}</button>;\n}\n"
+      },
+      {
+        "path": "changelog.md",
+        "content": "# Button Component Changelog\n\nTrack each iteration here:\n\n## Iteration 1\n- Request: \"...\"\n- Changes: ...\n\n## Iteration 2\n- Request: \"...\"\n- Changes: ...\n"
+      }
+    ],
+    "cleanBefore": true
+  },
+
+  "objectives": [
+    {
+      "id": "obj-1",
+      "description": "Add variant prop to Button",
+      "type": "file_contains",
+      "target": "Button.jsx",
+      "pattern": "variant|primary|secondary|danger",
+      "required": true
+    },
+    {
+      "id": "obj-2",
+      "description": "Add size prop to Button",
+      "type": "file_contains",
+      "target": "Button.jsx",
+      "pattern": "size|sm|md|lg|small|medium|large",
+      "required": true
+    },
+    {
+      "id": "obj-3",
+      "description": "Add loading state",
+      "type": "file_contains",
+      "target": "Button.jsx",
+      "pattern": "loading|isLoading|spinner|Loading",
+      "required": true
+    },
+    {
+      "id": "obj-4",
+      "description": "Document iterations in changelog",
+      "type": "file_contains",
+      "target": "changelog.md",
+      "pattern": "Iteration.*[23]|variant|size|loading",
+      "required": true
+    }
+  ],
+
+  "bonusObjectives": [
+    {
+      "id": "bonus-1",
+      "description": "Add disabled state",
+      "type": "file_contains",
+      "target": "Button.jsx",
+      "pattern": "disabled|isDisabled",
+      "xpBonus": 35
+    },
+    {
+      "id": "bonus-2",
+      "description": "Add TypeScript types or PropTypes",
+      "type": "file_contains",
+      "target": "Button.jsx",
+      "pattern": "PropTypes|interface|type.*Props|: React\\.FC",
+      "xpBonus": 40
+    }
+  ],
+
+  "hints": [
+    {
+      "level": 1,
+      "text": "Start simple, then add one feature at a time. Each request builds on the previous result.",
+      "xpCost": 10
+    },
+    {
+      "level": 2,
+      "text": "Try: 'Add variant prop with primary/secondary/danger' then 'Add size prop' then 'Add loading state'",
+      "xpCost": 35
+    },
+    {
+      "level": 3,
+      "text": "Iterate: 1) 'Add variant prop (primary, secondary, danger) with different colors' 2) 'Add size prop (sm, md, lg)' 3) 'Add loading prop that shows a spinner and disables the button'",
+      "xpCost": 70
+    }
+  ],
+
+  "solution": {
+    "approach": "Build up the component through multiple requests, each adding one feature.",
+    "example": "Iteratively add features to the Button component",
+    "alternativeApproaches": [
+      "Ask for all features at once with detailed specs",
+      "Add features one by one with feedback between"
+    ]
+  },
+
+  "learningPoints": [
+    "Complex features are easier to build iteratively",
+    "Each iteration lets you validate before continuing",
+    "Iterative refinement gives you more control over the result"
+  ],
+
+  "nextChallenge": "12-003"
+}

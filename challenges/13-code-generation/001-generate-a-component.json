@@ -1,0 +1,117 @@
+{
+  "id": "13-001",
+  "module": "code-generation",
+  "title": "Generate a Component",
+  "description": "Learn to generate complete UI components from descriptions. Claude can scaffold components quickly.",
+  "difficulty": "beginner",
+  "xpReward": 150,
+  "estimatedMinutes": 8,
+  "skills": ["component-generation", "scaffolding"],
+
+  "setup": {
+    "workingDir": "~/dojo-workspace/challenge-13-001",
+    "initialFiles": [
+      {
+        "path": "README.md",
+        "content": "# Challenge: Generate a Component\n\nGenerate a complete React component from a description.\n\n## Objectives\n1. Generate a UserCard component\n2. It should display: avatar, name, email, role badge\n3. Include basic styling\n"
+      },
+      {
+        "path": "package.json",
+        "content": "{\n  \"name\": \"component-gen\",\n  \"dependencies\": {\n    \"react\": \"^18.0.0\"\n  }\n}\n"
+      },
+      {
+        "path": "styles.css",
+        "content": "/* Component styles will go here */\n"
+      }
+    ],
+    "cleanBefore": true
+  },
+
+  "objectives": [
+    {
+      "id": "obj-1",
+      "description": "Create UserCard component",
+      "type": "file_exists",
+      "target": "UserCard.jsx",
+      "required": true
+    },
+    {
+      "id": "obj-2",
+      "description": "Component has avatar prop",
+      "type": "file_contains",
+      "target": "UserCard.jsx",
+      "pattern": "avatar|Avatar|img.*src",
+      "required": true
+    },
+    {
+      "id": "obj-3",
+      "description": "Component displays name and email",
+      "type": "file_contains",
+      "target": "UserCard.jsx",
+      "pattern": "name.*email|email.*name|\\{.*name.*\\}.*\\{.*email.*\\}",
+      "required": true
+    },
+    {
+      "id": "obj-4",
+      "description": "Component has role badge",
+      "type": "file_contains",
+      "target": "UserCard.jsx",
+      "pattern": "role|badge|Badge|admin|user",
+      "required": true
+    }
+  ],
+
+  "bonusObjectives": [
+    {
+      "id": "bonus-1",
+      "description": "Add CSS styles for the card",
+      "type": "file_contains",
+      "target": "styles.css",
+      "pattern": "\\.card|user-card|UserCard",
+      "xpBonus": 30
+    },
+    {
+      "id": "bonus-2",
+      "description": "Add PropTypes or TypeScript types",
+      "type": "file_contains",
+      "target": "UserCard.jsx",
+      "pattern": "PropTypes|interface|type.*Props",
+      "xpBonus": 30
+    }
+  ],
+
+  "hints": [
+    {
+      "level": 1,
+      "text": "Describe the component in detail: what props it takes, what it displays, and its structure.",
+      "xpCost": 10
+    },
+    {
+      "level": 2,
+      "text": "Try: 'Create a UserCard component that takes avatar, name, email, and role props. Display as a card with the avatar image, name, email, and a colored role badge.'",
+      "xpCost": 30
+    },
+    {
+      "level": 3,
+      "text": "Ask: 'Create UserCard.jsx: a React component with props (avatar: string, name: string, email: string, role: 'admin'|'user'). Show avatar image, name as heading, email below, and role as a colored badge. Add CSS to styles.css.'",
+      "xpCost": 60
+    }
+  ],
+
+  "solution": {
+    "approach": "Describe the component structure and props in detail.",
+    "example": "Generate a UserCard component with avatar, name, email, and role badge",
+    "alternativeApproaches": [
+      "Start with a basic card, then add features",
+      "Generate with inline styles vs separate CSS"
+    ]
+  },
+
+  "learningPoints": [
+    "Detailed descriptions produce better components",
+    "Specify props, structure, and styling needs",
+    "Claude can generate complete, working components"
+  ],
+
+  "nextChallenge": "13-002"
+}

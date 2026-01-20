@@ -1,0 +1,101 @@
+{
+  "id": "16-001",
+  "module": "agentic-loops",
+  "title": "Understanding Ralph Loop",
+  "description": "Learn about Ralph Loop - Claude Code's agentic loop feature for autonomous, iterative work.",
+  "difficulty": "intermediate",
+  "xpReward": 200,
+  "estimatedMinutes": 10,
+  "skills": ["agentic-loops", "autonomous-work"],
+
+  "setup": {
+    "workingDir": "~/dojo-workspace/challenge-16-001",
+    "initialFiles": [
+      {
+        "path": "README.md",
+        "content": "# Challenge: Understanding Ralph Loop\n\nLearn about Ralph Loop and when to use it.\n\n## What is Ralph Loop?\nRalph Loop is an agentic loop feature that allows Claude Code to work autonomously on iterative tasks, continuously working until the task is complete or you stop it.\n\n## Objectives\n1. Learn what Ralph Loop is and when to use it\n2. Understand the difference between regular prompts and agentic loops\n3. Create documentation explaining Ralph Loop\n"
+      }
+    ],
+    "cleanBefore": true
+  },
+
+  "objectives": [
+    {
+      "id": "obj-1",
+      "description": "Create Ralph Loop documentation",
+      "type": "file_exists",
+      "target": "ralph-loop-guide.md",
+      "required": true
+    },
+    {
+      "id": "obj-2",
+      "description": "Document explains agentic loops",
+      "type": "file_contains",
+      "target": "ralph-loop-guide.md",
+      "pattern": "[Aa]gentic|[Ll]oop|[Aa]utonomous|[Ii]terative",
+      "required": true
+    },
+    {
+      "id": "obj-3",
+      "description": "Document includes use cases",
+      "type": "file_contains",
+      "target": "ralph-loop-guide.md",
+      "pattern": "[Ww]hen|[Uu]se case|[Ee]xample|[Ss]cenario|[Pp]erfect for",
+      "required": true
+    },
+    {
+      "id": "obj-4",
+      "description": "Document mentions completion promises",
+      "type": "file_contains",
+      "target": "ralph-loop-guide.md",
+      "pattern": "[Cc]ompletion|[Pp]romise|[Ss]top|[Ff]inish|[Gg]oal",
+      "required": true
+    }
+  ],
+
+  "bonusObjectives": [
+    {
+      "id": "bonus-1",
+      "description": "Include pros and cons",
+      "type": "file_contains",
+      "target": "ralph-loop-guide.md",
+      "pattern": "[Pp]ros|[Cc]ons|[Aa]dvantage|[Dd]isadvantage|[Bb]enefit|[Rr]isk",
+      "xpBonus": 40
+    }
+  ],
+
+  "hints": [
+    {
+      "level": 1,
+      "text": "Research Ralph Loop - it's a Claude Code feature for autonomous, iterative work with completion promises.",
+      "xpCost": 15
+    },
+    {
+      "level": 2,
+      "text": "Try: 'Help me understand Ralph Loop - when to use it, how it works, and create a guide explaining it'",
+      "xpCost": 40
+    },
+    {
+      "level": 3,
+      "text": "Ask: 'Create ralph-loop-guide.md explaining: 1) What Ralph Loop is (agentic loop for autonomous work), 2) When to use it (large refactors, iterative improvements), 3) How completion promises work, 4) Best practices and when NOT to use it.'",
+      "xpCost": 80
+    }
+  ],
+
+  "solution": {
+    "approach": "Learn about Ralph Loop and document its concepts and use cases.",
+    "example": "Create comprehensive documentation about Ralph Loop",
+    "alternativeApproaches": [
+      "Ask Claude to explain Ralph Loop",
+      "Research and document the agentic loop pattern"
+    ]
+  },
+
+  "learningPoints": [
+    "Ralph Loop enables autonomous, iterative work",
+    "Completion promises define when the loop should stop",
+    "Best for large, iterative tasks that need continuous work"
+  ],
+
+  "nextChallenge": "16-002"
+}

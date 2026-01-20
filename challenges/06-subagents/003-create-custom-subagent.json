@@ -1,0 +1,108 @@
+{
+  "id": "06-003",
+  "module": "subagents",
+  "title": "Create Custom Subagent",
+  "description": "Learn to create a custom subagent for your Claude Code plugin. Custom agents extend Claude Code's capabilities.",
+  "difficulty": "advanced",
+  "xpReward": 350,
+  "estimatedMinutes": 15,
+  "skills": ["agent-creation", "plugin-development"],
+
+  "setup": {
+    "workingDir": "~/dojo-workspace/challenge-06-003",
+    "initialFiles": [
+      {
+        "path": "README.md",
+        "content": "# Challenge: Create Custom Subagent\n\nCreate a custom subagent that reviews code for security issues.\n\n## Objectives\n1. Create an agents folder with a security-reviewer agent\n2. Define the agent's system prompt and tools\n3. Test it works by asking it to review sample code\n"
+      },
+      {
+        "path": "plugin.json",
+        "content": "{\n  \"name\": \"security-plugin\",\n  \"version\": \"1.0.0\",\n  \"description\": \"Security review tools\"\n}\n"
+      },
+      {
+        "path": "sample-code/auth.js",
+        "content": "// Sample code with security issues\nconst express = require('express');\nconst router = express.Router();\n\nrouter.post('/login', (req, res) => {\n  const { username, password } = req.body;\n  \n  // Direct SQL query - SQL injection vulnerability!\n  const query = `SELECT * FROM users WHERE username='${username}' AND password='${password}'`;\n  \n  // Hardcoded secret\n  const SECRET = 'super-secret-key-12345';\n  \n  // Logging sensitive data\n  console.log('Login attempt:', { username, password });\n  \n  res.json({ token: 'generated-token' });\n});\n\nmodule.exports = router;\n"
+      }
+    ],
+    "cleanBefore": true
+  },
+
+  "objectives": [
+    {
+      "id": "obj-1",
+      "description": "Create agents folder",
+      "type": "file_exists",
+      "target": "agents/security-reviewer.md",
+      "required": true
+    },
+    {
+      "id": "obj-2",
+      "description": "Agent has description in frontmatter",
+      "type": "file_contains",
+      "target": "agents/security-reviewer.md",
+      "pattern": "description:",
+      "required": true
+    },
+    {
+      "id": "obj-3",
+      "description": "Agent prompt mentions security review",
+      "type": "file_contains",
+      "target": "agents/security-reviewer.md",
+      "pattern": "[Ss]ecurity|[Vv]ulnerabilit|[Rr]eview|OWASP",
+      "required": true
+    }
+  ],
+
+  "bonusObjectives": [
+    {
+      "id": "bonus-1",
+      "description": "Define allowed-tools for the agent",
+      "type": "file_contains",
+      "target": "agents/security-reviewer.md",
+      "pattern": "allowed-tools:|tools:",
+      "xpBonus": 50
+    },
+    {
+      "id": "bonus-2",
+      "description": "Create a security review report for sample code",
+      "type": "file_exists",
+      "target": "security-report.md",
+      "xpBonus": 75
+    }
+  ],
+
+  "hints": [
+    {
+      "level": 1,
+      "text": "Custom agents are markdown files in an 'agents' folder with frontmatter and a system prompt.",
+      "xpCost": 25
+    },
+    {
+      "level": 2,
+      "text": "Try: 'Create a custom agent called security-reviewer that analyzes code for security vulnerabilities'",
+      "xpCost": 70
+    },
+    {
+      "level": 3,
+      "text": "Ask: 'Create agents/security-reviewer.md with frontmatter (description, allowed-tools: Read, Grep, Glob) and a system prompt that instructs the agent to review code for security issues like SQL injection, hardcoded secrets, and sensitive data logging'",
+      "xpCost": 125
+    }
+  ],
+
+  "solution": {
+    "approach": "Create an agent definition file with appropriate frontmatter and system prompt.",
+    "example": "Create a security review agent in the agents folder with proper configuration",
+    "alternativeApproaches": [
+      "Build a custom agent for security analysis",
+      "Add a security-reviewer subagent to this plugin"
+    ]
+  },
+
+  "learningPoints": [
+    "Custom agents are markdown files with YAML frontmatter",
+    "The system prompt defines the agent's behavior",
+    "allowed-tools restricts what the agent can do"
+  ],
+
+  "nextChallenge": "06-004"
+}

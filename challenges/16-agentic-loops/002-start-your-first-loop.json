@@ -1,0 +1,113 @@
+{
+  "id": "16-002",
+  "module": "agentic-loops",
+  "title": "Start Your First Loop",
+  "description": "Start your first Ralph Loop and watch it work autonomously on an iterative task.",
+  "difficulty": "intermediate",
+  "xpReward": 225,
+  "estimatedMinutes": 15,
+  "skills": ["loop-initiation", "task-definition"],
+
+  "setup": {
+    "workingDir": "~/dojo-workspace/challenge-16-002",
+    "initialFiles": [
+      {
+        "path": "README.md",
+        "content": "# Challenge: Start Your First Loop\n\nStart a Ralph Loop to clean up this legacy codebase.\n\n## Objectives\n1. Start a Ralph Loop with /ralph-loop\n2. Define a clear task: \"Clean up all files in src/\"\n3. Let it work autonomously\n4. Document what it accomplished\n"
+      },
+      {
+        "path": "src/utils.js",
+        "content": "// TODO: clean up this file\nvar x = function(a, b) {\n  var result = a + b;\n  return result;\n}\n\nvar y = function(s) {\n  var upper = s.toUpperCase();\n  return upper;\n}\n\nvar z = function(arr) {\n  var filtered = [];\n  for (var i = 0; i < arr.length; i++) {\n    if (arr[i] > 0) {\n      filtered.push(arr[i]);\n    }\n  }\n  return filtered;\n}\n\nmodule.exports = { x, y, z };\n"
+      },
+      {
+        "path": "src/api.js",
+        "content": "// TODO: modernize this code\nvar fetch = require('node-fetch');\n\nvar getData = function(url) {\n  return fetch(url)\n    .then(function(response) {\n      return response.json();\n    })\n    .then(function(data) {\n      return data;\n    });\n}\n\nvar postData = function(url, body) {\n  return fetch(url, {\n    method: 'POST',\n    body: JSON.stringify(body)\n  }).then(function(response) {\n    return response.json();\n  });\n}\n\nmodule.exports = { getData, postData };\n"
+      },
+      {
+        "path": "src/constants.js",
+        "content": "// TODO: use const and better names\nvar URL = 'https://api.example.com';\nvar TIMEOUT = 5000;\nvar MAX = 100;\nvar MIN = 0;\n\nmodule.exports = { URL, TIMEOUT, MAX, MIN };\n"
+      }
+    ],
+    "cleanBefore": true
+  },
+
+  "objectives": [
+    {
+      "id": "obj-1",
+      "description": "Modernize utils.js",
+      "type": "file_contains",
+      "target": "src/utils.js",
+      "pattern": "const|let|=>|filter|map",
+      "required": true
+    },
+    {
+      "id": "obj-2",
+      "description": "Modernize api.js",
+      "type": "file_contains",
+      "target": "src/api.js",
+      "pattern": "async|await|const",
+      "required": true
+    },
+    {
+      "id": "obj-3",
+      "description": "Improve constants.js",
+      "type": "file_contains",
+      "target": "src/constants.js",
+      "pattern": "const|API_URL|BASE_URL|REQUEST_TIMEOUT",
+      "required": true
+    },
+    {
+      "id": "obj-4",
+      "description": "Document what changed",
+      "type": "file_exists",
+      "target": "cleanup-summary.md",
+      "required": true
+    }
+  ],
+
+  "bonusObjectives": [
+    {
+      "id": "bonus-1",
+      "description": "Use descriptive function names",
+      "type": "file_contains",
+      "target": "src/utils.js",
+      "pattern": "add|sum|uppercase|toUpperCase|filterPositive|positiveNumbers",
+      "xpBonus": 50
+    }
+  ],
+
+  "hints": [
+    {
+      "level": 1,
+      "text": "Use /ralph-loop to start an agentic loop. Give it a clear task like 'modernize all code in src/'.",
+      "xpCost": 15
+    },
+    {
+      "level": 2,
+      "text": "Try: '/ralph-loop Modernize all JavaScript files in src/: convert var to const/let, use arrow functions, use async/await, improve variable names'",
+      "xpCost": 45
+    },
+    {
+      "level": 3,
+      "text": "Start with: '/ralph-loop Clean up the entire src/ folder: 1) Convert all var to const/let, 2) Convert functions to arrow functions, 3) Use async/await instead of .then(), 4) Rename single-letter variables to descriptive names, 5) Create cleanup-summary.md documenting changes'",
+      "xpCost": 90
+    }
+  ],
+
+  "solution": {
+    "approach": "Start a Ralph Loop with a clear, comprehensive task definition.",
+    "example": "Use /ralph-loop to modernize the legacy codebase",
+    "alternativeApproaches": [
+      "Define the task file by file",
+      "Give general guidelines and let Ralph decide specifics"
+    ]
+  },
+
+  "learningPoints": [
+    "Clear task definitions help Ralph Loop succeed",
+    "Ralph Loop works through files iteratively",
+    "Document results to track what changed"
+  ],
+
+  "nextChallenge": "16-003"
+}

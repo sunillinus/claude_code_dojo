@@ -1,0 +1,105 @@
+{
+  "id": "13-002",
+  "module": "code-generation",
+  "title": "Scaffold Project Structure",
+  "description": "Generate an entire project structure with multiple files and folders.",
+  "difficulty": "intermediate",
+  "xpReward": 200,
+  "estimatedMinutes": 12,
+  "skills": ["project-scaffolding", "architecture"],
+
+  "setup": {
+    "workingDir": "~/dojo-workspace/challenge-13-002",
+    "initialFiles": [
+      {
+        "path": "README.md",
+        "content": "# Challenge: Scaffold Project Structure\n\nGenerate a complete Express.js API project structure.\n\n## Requirements\n- RESTful API structure\n- Routes, controllers, models separation\n- Middleware folder\n- Config folder\n- Basic error handling\n"
+      }
+    ],
+    "cleanBefore": true
+  },
+
+  "objectives": [
+    {
+      "id": "obj-1",
+      "description": "Create routes folder with index",
+      "type": "file_exists",
+      "target": "src/routes/index.js",
+      "required": true
+    },
+    {
+      "id": "obj-2",
+      "description": "Create controllers folder",
+      "type": "file_exists",
+      "target": "src/controllers/userController.js",
+      "required": true
+    },
+    {
+      "id": "obj-3",
+      "description": "Create middleware folder",
+      "type": "file_exists",
+      "target": "src/middleware/errorHandler.js",
+      "required": true
+    },
+    {
+      "id": "obj-4",
+      "description": "Create main app file",
+      "type": "file_contains",
+      "target": "src/app.js",
+      "pattern": "express|app\\.|router|routes",
+      "required": true
+    }
+  ],
+
+  "bonusObjectives": [
+    {
+      "id": "bonus-1",
+      "description": "Add config folder",
+      "type": "file_exists",
+      "target": "src/config/index.js",
+      "xpBonus": 40
+    },
+    {
+      "id": "bonus-2",
+      "description": "Add models folder",
+      "type": "file_exists",
+      "target": "src/models/User.js",
+      "xpBonus": 40
+    }
+  ],
+
+  "hints": [
+    {
+      "level": 1,
+      "text": "Ask Claude to scaffold the entire structure. Mention all the folders and files you need.",
+      "xpCost": 15
+    },
+    {
+      "level": 2,
+      "text": "Try: 'Scaffold an Express API with src/routes, src/controllers, src/middleware, src/models, and src/config folders'",
+      "xpCost": 40
+    },
+    {
+      "level": 3,
+      "text": "Ask: 'Create a complete Express.js API structure: src/app.js (main), src/routes/index.js (router setup), src/controllers/userController.js, src/middleware/errorHandler.js, src/models/User.js, src/config/index.js. Include basic boilerplate in each.'",
+      "xpCost": 80
+    }
+  ],
+
+  "solution": {
+    "approach": "Request the complete structure with all folders and files specified.",
+    "example": "Scaffold a complete Express.js API project structure",
+    "alternativeApproaches": [
+      "Generate folder by folder",
+      "Start with structure, then add content"
+    ]
+  },
+
+  "learningPoints": [
+    "Claude can generate entire project structures",
+    "Specify architecture patterns (MVC, etc.)",
+    "Request boilerplate content in each file"
+  ],
+
+  "nextChallenge": "13-003"
+}

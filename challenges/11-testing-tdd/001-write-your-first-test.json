@@ -1,0 +1,117 @@
+{
+  "id": "11-001",
+  "module": "testing-tdd",
+  "title": "Write Your First Test",
+  "description": "Learn to write a simple test using Node.js built-in test runner. Testing is essential for reliable code.",
+  "difficulty": "beginner",
+  "xpReward": 150,
+  "estimatedMinutes": 8,
+  "skills": ["testing", "assertions"],
+
+  "setup": {
+    "workingDir": "~/dojo-workspace/challenge-11-001",
+    "initialFiles": [
+      {
+        "path": "README.md",
+        "content": "# Challenge: Write Your First Test\n\nWrite tests for a simple math utility module.\n\n## Objectives\n1. Create a test file for mathUtils.js\n2. Write tests for the add and multiply functions\n3. Run the tests and make sure they pass\n"
+      },
+      {
+        "path": "package.json",
+        "content": "{\n  \"name\": \"testing-challenge\",\n  \"scripts\": {\n    \"test\": \"node --test\"\n  }\n}\n"
+      },
+      {
+        "path": "mathUtils.js",
+        "content": "function add(a, b) {\n  return a + b;\n}\n\nfunction multiply(a, b) {\n  return a * b;\n}\n\nfunction divide(a, b) {\n  if (b === 0) throw new Error('Cannot divide by zero');\n  return a / b;\n}\n\nmodule.exports = { add, multiply, divide };\n"
+      }
+    ],
+    "cleanBefore": true
+  },
+
+  "objectives": [
+    {
+      "id": "obj-1",
+      "description": "Create a test file",
+      "type": "file_exists",
+      "target": "mathUtils.test.js",
+      "required": true
+    },
+    {
+      "id": "obj-2",
+      "description": "Import the test module",
+      "type": "file_contains",
+      "target": "mathUtils.test.js",
+      "pattern": "require\\(['\"]node:test['\"]\\)|from ['\"]node:test['\"]",
+      "required": true
+    },
+    {
+      "id": "obj-3",
+      "description": "Write a test for add function",
+      "type": "file_contains",
+      "target": "mathUtils.test.js",
+      "pattern": "test.*add|describe.*add",
+      "required": true
+    },
+    {
+      "id": "obj-4",
+      "description": "Use assertions",
+      "type": "file_contains",
+      "target": "mathUtils.test.js",
+      "pattern": "assert|expect",
+      "required": true
+    }
+  ],
+
+  "bonusObjectives": [
+    {
+      "id": "bonus-1",
+      "description": "Test the multiply function",
+      "type": "file_contains",
+      "target": "mathUtils.test.js",
+      "pattern": "multiply",
+      "xpBonus": 25
+    },
+    {
+      "id": "bonus-2",
+      "description": "Test the divide function including error case",
+      "type": "file_contains",
+      "target": "mathUtils.test.js",
+      "pattern": "divide.*zero|throws|Error",
+      "xpBonus": 50
+    }
+  ],
+
+  "hints": [
+    {
+      "level": 1,
+      "text": "Node.js has a built-in test runner. Use require('node:test') to import it.",
+      "xpCost": 10
+    },
+    {
+      "level": 2,
+      "text": "Try: 'Write tests for mathUtils.js using Node's built-in test runner'",
+      "xpCost": 30
+    },
+    {
+      "level": 3,
+      "text": "Ask: 'Create mathUtils.test.js with tests for add, multiply, and divide functions using node:test and node:assert'",
+      "xpCost": 60
+    }
+  ],
+
+  "solution": {
+    "approach": "Create a test file that imports node:test and node:assert, then write test cases.",
+    "example": "Write tests for the math utility functions in mathUtils.js",
+    "alternativeApproaches": [
+      "Create unit tests for mathUtils.js",
+      "Add test coverage for the math functions"
+    ]
+  },
+
+  "learningPoints": [
+    "Node.js has a built-in test runner (node:test)",
+    "Tests use assertions to verify expected behavior",
+    "Test files conventionally end in .test.js"
+  ],
+
+  "nextChallenge": "11-002"
+}

@@ -1,0 +1,90 @@
+{
+  "id": "01-003",
+  "module": "fundamentals",
+  "title": "Edit an Existing File",
+  "description": "Learn to modify existing files precisely. Claude Code can make surgical edits without disturbing the rest of your code.",
+  "difficulty": "beginner",
+  "xpReward": 100,
+  "estimatedMinutes": 5,
+  "skills": ["file-editing"],
+
+  "setup": {
+    "workingDir": "~/dojo-workspace/challenge-01-003",
+    "initialFiles": [
+      {
+        "path": "README.md",
+        "content": "# Challenge: Edit an Existing File\n\nYour task: Fix the bug in `calculator.js`\n\n## Objectives\n1. The `multiply` function has a bug - it adds instead of multiplies\n2. Fix the bug without changing anything else\n"
+      },
+      {
+        "path": "calculator.js",
+        "content": "// Simple calculator module\n\nfunction add(a, b) {\n  return a + b;\n}\n\nfunction subtract(a, b) {\n  return a - b;\n}\n\nfunction multiply(a, b) {\n  return a + b; // BUG: should multiply!\n}\n\nfunction divide(a, b) {\n  if (b === 0) throw new Error('Cannot divide by zero');\n  return a / b;\n}\n\nmodule.exports = { add, subtract, multiply, divide };\n"
+      }
+    ],
+    "cleanBefore": true
+  },
+
+  "objectives": [
+    {
+      "id": "obj-1",
+      "description": "The multiply function should use the * operator",
+      "type": "file_contains",
+      "target": "calculator.js",
+      "pattern": "function multiply[^}]+\\*",
+      "required": true
+    },
+    {
+      "id": "obj-2",
+      "description": "The add function should still use + operator (not broken)",
+      "type": "file_contains",
+      "target": "calculator.js",
+      "pattern": "function add\\(a, b\\)[^}]+return a \\+ b",
+      "required": true
+    }
+  ],
+
+  "bonusObjectives": [
+    {
+      "id": "bonus-1",
+      "description": "Remove or update the bug comment",
+      "type": "file_not_contains",
+      "target": "calculator.js",
+      "pattern": "BUG:",
+      "xpBonus": 25
+    }
+  ],
+
+  "hints": [
+    {
+      "level": 1,
+      "text": "Ask Claude Code to fix the multiply function. Be specific about what's wrong.",
+      "xpCost": 10
+    },
+    {
+      "level": 2,
+      "text": "Say something like: 'In calculator.js, the multiply function uses + but should use *'",
+      "xpCost": 25
+    },
+    {
+      "level": 3,
+      "text": "Type: 'Fix the bug in calculator.js - change the multiply function to use * instead of +'",
+      "xpCost": 50
+    }
+  ],
+
+  "solution": {
+    "approach": "Describe the specific edit you want to make. Claude Code will make targeted changes.",
+    "example": "Fix the multiply function in calculator.js - it should multiply (use *) not add",
+    "alternativeApproaches": [
+      "There's a bug in calculator.js where multiply uses + instead of *. Fix it.",
+      "Edit calculator.js to fix the multiply function"
+    ]
+  },
+
+  "learningPoints": [
+    "Claude Code can make precise, surgical edits to existing code",
+    "Describing the change specifically helps ensure accuracy",
+    "Claude Code preserves the rest of the file when making edits"
+  ],
+
+  "nextChallenge": "01-004"
+}

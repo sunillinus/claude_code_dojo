@@ -1,0 +1,114 @@
+{
+  "id": "05-004",
+  "module": "debugging",
+  "title": "Fix Failing Tests",
+  "description": "Learn to run tests, interpret failures, and fix the underlying code. Test-driven debugging is efficient and thorough.",
+  "difficulty": "advanced",
+  "xpReward": 300,
+  "estimatedMinutes": 15,
+  "skills": ["test-debugging", "test-interpretation"],
+
+  "setup": {
+    "workingDir": "~/dojo-workspace/challenge-05-004",
+    "initialFiles": [
+      {
+        "path": "README.md",
+        "content": "# Challenge: Fix Failing Tests\n\nThe tests are failing! Fix the code to make them pass.\n\n## Objectives\n1. Run the tests to see failures\n2. Fix the code (not the tests!) to make them pass\n3. All 4 tests should pass\n"
+      },
+      {
+        "path": "package.json",
+        "content": "{\n  \"name\": \"test-challenge\",\n  \"scripts\": {\n    \"test\": \"node --test\"\n  }\n}\n"
+      },
+      {
+        "path": "stringUtils.js",
+        "content": "// String utility functions\n\nfunction capitalize(str) {\n  return str.toUpperCase();\n}\n\nfunction reverse(str) {\n  return str.split('').reverse();\n}\n\nfunction truncate(str, maxLength) {\n  if (str.length <= maxLength) {\n    return str;\n  }\n  return str.slice(0, maxLength);\n}\n\nfunction countWords(str) {\n  return str.split(' ').length;\n}\n\nmodule.exports = { capitalize, reverse, truncate, countWords };\n"
+      },
+      {
+        "path": "stringUtils.test.js",
+        "content": "const { test } = require('node:test');\nconst assert = require('node:assert');\nconst { capitalize, reverse, truncate, countWords } = require('./stringUtils');\n\ntest('capitalize should uppercase first letter only', () => {\n  assert.strictEqual(capitalize('hello'), 'Hello');\n  assert.strictEqual(capitalize('WORLD'), 'World');\n});\n\ntest('reverse should return reversed string', () => {\n  assert.strictEqual(reverse('hello'), 'olleh');\n  assert.strictEqual(reverse('abc'), 'cba');\n});\n\ntest('truncate should add ellipsis when truncating', () => {\n  assert.strictEqual(truncate('hello world', 5), 'hello...');\n  assert.strictEqual(truncate('hi', 10), 'hi');\n});\n\ntest('countWords should handle multiple spaces', () => {\n  assert.strictEqual(countWords('hello world'), 2);\n  assert.strictEqual(countWords('one  two   three'), 3);\n  assert.strictEqual(countWords(''), 0);\n});\n"
+      }
+    ],
+    "cleanBefore": true
+  },
+
+  "objectives": [
+    {
+      "id": "obj-1",
+      "description": "Fix capitalize to only uppercase first letter",
+      "type": "file_contains",
+      "target": "stringUtils.js",
+      "pattern": "charAt\\(0\\).*toUpperCase|\\[0\\].*toUpperCase|slice\\(1\\).*toLowerCase",
+      "required": true
+    },
+    {
+      "id": "obj-2",
+      "description": "Fix reverse to return string not array",
+      "type": "file_contains",
+      "target": "stringUtils.js",
+      "pattern": "\\.join\\(",
+      "required": true
+    },
+    {
+      "id": "obj-3",
+      "description": "Fix truncate to add ellipsis",
+      "type": "file_contains",
+      "target": "stringUtils.js",
+      "pattern": "\\.\\.\\.|ellipsis|\\+ '\\.\\.\\.'",
+      "required": true
+    },
+    {
+      "id": "obj-4",
+      "description": "Fix countWords to handle multiple spaces and empty strings",
+      "type": "file_contains",
+      "target": "stringUtils.js",
+      "pattern": "filter|trim|\\s+|split.*\\/",
+      "required": true
+    }
+  ],
+
+  "bonusObjectives": [
+    {
+      "id": "bonus-1",
+      "description": "All tests pass when run",
+      "type": "command_output_contains",
+      "command": "cd ~/dojo-workspace/challenge-05-004 && node --test 2>&1 | grep -E 'pass|ok' | head -1",
+      "pattern": "pass|ok",
+      "xpBonus": 75
+    }
+  ],
+
+  "hints": [
+    {
+      "level": 1,
+      "text": "Run the tests first to see what's failing and why.",
+      "xpCost": 20
+    },
+    {
+      "level": 2,
+      "text": "Try: 'Run the tests with npm test and fix the failing code in stringUtils.js'",
+      "xpCost": 60
+    },
+    {
+      "level": 3,
+      "text": "Ask: 'Run npm test to see failures. Fix stringUtils.js: capitalize should only uppercase first letter, reverse should return a string, truncate should add ellipsis, countWords should handle multiple spaces and empty strings.'",
+      "xpCost": 115
+    }
+  ],
+
+  "solution": {
+    "approach": "Run tests, interpret error messages, and fix the implementation.",
+    "example": "Run the tests and fix all the failing functions in stringUtils.js",
+    "alternativeApproaches": [
+      "Make all tests pass by fixing the code",
+      "Debug the test failures and fix the implementations"
+    ]
+  },
+
+  "learningPoints": [
+    "Test output tells you what's expected vs actual",
+    "Fix code to match specifications, not tests to match broken code",
+    "Claude Code can run tests and interpret failures"
+  ],
+
+  "nextChallenge": "11-001"
+}

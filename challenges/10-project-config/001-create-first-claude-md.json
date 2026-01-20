@@ -1,0 +1,105 @@
+{
+  "id": "10-001",
+  "module": "project-config",
+  "title": "Create Your First CLAUDE.md",
+  "description": "Learn to create a CLAUDE.md file to give Claude Code context about your project. This is the foundation of customizing Claude's behavior.",
+  "difficulty": "beginner",
+  "xpReward": 100,
+  "estimatedMinutes": 5,
+  "skills": ["claude-md", "project-context"],
+
+  "setup": {
+    "workingDir": "~/dojo-workspace/challenge-10-001",
+    "initialFiles": [
+      {
+        "path": "README.md",
+        "content": "# Challenge: Create Your First CLAUDE.md\n\nEvery good project should have a CLAUDE.md file to help Claude Code understand it.\n\n## Objectives\n1. Create a CLAUDE.md file in the project root\n2. Describe what this project does\n3. Add basic commands (build, test, run)\n"
+      },
+      {
+        "path": "package.json",
+        "content": "{\n  \"name\": \"todo-app\",\n  \"version\": \"1.0.0\",\n  \"scripts\": {\n    \"dev\": \"vite\",\n    \"build\": \"vite build\",\n    \"test\": \"vitest\",\n    \"lint\": \"eslint src/\"\n  },\n  \"dependencies\": {\n    \"react\": \"^18.2.0\"\n  }\n}\n"
+      },
+      {
+        "path": "src/App.jsx",
+        "content": "import { useState } from 'react';\n\nfunction App() {\n  const [todos, setTodos] = useState([]);\n  \n  const addTodo = (text) => {\n    setTodos([...todos, { id: Date.now(), text, done: false }]);\n  };\n  \n  return (\n    <div className=\"app\">\n      <h1>Todo App</h1>\n      {/* Todo list UI */}\n    </div>\n  );\n}\n\nexport default App;\n"
+      },
+      {
+        "path": "src/components/TodoItem.jsx",
+        "content": "function TodoItem({ todo, onToggle, onDelete }) {\n  return (\n    <div className=\"todo-item\">\n      <input type=\"checkbox\" checked={todo.done} onChange={onToggle} />\n      <span>{todo.text}</span>\n      <button onClick={onDelete}>Delete</button>\n    </div>\n  );\n}\n\nexport default TodoItem;\n"
+      }
+    ],
+    "cleanBefore": true
+  },
+
+  "objectives": [
+    {
+      "id": "obj-1",
+      "description": "Create CLAUDE.md file",
+      "type": "file_exists",
+      "target": "CLAUDE.md",
+      "required": true
+    },
+    {
+      "id": "obj-2",
+      "description": "Describe the project purpose",
+      "type": "file_contains",
+      "target": "CLAUDE.md",
+      "pattern": "[Tt]odo|[Aa]pp|[Pp]roject|[Rr]eact",
+      "required": true
+    },
+    {
+      "id": "obj-3",
+      "description": "Include build/dev commands",
+      "type": "file_contains",
+      "target": "CLAUDE.md",
+      "pattern": "npm|yarn|pnpm|build|dev|test",
+      "required": true
+    }
+  ],
+
+  "bonusObjectives": [
+    {
+      "id": "bonus-1",
+      "description": "Document the project structure",
+      "type": "file_contains",
+      "target": "CLAUDE.md",
+      "pattern": "src/|structure|folder|component",
+      "xpBonus": 25
+    }
+  ],
+
+  "hints": [
+    {
+      "level": 1,
+      "text": "CLAUDE.md is a markdown file that tells Claude Code about your project - what it does, how to build it, etc.",
+      "xpCost": 5
+    },
+    {
+      "level": 2,
+      "text": "Try: 'Create a CLAUDE.md file describing this React todo app and its npm commands'",
+      "xpCost": 20
+    },
+    {
+      "level": 3,
+      "text": "Ask: 'Create CLAUDE.md for this project. Include: 1) What the app does (React todo app) 2) How to run it (npm run dev) 3) How to build (npm run build) 4) How to test (npm test)'",
+      "xpCost": 40
+    }
+  ],
+
+  "solution": {
+    "approach": "Create a CLAUDE.md file with project description and common commands.",
+    "example": "Create a CLAUDE.md file explaining this is a React todo app with its build commands",
+    "alternativeApproaches": [
+      "Add project documentation in CLAUDE.md",
+      "Document this project for Claude Code"
+    ]
+  },
+
+  "learningPoints": [
+    "CLAUDE.md provides project context to Claude Code",
+    "Include project purpose, tech stack, and common commands",
+    "Claude reads CLAUDE.md automatically when working in a project"
+  ],
+
+  "nextChallenge": "10-002"
+}

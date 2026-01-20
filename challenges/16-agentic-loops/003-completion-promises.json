@@ -1,0 +1,116 @@
+{
+  "id": "16-003",
+  "module": "agentic-loops",
+  "title": "Completion Promises",
+  "description": "Learn to define clear completion promises that tell Ralph Loop when the task is done.",
+  "difficulty": "advanced",
+  "xpReward": 275,
+  "estimatedMinutes": 15,
+  "skills": ["completion-criteria", "goal-definition"],
+
+  "setup": {
+    "workingDir": "~/dojo-workspace/challenge-16-003",
+    "initialFiles": [
+      {
+        "path": "README.md",
+        "content": "# Challenge: Completion Promises\n\nLearn to define clear completion criteria for Ralph Loop.\n\n## What are Completion Promises?\nCompletion promises define when Ralph Loop should stop working. Without clear completion criteria, loops might run indefinitely or stop prematurely.\n\n## Objectives\n1. Define measurable completion criteria\n2. Start a loop with explicit success conditions\n3. Verify completion criteria are met\n"
+      },
+      {
+        "path": "package.json",
+        "content": "{\n  \"name\": \"completion-test\",\n  \"scripts\": {\n    \"test\": \"node --test\",\n    \"lint\": \"echo 'Lint check'\"\n  }\n}\n"
+      },
+      {
+        "path": "src/calculator.js",
+        "content": "// Calculator module - needs tests and docs\n\nfunction add(a, b) {\n  return a + b;\n}\n\nfunction subtract(a, b) {\n  return a - b;\n}\n\nfunction multiply(a, b) {\n  return a * b;\n}\n\nfunction divide(a, b) {\n  if (b === 0) throw new Error('Division by zero');\n  return a / b;\n}\n\nmodule.exports = { add, subtract, multiply, divide };\n"
+      }
+    ],
+    "cleanBefore": true
+  },
+
+  "objectives": [
+    {
+      "id": "obj-1",
+      "description": "Create test file for calculator",
+      "type": "file_exists",
+      "target": "src/calculator.test.js",
+      "required": true
+    },
+    {
+      "id": "obj-2",
+      "description": "Test all four functions",
+      "type": "file_contains",
+      "target": "src/calculator.test.js",
+      "pattern": "add|subtract|multiply|divide",
+      "required": true
+    },
+    {
+      "id": "obj-3",
+      "description": "Test edge cases",
+      "type": "file_contains",
+      "target": "src/calculator.test.js",
+      "pattern": "zero|error|throw|negative|0",
+      "required": true
+    },
+    {
+      "id": "obj-4",
+      "description": "Document completion criteria",
+      "type": "file_exists",
+      "target": "completion-criteria.md",
+      "required": true
+    }
+  ],
+
+  "bonusObjectives": [
+    {
+      "id": "bonus-1",
+      "description": "Add JSDoc documentation",
+      "type": "file_contains",
+      "target": "src/calculator.js",
+      "pattern": "@param|@returns|@throws|\\* ",
+      "xpBonus": 50
+    },
+    {
+      "id": "bonus-2",
+      "description": "Tests pass when run",
+      "type": "command_output_contains",
+      "command": "cd ~/dojo-workspace/challenge-16-003 && npm test 2>&1 | tail -3",
+      "pattern": "pass|ok|passing",
+      "xpBonus": 50
+    }
+  ],
+
+  "hints": [
+    {
+      "level": 1,
+      "text": "Define completion as: 'Done when all 4 functions have tests, including edge cases, and tests pass'.",
+      "xpCost": 20
+    },
+    {
+      "level": 2,
+      "text": "Try: '/ralph-loop Write comprehensive tests for calculator.js. COMPLETION: Tests exist for add, subtract, multiply, divide including edge cases (division by zero). All tests pass.'",
+      "xpCost": 55
+    },
+    {
+      "level": 3,
+      "text": "Ask: '/ralph-loop Task: Create calculator.test.js with comprehensive tests. COMPLETION CRITERIA: 1) Tests for add with positive/negative numbers, 2) Tests for subtract, 3) Tests for multiply, 4) Tests for divide including division-by-zero error, 5) npm test passes, 6) Create completion-criteria.md documenting these criteria.'",
+      "xpCost": 110
+    }
+  ],
+
+  "solution": {
+    "approach": "Define explicit, measurable completion criteria for the loop.",
+    "example": "Create tests with clear completion promises",
+    "alternativeApproaches": [
+      "Use a checklist format for completion criteria",
+      "Define success as passing specific commands"
+    ]
+  },
+
+  "learningPoints": [
+    "Clear completion criteria prevent infinite loops",
+    "Measurable criteria help verify success",
+    "Document completion criteria for transparency"
+  ],
+
+  "nextChallenge": "16-004"
+}

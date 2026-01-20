@@ -1,0 +1,111 @@
+{
+  "id": "01-005",
+  "module": "fundamentals",
+  "title": "Delete and Rename Files",
+  "description": "Learn to manage files by deleting unwanted files and renaming others. Claude Code can help you reorganize your project structure.",
+  "difficulty": "beginner",
+  "xpReward": 125,
+  "estimatedMinutes": 5,
+  "skills": ["file-management"],
+
+  "setup": {
+    "workingDir": "~/dojo-workspace/challenge-01-005",
+    "initialFiles": [
+      {
+        "path": "README.md",
+        "content": "# Challenge: Delete and Rename Files\n\nYour task: Clean up this messy project structure\n\n## Objectives\n1. Delete the `temp.txt` file (it's not needed)\n2. Rename `oldname.js` to `utils.js`\n3. Keep `important.js` unchanged\n"
+      },
+      {
+        "path": "temp.txt",
+        "content": "This is a temporary file that should be deleted.\nIt contains nothing useful.\n"
+      },
+      {
+        "path": "oldname.js",
+        "content": "// Utility functions\nfunction formatDate(date) {\n  return date.toISOString().split('T')[0];\n}\n\nfunction capitalize(str) {\n  return str.charAt(0).toUpperCase() + str.slice(1);\n}\n\nmodule.exports = { formatDate, capitalize };\n"
+      },
+      {
+        "path": "important.js",
+        "content": "// Important application logic - DO NOT MODIFY\nconst APP_VERSION = '1.0.0';\nmodule.exports = { APP_VERSION };\n"
+      }
+    ],
+    "cleanBefore": true
+  },
+
+  "objectives": [
+    {
+      "id": "obj-1",
+      "description": "Delete temp.txt",
+      "type": "file_deleted",
+      "target": "temp.txt",
+      "required": true
+    },
+    {
+      "id": "obj-2",
+      "description": "Create utils.js (renamed from oldname.js)",
+      "type": "file_exists",
+      "target": "utils.js",
+      "required": true
+    },
+    {
+      "id": "obj-3",
+      "description": "utils.js should contain the utility functions",
+      "type": "file_contains",
+      "target": "utils.js",
+      "pattern": "formatDate|capitalize",
+      "required": true
+    },
+    {
+      "id": "obj-4",
+      "description": "important.js should still exist unchanged",
+      "type": "file_contains",
+      "target": "important.js",
+      "pattern": "APP_VERSION",
+      "required": true
+    }
+  ],
+
+  "bonusObjectives": [
+    {
+      "id": "bonus-1",
+      "description": "oldname.js should no longer exist",
+      "type": "file_deleted",
+      "target": "oldname.js",
+      "xpBonus": 25
+    }
+  ],
+
+  "hints": [
+    {
+      "level": 1,
+      "text": "You can ask Claude Code to delete or rename files. Use natural language to describe what you want.",
+      "xpCost": 10
+    },
+    {
+      "level": 2,
+      "text": "Try: 'Delete temp.txt and rename oldname.js to utils.js'",
+      "xpCost": 25
+    },
+    {
+      "level": 3,
+      "text": "Claude Code uses bash commands like 'rm' and 'mv' behind the scenes. Just describe the changes you want.",
+      "xpCost": 50
+    }
+  ],
+
+  "solution": {
+    "approach": "Describe the file operations you want. Claude Code will execute the appropriate commands.",
+    "example": "Delete the temp.txt file and rename oldname.js to utils.js",
+    "alternativeApproaches": [
+      "Clean up: remove temp.txt, rename oldname.js to utils.js",
+      "Reorganize files: delete temp.txt, move oldname.js to utils.js"
+    ]
+  },
+
+  "learningPoints": [
+    "Claude Code can delete files when asked",
+    "Claude Code can rename/move files to new locations",
+    "Always verify important files aren't accidentally modified"
+  ],
+
+  "nextChallenge": "02-001"
+}

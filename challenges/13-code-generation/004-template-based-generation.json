@@ -1,0 +1,119 @@
+{
+  "id": "13-004",
+  "module": "code-generation",
+  "title": "Template-Based Generation",
+  "description": "Use existing code as templates to generate similar components or modules.",
+  "difficulty": "advanced",
+  "xpReward": 275,
+  "estimatedMinutes": 15,
+  "skills": ["templates", "pattern-replication"],
+
+  "setup": {
+    "workingDir": "~/dojo-workspace/challenge-13-004",
+    "initialFiles": [
+      {
+        "path": "README.md",
+        "content": "# Challenge: Template-Based Generation\n\nUse the existing UserService as a template to generate similar services.\n\n## Objectives\n1. Study the UserService pattern\n2. Generate ProductService following the same pattern\n3. Generate OrderService following the same pattern\n"
+      },
+      {
+        "path": "services/UserService.js",
+        "content": "import { db } from '../db.js';\nimport { validateUser } from '../validators/userValidator.js';\nimport { NotFoundError, ValidationError } from '../errors.js';\n\nexport class UserService {\n  static async getAll(filters = {}) {\n    return db.users.find(filters);\n  }\n\n  static async getById(id) {\n    const user = await db.users.findById(id);\n    if (!user) throw new NotFoundError('User not found');\n    return user;\n  }\n\n  static async create(data) {\n    const errors = validateUser(data);\n    if (errors.length) throw new ValidationError(errors);\n    return db.users.create(data);\n  }\n\n  static async update(id, data) {\n    await this.getById(id); // Throws if not found\n    const errors = validateUser(data, { partial: true });\n    if (errors.length) throw new ValidationError(errors);\n    return db.users.update(id, data);\n  }\n\n  static async delete(id) {\n    await this.getById(id); // Throws if not found\n    return db.users.delete(id);\n  }\n}\n"
+      },
+      {
+        "path": "db.js",
+        "content": "// Mock database module\nexport const db = {\n  users: { find: async () => [], findById: async () => null, create: async (d) => d, update: async (id, d) => d, delete: async () => true },\n  products: { find: async () => [], findById: async () => null, create: async (d) => d, update: async (id, d) => d, delete: async () => true },\n  orders: { find: async () => [], findById: async () => null, create: async (d) => d, update: async (id, d) => d, delete: async () => true }\n};\n"
+      },
+      {
+        "path": "errors.js",
+        "content": "export class NotFoundError extends Error {\n  constructor(message) {\n    super(message);\n    this.name = 'NotFoundError';\n    this.status = 404;\n  }\n}\n\nexport class ValidationError extends Error {\n  constructor(errors) {\n    super('Validation failed');\n    this.name = 'ValidationError';\n    this.errors = errors;\n    this.status = 400;\n  }\n}\n"
+      }
+    ],
+    "cleanBefore": true
+  },
+
+  "objectives": [
+    {
+      "id": "obj-1",
+      "description": "Create ProductService",
+      "type": "file_exists",
+      "target": "services/ProductService.js",
+      "required": true
+    },
+    {
+      "id": "obj-2",
+      "description": "ProductService follows same pattern",
+      "type": "file_contains",
+      "target": "services/ProductService.js",
+      "pattern": "class ProductService|getAll|getById|create|update|delete",
+      "required": true
+    },
+    {
+      "id": "obj-3",
+      "description": "Create OrderService",
+      "type": "file_exists",
+      "target": "services/OrderService.js",
+      "required": true
+    },
+    {
+      "id": "obj-4",
+      "description": "Services use proper imports",
+      "type": "file_contains",
+      "target": "services/ProductService.js",
+      "pattern": "import.*db|import.*errors|NotFoundError|ValidationError",
+      "required": true
+    }
+  ],
+
+  "bonusObjectives": [
+    {
+      "id": "bonus-1",
+      "description": "Create validators for Product and Order",
+      "type": "file_exists",
+      "target": "validators/productValidator.js",
+      "xpBonus": 50
+    },
+    {
+      "id": "bonus-2",
+      "description": "Add entity-specific methods (e.g., getByCategory for products)",
+      "type": "file_contains",
+      "target": "services/ProductService.js",
+      "pattern": "getBy|findBy|Category|Stock|Price",
+      "xpBonus": 50
+    }
+  ],
+
+  "hints": [
+    {
+      "level": 1,
+      "text": "Reference UserService and ask Claude to generate similar services for Product and Order.",
+      "xpCost": 20
+    },
+    {
+      "level": 2,
+      "text": "Try: 'Using UserService.js as a template, create ProductService.js and OrderService.js following the exact same pattern'",
+      "xpCost": 55
+    },
+    {
+      "level": 3,
+      "text": "Ask: 'Read services/UserService.js. Using it as a template, create: 1) services/ProductService.js with the same CRUD methods but for products, 2) services/OrderService.js for orders. Maintain the same imports, error handling, and validation pattern.'",
+      "xpCost": 110
+    }
+  ],
+
+  "solution": {
+    "approach": "Reference the existing service as a template and ask for similar implementations.",
+    "example": "Generate ProductService and OrderService using UserService as a template",
+    "alternativeApproaches": [
+      "Copy the pattern description rather than referencing the file",
+      "Generate services one at a time"
+    ]
+  },
+
+  "learningPoints": [
+    "Existing code serves as excellent templates",
+    "Consistent patterns across similar components",
+    "Reference specific files for pattern matching"
+  ],
+
+  "nextChallenge": "14-001"
+}

@@ -1,0 +1,116 @@
+{
+  "id": "10-004",
+  "module": "project-config",
+  "title": "Settings and Permissions",
+  "description": "Learn about Claude Code settings, .claude folders, and permission management for safer automation.",
+  "difficulty": "intermediate",
+  "xpReward": 200,
+  "estimatedMinutes": 12,
+  "skills": ["settings-management", "permissions"],
+
+  "setup": {
+    "workingDir": "~/dojo-workspace/challenge-10-004",
+    "initialFiles": [
+      {
+        "path": "README.md",
+        "content": "# Challenge: Settings and Permissions\n\nLearn to configure Claude Code settings and manage permissions.\n\n## Objectives\n1. Create a .claude folder for project-specific settings\n2. Document permission patterns in CLAUDE.md\n3. Create a settings guide for the team\n"
+      },
+      {
+        "path": "CLAUDE.md",
+        "content": "# Secure Banking API\n\nA financial services API with strict security requirements.\n\n## Commands\n- `npm run dev` - Development server\n- `npm run test` - Run tests\n"
+      },
+      {
+        "path": "src/index.ts",
+        "content": "import express from 'express';\nconst app = express();\n\n// Banking API routes\napp.use('/api/accounts', require('./routes/accounts'));\napp.use('/api/transactions', require('./routes/transactions'));\n\napp.listen(3000);\n"
+      },
+      {
+        "path": "config/production.json",
+        "content": "{\n  \"database\": {\n    \"host\": \"prod-db.internal\",\n    \"ssl\": true\n  },\n  \"api\": {\n    \"rateLimit\": 100\n  }\n}\n"
+      },
+      {
+        "path": ".env.example",
+        "content": "DATABASE_URL=postgresql://user:pass@localhost:5432/banking\nJWT_SECRET=your-secret-here\nSTRIPE_KEY=sk_test_xxx\n"
+      }
+    ],
+    "cleanBefore": true
+  },
+
+  "objectives": [
+    {
+      "id": "obj-1",
+      "description": "Create .claude directory",
+      "type": "file_exists",
+      "target": ".claude/.gitkeep",
+      "required": true
+    },
+    {
+      "id": "obj-2",
+      "description": "Document security/permission guidelines in CLAUDE.md",
+      "type": "file_contains",
+      "target": "CLAUDE.md",
+      "pattern": "[Ss]ecur|[Pp]ermission|[Nn]ever|[Dd]o not|[Aa]void|[Ss]ensitive",
+      "required": true
+    },
+    {
+      "id": "obj-3",
+      "description": "Add rules about protected files/directories",
+      "type": "file_contains",
+      "target": "CLAUDE.md",
+      "pattern": "config/|production|\\.env|[Pp]rotect|[Dd]o not (edit|modify|touch)",
+      "required": true
+    }
+  ],
+
+  "bonusObjectives": [
+    {
+      "id": "bonus-1",
+      "description": "Create settings documentation",
+      "type": "file_exists",
+      "target": "docs/claude-settings.md",
+      "xpBonus": 50
+    },
+    {
+      "id": "bonus-2",
+      "description": "Add allowed/denied tool patterns",
+      "type": "file_contains",
+      "target": "CLAUDE.md",
+      "pattern": "[Aa]llow|[Dd]eny|[Bb]lock|[Tt]ool|Bash|Write|Edit",
+      "xpBonus": 50
+    }
+  ],
+
+  "hints": [
+    {
+      "level": 1,
+      "text": "The .claude folder stores project-specific Claude Code settings and state.",
+      "xpCost": 15
+    },
+    {
+      "level": 2,
+      "text": "Try: 'Set up the .claude folder and add security guidelines to CLAUDE.md for this banking API'",
+      "xpCost": 40
+    },
+    {
+      "level": 3,
+      "text": "Ask: 'For this banking API: 1) Create .claude/.gitkeep to establish the settings folder 2) Update CLAUDE.md with security rules: never edit production config, never commit .env files, never expose credentials 3) Add a list of protected files that should not be modified'",
+      "xpCost": 75
+    }
+  ],
+
+  "solution": {
+    "approach": "Set up project settings folder and document security constraints.",
+    "example": "Create .claude folder and add security/permission guidelines to CLAUDE.md",
+    "alternativeApproaches": [
+      "Configure Claude Code for a security-sensitive project",
+      "Set up proper guardrails for the banking API"
+    ]
+  },
+
+  "learningPoints": [
+    ".claude folder stores project-specific settings and state",
+    "CLAUDE.md can specify files/directories that shouldn't be modified",
+    "Security rules in CLAUDE.md help prevent accidents"
+  ],
+
+  "nextChallenge": "10-005"
+}

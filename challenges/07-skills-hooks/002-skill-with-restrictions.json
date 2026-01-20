@@ -1,0 +1,117 @@
+{
+  "id": "07-002",
+  "module": "skills-hooks",
+  "title": "Skill with Tool Restrictions",
+  "description": "Learn to create skills with specific tool restrictions. Limiting tools makes skills safer and more focused.",
+  "difficulty": "advanced",
+  "xpReward": 325,
+  "estimatedMinutes": 15,
+  "skills": ["skill-security", "tool-restrictions"],
+
+  "setup": {
+    "workingDir": "~/dojo-workspace/challenge-07-002",
+    "initialFiles": [
+      {
+        "path": "README.md",
+        "content": "# Challenge: Skill with Tool Restrictions\n\nCreate a read-only code review skill that cannot modify files.\n\n## Objectives\n1. Create a code-review skill\n2. Restrict it to only Read, Grep, and Glob tools\n3. The skill should NOT be able to Edit or Write\n"
+      },
+      {
+        "path": "plugin.json",
+        "content": "{\n  \"name\": \"review-tools\",\n  \"version\": \"1.0.0\",\n  \"description\": \"Code review utilities\"\n}\n"
+      },
+      {
+        "path": "src/example.js",
+        "content": "// Example code for review\nfunction processData(data) {\n  var result = [];\n  for (var i = 0; i < data.length; i++) {\n    result.push(data[i] * 2);\n  }\n  return result;\n}\n\nmodule.exports = { processData };\n"
+      }
+    ],
+    "cleanBefore": true
+  },
+
+  "objectives": [
+    {
+      "id": "obj-1",
+      "description": "Create code-review skill",
+      "type": "file_exists",
+      "target": "skills/code-review/SKILL.md",
+      "required": true
+    },
+    {
+      "id": "obj-2",
+      "description": "Skill has allowed-tools restriction",
+      "type": "file_contains",
+      "target": "skills/code-review/SKILL.md",
+      "pattern": "allowed-tools:",
+      "required": true
+    },
+    {
+      "id": "obj-3",
+      "description": "Read tool is allowed",
+      "type": "file_contains",
+      "target": "skills/code-review/SKILL.md",
+      "pattern": "Read",
+      "required": true
+    },
+    {
+      "id": "obj-4",
+      "description": "Edit/Write are NOT in allowed tools",
+      "type": "file_not_contains",
+      "target": "skills/code-review/SKILL.md",
+      "pattern": "allowed-tools:.*Edit|allowed-tools:.*Write",
+      "required": true
+    }
+  ],
+
+  "bonusObjectives": [
+    {
+      "id": "bonus-1",
+      "description": "Include Grep and Glob in allowed tools",
+      "type": "file_contains",
+      "target": "skills/code-review/SKILL.md",
+      "pattern": "Grep.*Glob|Glob.*Grep",
+      "xpBonus": 50
+    },
+    {
+      "id": "bonus-2",
+      "description": "Prompt includes specific review criteria",
+      "type": "file_contains",
+      "target": "skills/code-review/SKILL.md",
+      "pattern": "best practice|code smell|performance|security|style",
+      "xpBonus": 50
+    }
+  ],
+
+  "hints": [
+    {
+      "level": 1,
+      "text": "Use 'allowed-tools' in the frontmatter to restrict what the skill can do.",
+      "xpCost": 25
+    },
+    {
+      "level": 2,
+      "text": "Try: 'Create a code-review skill with allowed-tools that only includes Read, Grep, and Glob'",
+      "xpCost": 65
+    },
+    {
+      "level": 3,
+      "text": "Ask: 'Create skills/code-review/SKILL.md with frontmatter including allowed-tools: [Read, Grep, Glob]. The prompt should review code for best practices, potential bugs, and style issues - but the skill should NOT be able to modify any files.'",
+      "xpCost": 120
+    }
+  ],
+
+  "solution": {
+    "approach": "Create a skill with explicit tool restrictions in the frontmatter.",
+    "example": "Create a read-only code review skill that can only use Read, Grep, and Glob",
+    "alternativeApproaches": [
+      "Build a safe code analysis skill with no write permissions",
+      "Add a review skill that cannot accidentally modify code"
+    ]
+  },
+
+  "learningPoints": [
+    "allowed-tools restricts which tools a skill can use",
+    "Read-only skills are safer for code review",
+    "Tool restrictions prevent accidental modifications"
+  ],
+
+  "nextChallenge": "07-003"
+}

@@ -1,0 +1,98 @@
+{
+  "id": "04-004",
+  "module": "code-editing",
+  "title": "Add Error Handling",
+  "description": "Learn to add proper error handling to existing code. Robust error handling prevents crashes and helps debugging.",
+  "difficulty": "intermediate",
+  "xpReward": 225,
+  "estimatedMinutes": 10,
+  "skills": ["error-handling", "defensive-coding"],
+
+  "setup": {
+    "workingDir": "~/dojo-workspace/challenge-04-004",
+    "initialFiles": [
+      {
+        "path": "README.md",
+        "content": "# Challenge: Add Error Handling\n\nThis code has no error handling. Make it robust!\n\n## Objectives\n1. Add try/catch to async functions\n2. Handle the case where the API returns an error\n3. Handle network failures gracefully\n"
+      },
+      {
+        "path": "dataService.js",
+        "content": "// Data service - needs error handling!\n\nconst API_URL = 'https://api.example.com';\n\nasync function fetchUserData(userId) {\n  const response = await fetch(`${API_URL}/users/${userId}`);\n  const data = await response.json();\n  return data;\n}\n\nasync function saveUserData(userId, data) {\n  const response = await fetch(`${API_URL}/users/${userId}`, {\n    method: 'PUT',\n    headers: { 'Content-Type': 'application/json' },\n    body: JSON.stringify(data)\n  });\n  const result = await response.json();\n  return result;\n}\n\nasync function deleteUser(userId) {\n  const response = await fetch(`${API_URL}/users/${userId}`, {\n    method: 'DELETE'\n  });\n  return response.ok;\n}\n\nmodule.exports = { fetchUserData, saveUserData, deleteUser };\n"
+      }
+    ],
+    "cleanBefore": true
+  },
+
+  "objectives": [
+    {
+      "id": "obj-1",
+      "description": "Add try/catch blocks",
+      "type": "file_contains",
+      "target": "dataService.js",
+      "pattern": "try\\s*\\{",
+      "required": true
+    },
+    {
+      "id": "obj-2",
+      "description": "Check response.ok or response status",
+      "type": "file_contains",
+      "target": "dataService.js",
+      "pattern": "response\\.ok|response\\.status|!response\\.ok",
+      "required": true
+    },
+    {
+      "id": "obj-3",
+      "description": "Throw or return error information",
+      "type": "file_contains",
+      "target": "dataService.js",
+      "pattern": "throw.*[Ee]rror|return.*error|catch.*error",
+      "required": true
+    }
+  ],
+
+  "bonusObjectives": [
+    {
+      "id": "bonus-1",
+      "description": "Include meaningful error messages",
+      "type": "file_contains",
+      "target": "dataService.js",
+      "pattern": "Failed to|Error:|Could not|Unable to",
+      "xpBonus": 50
+    }
+  ],
+
+  "hints": [
+    {
+      "level": 1,
+      "text": "Ask Claude Code to add error handling to the async functions.",
+      "xpCost": 15
+    },
+    {
+      "level": 2,
+      "text": "Try: 'Add try/catch blocks and check response status in dataService.js'",
+      "xpCost": 45
+    },
+    {
+      "level": 3,
+      "text": "Ask: 'Add proper error handling to all functions in dataService.js: wrap in try/catch, check response.ok before parsing JSON, and throw descriptive errors on failure'",
+      "xpCost": 85
+    }
+  ],
+
+  "solution": {
+    "approach": "Add try/catch blocks and response status checks.",
+    "example": "Add error handling to dataService.js - catch network errors and check API responses",
+    "alternativeApproaches": [
+      "Make these functions handle failures gracefully",
+      "Add defensive error handling to the API calls"
+    ]
+  },
+
+  "learningPoints": [
+    "Always handle potential errors in async code",
+    "Check response status before assuming success",
+    "Descriptive error messages help debugging"
+  ],
+
+  "nextChallenge": "04-005"
+}

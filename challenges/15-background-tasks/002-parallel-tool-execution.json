@@ -1,0 +1,110 @@
+{
+  "id": "15-002",
+  "module": "background-tasks",
+  "title": "Parallel Tool Execution",
+  "description": "Learn how Claude can run multiple independent operations in parallel for efficiency.",
+  "difficulty": "intermediate",
+  "xpReward": 225,
+  "estimatedMinutes": 12,
+  "skills": ["parallel-execution", "efficiency"],
+
+  "setup": {
+    "workingDir": "~/dojo-workspace/challenge-15-002",
+    "initialFiles": [
+      {
+        "path": "README.md",
+        "content": "# Challenge: Parallel Tool Execution\n\nLearn how parallel execution speeds up tasks.\n\n## Objectives\n1. Create multiple independent files simultaneously\n2. Observe how Claude can batch operations\n3. Compare with sequential execution\n"
+      },
+      {
+        "path": "templates/component.template",
+        "content": "import React from 'react';\n\nexport function {{NAME}}() {\n  return <div>{{NAME}} Component</div>;\n}\n"
+      }
+    ],
+    "cleanBefore": true
+  },
+
+  "objectives": [
+    {
+      "id": "obj-1",
+      "description": "Create Header component",
+      "type": "file_exists",
+      "target": "components/Header.jsx",
+      "required": true
+    },
+    {
+      "id": "obj-2",
+      "description": "Create Footer component",
+      "type": "file_exists",
+      "target": "components/Footer.jsx",
+      "required": true
+    },
+    {
+      "id": "obj-3",
+      "description": "Create Sidebar component",
+      "type": "file_exists",
+      "target": "components/Sidebar.jsx",
+      "required": true
+    },
+    {
+      "id": "obj-4",
+      "description": "Create index exporting all",
+      "type": "file_contains",
+      "target": "components/index.js",
+      "pattern": "export.*Header|export.*Footer|export.*Sidebar",
+      "required": true
+    }
+  ],
+
+  "bonusObjectives": [
+    {
+      "id": "bonus-1",
+      "description": "Create more than 3 components",
+      "type": "file_exists",
+      "target": "components/Navigation.jsx",
+      "xpBonus": 40
+    },
+    {
+      "id": "bonus-2",
+      "description": "All components follow consistent pattern",
+      "type": "file_contains",
+      "target": "components/Header.jsx",
+      "pattern": "export function|export default",
+      "xpBonus": 35
+    }
+  ],
+
+  "hints": [
+    {
+      "level": 1,
+      "text": "Ask Claude to create multiple files at once. Independent files can be created in parallel.",
+      "xpCost": 15
+    },
+    {
+      "level": 2,
+      "text": "Try: 'Create Header, Footer, and Sidebar components in the components folder, plus an index.js that exports them all'",
+      "xpCost": 45
+    },
+    {
+      "level": 3,
+      "text": "Ask: 'Create these components in parallel: components/Header.jsx, components/Footer.jsx, components/Sidebar.jsx, components/Navigation.jsx. Each should be a React functional component. Also create components/index.js exporting all of them.'",
+      "xpCost": 90
+    }
+  ],
+
+  "solution": {
+    "approach": "Request multiple independent files at once for parallel creation.",
+    "example": "Create multiple React components in parallel",
+    "alternativeApproaches": [
+      "Create files in batches",
+      "Let Claude decide optimal parallelization"
+    ]
+  },
+
+  "learningPoints": [
+    "Independent operations can run in parallel",
+    "Parallel execution is faster than sequential",
+    "Claude optimizes tool calls when possible"
+  ],
+
+  "nextChallenge": "15-003"
+}

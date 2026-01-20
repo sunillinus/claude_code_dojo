@@ -1,0 +1,105 @@
+{
+  "id": "08-001",
+  "module": "mcp-integration",
+  "title": "Add an MCP Server",
+  "description": "Learn to add an MCP (Model Context Protocol) server to your Claude Code setup. MCP servers extend Claude's capabilities with external tools.",
+  "difficulty": "intermediate",
+  "xpReward": 275,
+  "estimatedMinutes": 12,
+  "skills": ["mcp-basics", "server-configuration"],
+
+  "setup": {
+    "workingDir": "~/dojo-workspace/challenge-08-001",
+    "initialFiles": [
+      {
+        "path": "README.md",
+        "content": "# Challenge: Add an MCP Server\n\nConfigure an MCP server to extend Claude Code's capabilities.\n\n## Objectives\n1. Create a .mcp.json configuration file\n2. Configure the filesystem MCP server\n3. Verify the configuration is valid JSON\n"
+      },
+      {
+        "path": "plugin.json",
+        "content": "{\n  \"name\": \"mcp-demo\",\n  \"version\": \"1.0.0\",\n  \"description\": \"MCP integration demo\"\n}\n"
+      }
+    ],
+    "cleanBefore": true
+  },
+
+  "objectives": [
+    {
+      "id": "obj-1",
+      "description": "Create .mcp.json configuration",
+      "type": "file_exists",
+      "target": ".mcp.json",
+      "required": true
+    },
+    {
+      "id": "obj-2",
+      "description": "Config has mcpServers key",
+      "type": "file_contains",
+      "target": ".mcp.json",
+      "pattern": "mcpServers",
+      "required": true
+    },
+    {
+      "id": "obj-3",
+      "description": "Config defines at least one server",
+      "type": "file_contains",
+      "target": ".mcp.json",
+      "pattern": "command|type|url",
+      "required": true
+    }
+  ],
+
+  "bonusObjectives": [
+    {
+      "id": "bonus-1",
+      "description": "Configure filesystem server with allowed directories",
+      "type": "file_contains",
+      "target": ".mcp.json",
+      "pattern": "filesystem|allowedDirectories|args",
+      "xpBonus": 50
+    },
+    {
+      "id": "bonus-2",
+      "description": "Include environment variables configuration",
+      "type": "file_contains",
+      "target": ".mcp.json",
+      "pattern": "env|environment",
+      "xpBonus": 50
+    }
+  ],
+
+  "hints": [
+    {
+      "level": 1,
+      "text": "MCP servers are configured in .mcp.json with the mcpServers key.",
+      "xpCost": 20
+    },
+    {
+      "level": 2,
+      "text": "Try: 'Create a .mcp.json file that configures the filesystem MCP server'",
+      "xpCost": 55
+    },
+    {
+      "level": 3,
+      "text": "Ask: 'Create .mcp.json with mcpServers configuration. Add a filesystem server using npx @anthropic/mcp-server-filesystem with args specifying allowed directories like the current workspace.'",
+      "xpCost": 105
+    }
+  ],
+
+  "solution": {
+    "approach": "Create a .mcp.json file with proper server configuration.",
+    "example": "Create .mcp.json configuring a filesystem MCP server",
+    "alternativeApproaches": [
+      "Add MCP server configuration for filesystem access",
+      "Set up .mcp.json with the Anthropic filesystem server"
+    ]
+  },
+
+  "learningPoints": [
+    "MCP servers are configured in .mcp.json",
+    "Each server has a name, command, and optional args/env",
+    "MCP extends Claude Code with external capabilities"
+  ],
+
+  "nextChallenge": "08-002"
+}

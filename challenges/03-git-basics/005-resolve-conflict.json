@@ -1,0 +1,102 @@
+{
+  "id": "03-005",
+  "module": "git-basics",
+  "title": "Resolve Simple Conflict",
+  "description": "Learn to resolve a merge conflict with Claude Code's help. Conflicts happen - knowing how to fix them is essential.",
+  "difficulty": "intermediate",
+  "xpReward": 250,
+  "estimatedMinutes": 10,
+  "skills": ["git-merge", "conflict-resolution"],
+
+  "setup": {
+    "workingDir": "~/dojo-workspace/challenge-03-005",
+    "initialFiles": [
+      {
+        "path": "README.md",
+        "content": "# Challenge: Resolve Simple Conflict\n\nTwo branches have conflicting changes. Merge them!\n\n## Objectives\n1. Merge the 'feature' branch into 'main'\n2. Resolve the conflict (keep both changes if possible)\n3. Complete the merge commit\n"
+      }
+    ],
+    "cleanBefore": true,
+    "postSetup": [
+      "cd ~/dojo-workspace/challenge-03-005 && git init",
+      "cd ~/dojo-workspace/challenge-03-005 && echo 'const config = { name: \"App\", version: \"1.0.0\" };\\nmodule.exports = config;' > config.js && git add . && git commit -m 'Initial config'",
+      "cd ~/dojo-workspace/challenge-03-005 && git checkout -b feature",
+      "cd ~/dojo-workspace/challenge-03-005 && echo 'const config = { name: \"App\", version: \"1.0.0\", debug: true };\\nmodule.exports = config;' > config.js && git add . && git commit -m 'Add debug flag'",
+      "cd ~/dojo-workspace/challenge-03-005 && git checkout main",
+      "cd ~/dojo-workspace/challenge-03-005 && echo 'const config = { name: \"MyApp\", version: \"1.0.0\" };\\nmodule.exports = config;' > config.js && git add . && git commit -m 'Update app name'"
+    ]
+  },
+
+  "objectives": [
+    {
+      "id": "obj-1",
+      "description": "Merge is complete (no MERGE_HEAD)",
+      "type": "command_output_contains",
+      "command": "test -f .git/MERGE_HEAD && echo 'merging' || echo 'clean'",
+      "pattern": "clean",
+      "required": true
+    },
+    {
+      "id": "obj-2",
+      "description": "config.js contains MyApp (from main)",
+      "type": "file_contains",
+      "target": "config.js",
+      "pattern": "MyApp",
+      "required": true
+    },
+    {
+      "id": "obj-3",
+      "description": "config.js contains debug (from feature)",
+      "type": "file_contains",
+      "target": "config.js",
+      "pattern": "debug",
+      "required": true
+    }
+  ],
+
+  "bonusObjectives": [
+    {
+      "id": "bonus-1",
+      "description": "Merge commit message mentions 'merge' or 'conflict'",
+      "type": "command_output_contains",
+      "command": "git log --format='%s' -1 2>/dev/null",
+      "pattern": "[Mm]erge|[Cc]onflict|[Ff]eature",
+      "xpBonus": 50
+    }
+  ],
+
+  "hints": [
+    {
+      "level": 1,
+      "text": "Ask Claude Code to merge the feature branch and help resolve any conflicts.",
+      "xpCost": 20
+    },
+    {
+      "level": 2,
+      "text": "Try: 'Merge the feature branch into main and resolve any conflicts by keeping both changes'",
+      "xpCost": 50
+    },
+    {
+      "level": 3,
+      "text": "Ask: 'Merge feature into main. There will be a conflict in config.js - resolve it by keeping the name from main (MyApp) and the debug flag from feature (debug: true), then complete the merge'",
+      "xpCost": 100
+    }
+  ],
+
+  "solution": {
+    "approach": "Merge branches, identify conflicts, and combine changes thoughtfully.",
+    "example": "Merge feature into main and resolve the conflict by combining both changes",
+    "alternativeApproaches": [
+      "Integrate the feature branch and fix the merge conflict",
+      "Complete the merge keeping changes from both branches"
+    ]
+  },
+
+  "learningPoints": [
+    "Merge conflicts occur when the same lines are changed differently",
+    "Claude Code can help identify and resolve conflicts",
+    "Often the best resolution combines changes from both branches"
+  ],
+
+  "nextChallenge": "04-001"
+}

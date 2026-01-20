@@ -1,0 +1,112 @@
+{
+  "id": "14-003",
+  "module": "web-research",
+  "title": "Research API Integration",
+  "description": "Research an external API and implement an integration based on the documentation.",
+  "difficulty": "intermediate",
+  "xpReward": 225,
+  "estimatedMinutes": 15,
+  "skills": ["api-research", "integration"],
+
+  "setup": {
+    "workingDir": "~/dojo-workspace/challenge-14-003",
+    "initialFiles": [
+      {
+        "path": "README.md",
+        "content": "# Challenge: Research API Integration\n\nResearch an API and implement a client for it.\n\n## Objectives\n1. Research the JSONPlaceholder API (free fake API)\n2. Document the available endpoints\n3. Create a client that wraps the API\n"
+      },
+      {
+        "path": "package.json",
+        "content": "{\n  \"name\": \"api-client\",\n  \"type\": \"module\"\n}\n"
+      }
+    ],
+    "cleanBefore": true
+  },
+
+  "objectives": [
+    {
+      "id": "obj-1",
+      "description": "Document the API endpoints",
+      "type": "file_exists",
+      "target": "api-docs.md",
+      "required": true
+    },
+    {
+      "id": "obj-2",
+      "description": "Docs include multiple endpoints",
+      "type": "file_contains",
+      "target": "api-docs.md",
+      "pattern": "/posts|/users|/comments|/todos",
+      "required": true
+    },
+    {
+      "id": "obj-3",
+      "description": "Create API client",
+      "type": "file_exists",
+      "target": "apiClient.js",
+      "required": true
+    },
+    {
+      "id": "obj-4",
+      "description": "Client has methods for API calls",
+      "type": "file_contains",
+      "target": "apiClient.js",
+      "pattern": "fetch|getPosts|getUsers|async|await",
+      "required": true
+    }
+  ],
+
+  "bonusObjectives": [
+    {
+      "id": "bonus-1",
+      "description": "Add error handling to client",
+      "type": "file_contains",
+      "target": "apiClient.js",
+      "pattern": "try|catch|throw|Error|ok|status",
+      "xpBonus": 50
+    },
+    {
+      "id": "bonus-2",
+      "description": "Support CRUD operations",
+      "type": "file_contains",
+      "target": "apiClient.js",
+      "pattern": "POST|PUT|DELETE|create|update|delete",
+      "xpBonus": 50
+    }
+  ],
+
+  "hints": [
+    {
+      "level": 1,
+      "text": "JSONPlaceholder is at jsonplaceholder.typicode.com. Ask Claude to look up its documentation.",
+      "xpCost": 15
+    },
+    {
+      "level": 2,
+      "text": "Try: 'Research JSONPlaceholder API, document its endpoints, and create an API client'",
+      "xpCost": 45
+    },
+    {
+      "level": 3,
+      "text": "Ask: 'Look up jsonplaceholder.typicode.com documentation. Create api-docs.md listing all endpoints. Then create apiClient.js with methods: getPosts(), getPost(id), getUsers(), createPost(data). Include error handling.'",
+      "xpCost": 90
+    }
+  ],
+
+  "solution": {
+    "approach": "Research the API documentation and create a client based on findings.",
+    "example": "Research JSONPlaceholder API and create a client library",
+    "alternativeApproaches": [
+      "Start with documentation, then implement",
+      "Implement one endpoint at a time"
+    ]
+  },
+
+  "learningPoints": [
+    "Research API docs before implementing",
+    "Document endpoints for team reference",
+    "Wrap APIs in clean client interfaces"
+  ],
+
+  "nextChallenge": "14-004"
+}

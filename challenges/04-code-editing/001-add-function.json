@@ -1,0 +1,98 @@
+{
+  "id": "04-001",
+  "module": "code-editing",
+  "title": "Add a Function",
+  "description": "Learn to add new functions to existing code. Claude Code integrates new code seamlessly with existing patterns.",
+  "difficulty": "intermediate",
+  "xpReward": 200,
+  "estimatedMinutes": 8,
+  "skills": ["code-addition", "pattern-matching"],
+
+  "setup": {
+    "workingDir": "~/dojo-workspace/challenge-04-001",
+    "initialFiles": [
+      {
+        "path": "README.md",
+        "content": "# Challenge: Add a Function\n\nAdd a new function to the math utilities.\n\n## Objectives\n1. Add a `power` function that calculates a^b\n2. Export it alongside existing functions\n3. Follow the existing code style\n"
+      },
+      {
+        "path": "mathUtils.js",
+        "content": "/**\n * Math utility functions\n */\n\n/**\n * Add two numbers\n * @param {number} a - First number\n * @param {number} b - Second number\n * @returns {number} Sum of a and b\n */\nfunction add(a, b) {\n  return a + b;\n}\n\n/**\n * Subtract two numbers\n * @param {number} a - First number\n * @param {number} b - Second number\n * @returns {number} Difference of a and b\n */\nfunction subtract(a, b) {\n  return a - b;\n}\n\n/**\n * Multiply two numbers\n * @param {number} a - First number\n * @param {number} b - Second number\n * @returns {number} Product of a and b\n */\nfunction multiply(a, b) {\n  return a * b;\n}\n\nmodule.exports = { add, subtract, multiply };\n"
+      }
+    ],
+    "cleanBefore": true
+  },
+
+  "objectives": [
+    {
+      "id": "obj-1",
+      "description": "Add a power function",
+      "type": "file_contains",
+      "target": "mathUtils.js",
+      "pattern": "function power\\s*\\(",
+      "required": true
+    },
+    {
+      "id": "obj-2",
+      "description": "Power function uses ** or Math.pow",
+      "type": "file_contains",
+      "target": "mathUtils.js",
+      "pattern": "\\*\\*|Math\\.pow",
+      "required": true
+    },
+    {
+      "id": "obj-3",
+      "description": "Power function is exported",
+      "type": "file_contains",
+      "target": "mathUtils.js",
+      "pattern": "module\\.exports.*power|exports.*power",
+      "required": true
+    }
+  ],
+
+  "bonusObjectives": [
+    {
+      "id": "bonus-1",
+      "description": "Include JSDoc comment for power function",
+      "type": "file_contains",
+      "target": "mathUtils.js",
+      "pattern": "/\\*\\*[^*]*\\*.*power|@param.*@returns",
+      "xpBonus": 50
+    }
+  ],
+
+  "hints": [
+    {
+      "level": 1,
+      "text": "Ask Claude Code to add a new function following the existing pattern.",
+      "xpCost": 15
+    },
+    {
+      "level": 2,
+      "text": "Try: 'Add a power function to mathUtils.js that calculates a^b'",
+      "xpCost": 40
+    },
+    {
+      "level": 3,
+      "text": "Ask: 'Add a power(a, b) function to mathUtils.js that returns a^b. Follow the existing style with JSDoc comments and export it.'",
+      "xpCost": 75
+    }
+  ],
+
+  "solution": {
+    "approach": "Ask Claude Code to add a function matching the existing code style.",
+    "example": "Add a power function to mathUtils.js following the same style as the other functions",
+    "alternativeApproaches": [
+      "Add exponentiation to the math utilities",
+      "Create a power function that raises a to the power of b"
+    ]
+  },
+
+  "learningPoints": [
+    "Claude Code matches existing code style automatically",
+    "Describing the function clearly helps get correct implementation",
+    "Asking to follow existing patterns ensures consistency"
+  ],
+
+  "nextChallenge": "04-002"
+}

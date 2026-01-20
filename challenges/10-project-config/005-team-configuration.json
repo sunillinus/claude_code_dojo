@@ -1,0 +1,129 @@
+{
+  "id": "10-005",
+  "module": "project-config",
+  "title": "Team Configuration",
+  "description": "Learn to set up CLAUDE.md for team projects, including shared standards, onboarding info, and consistent behavior across developers.",
+  "difficulty": "intermediate",
+  "xpReward": 200,
+  "estimatedMinutes": 12,
+  "skills": ["team-setup", "shared-configuration"],
+
+  "setup": {
+    "workingDir": "~/dojo-workspace/challenge-10-005",
+    "initialFiles": [
+      {
+        "path": "README.md",
+        "content": "# Challenge: Team Configuration\n\nSet up CLAUDE.md so all team members have a consistent Claude Code experience.\n\n## Objectives\n1. Create comprehensive team documentation\n2. Include onboarding information for new developers\n3. Document team conventions and standards\n4. Add troubleshooting guidance\n"
+      },
+      {
+        "path": "package.json",
+        "content": "{\n  \"name\": \"team-project\",\n  \"scripts\": {\n    \"dev\": \"next dev\",\n    \"build\": \"next build\",\n    \"test\": \"jest\",\n    \"lint\": \"eslint . --fix\",\n    \"db:migrate\": \"prisma migrate dev\",\n    \"db:seed\": \"prisma db seed\"\n  }\n}\n"
+      },
+      {
+        "path": "src/app/page.tsx",
+        "content": "export default function Home() {\n  return <main>Welcome to Team Project</main>;\n}\n"
+      },
+      {
+        "path": ".eslintrc.json",
+        "content": "{\n  \"extends\": [\"next/core-web-vitals\"],\n  \"rules\": {\n    \"no-console\": \"warn\",\n    \"@typescript-eslint/no-explicit-any\": \"error\"\n  }\n}\n"
+      }
+    ],
+    "cleanBefore": true
+  },
+
+  "objectives": [
+    {
+      "id": "obj-1",
+      "description": "Create comprehensive CLAUDE.md",
+      "type": "file_exists",
+      "target": "CLAUDE.md",
+      "required": true
+    },
+    {
+      "id": "obj-2",
+      "description": "Include team/project overview",
+      "type": "file_contains",
+      "target": "CLAUDE.md",
+      "pattern": "[Tt]eam|[Pp]roject|[Oo]verview|[Aa]bout",
+      "required": true
+    },
+    {
+      "id": "obj-3",
+      "description": "Document all npm scripts",
+      "type": "file_contains",
+      "target": "CLAUDE.md",
+      "pattern": "npm run|dev|build|test|lint",
+      "required": true
+    },
+    {
+      "id": "obj-4",
+      "description": "Include coding standards",
+      "type": "file_contains",
+      "target": "CLAUDE.md",
+      "pattern": "[Ss]tandard|[Cc]onvention|[Ss]tyle|[Rr]ule|eslint|[Ll]int",
+      "required": true
+    },
+    {
+      "id": "obj-5",
+      "description": "Add setup/onboarding instructions",
+      "type": "file_contains",
+      "target": "CLAUDE.md",
+      "pattern": "[Ss]etup|[Ii]nstall|[Gg]etting [Ss]tarted|[Oo]nboard|npm install",
+      "required": true
+    }
+  ],
+
+  "bonusObjectives": [
+    {
+      "id": "bonus-1",
+      "description": "Add troubleshooting section",
+      "type": "file_contains",
+      "target": "CLAUDE.md",
+      "pattern": "[Tt]roubleshoot|[Cc]ommon [Ii]ssue|[Ff]ix|[Pp]roblem|FAQ",
+      "xpBonus": 50
+    },
+    {
+      "id": "bonus-2",
+      "description": "Include PR/commit conventions",
+      "type": "file_contains",
+      "target": "CLAUDE.md",
+      "pattern": "[Cc]ommit|PR|[Pp]ull [Rr]equest|[Bb]ranch|[Cc]onventional",
+      "xpBonus": 50
+    }
+  ],
+
+  "hints": [
+    {
+      "level": 1,
+      "text": "Team CLAUDE.md files should be comprehensive enough for a new developer to get started.",
+      "xpCost": 15
+    },
+    {
+      "level": 2,
+      "text": "Try: 'Create a team-friendly CLAUDE.md with onboarding info, all commands, coding standards, and troubleshooting'",
+      "xpCost": 40
+    },
+    {
+      "level": 3,
+      "text": "Ask: 'Create CLAUDE.md for a team project: 1) Project overview 2) Getting started (clone, npm install, setup) 3) All npm scripts explained 4) Coding standards (TypeScript, no any, eslint rules) 5) Git workflow (branch naming, PR process) 6) Common issues and fixes'",
+      "xpCost": 75
+    }
+  ],
+
+  "solution": {
+    "approach": "Create a comprehensive CLAUDE.md that serves as team documentation.",
+    "example": "Create complete team documentation in CLAUDE.md covering all aspects of the project",
+    "alternativeApproaches": [
+      "Build an onboarding-friendly CLAUDE.md for the team",
+      "Document everything a new team member needs to know"
+    ]
+  },
+
+  "learningPoints": [
+    "CLAUDE.md should work for all team members, not just the author",
+    "Include setup instructions, commands, and conventions",
+    "Good CLAUDE.md reduces onboarding time for both humans and Claude"
+  ],
+
+  "nextChallenge": "12-001"
+}

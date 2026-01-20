@@ -1,0 +1,117 @@
+{
+  "id": "02-004",
+  "module": "search-navigation",
+  "title": "Find Function Definitions",
+  "description": "Learn to find where functions and classes are defined. Claude Code can track down definitions even when they're spread across multiple files.",
+  "difficulty": "intermediate",
+  "xpReward": 200,
+  "estimatedMinutes": 8,
+  "skills": ["definition-search", "code-navigation"],
+
+  "setup": {
+    "workingDir": "~/dojo-workspace/challenge-02-004",
+    "initialFiles": [
+      {
+        "path": "README.md",
+        "content": "# Challenge: Find Function Definitions\n\nThis project uses several utility functions. Find where they're defined!\n\n## Objectives\n1. Find where `formatCurrency` is defined\n2. Find where `validateUser` is defined\n3. Create definitions.md listing the file and line number for each\n"
+      },
+      {
+        "path": "src/index.js",
+        "content": "const { processOrder } = require('./services/orderService');\nconst { formatCurrency } = require('./utils/formatting');\n\nconst order = { total: 99.99 };\nconsole.log('Total:', formatCurrency(order.total));\n\nprocessOrder(order);\n"
+      },
+      {
+        "path": "src/services/orderService.js",
+        "content": "const { validateUser } = require('../auth/validator');\nconst { formatCurrency } = require('../utils/formatting');\nconst { sendNotification } = require('../utils/notifications');\n\nasync function processOrder(order) {\n  const user = await validateUser(order.userId);\n  if (!user) throw new Error('Invalid user');\n  \n  const formatted = formatCurrency(order.total);\n  await sendNotification(user.email, `Order total: ${formatted}`);\n  \n  return { success: true };\n}\n\nmodule.exports = { processOrder };\n"
+      },
+      {
+        "path": "src/utils/formatting.js",
+        "content": "/**\n * Format a number as currency\n * @param {number} amount - The amount to format\n * @returns {string} Formatted currency string\n */\nfunction formatCurrency(amount) {\n  return '$' + amount.toFixed(2);\n}\n\nfunction formatDate(date) {\n  return date.toISOString().split('T')[0];\n}\n\nfunction formatPercent(value) {\n  return (value * 100).toFixed(1) + '%';\n}\n\nmodule.exports = { formatCurrency, formatDate, formatPercent };\n"
+      },
+      {
+        "path": "src/utils/notifications.js",
+        "content": "async function sendNotification(email, message) {\n  console.log(`Sending to ${email}: ${message}`);\n  return true;\n}\n\nasync function sendBulkNotification(emails, message) {\n  return Promise.all(emails.map(e => sendNotification(e, message)));\n}\n\nmodule.exports = { sendNotification, sendBulkNotification };\n"
+      },
+      {
+        "path": "src/auth/validator.js",
+        "content": "const { findUserById } = require('./userStore');\n\n/**\n * Validate a user exists and is active\n * @param {string} userId - The user ID to validate\n * @returns {object|null} User object or null if invalid\n */\nasync function validateUser(userId) {\n  const user = await findUserById(userId);\n  if (!user || !user.active) return null;\n  return user;\n}\n\nfunction validatePassword(password) {\n  return password && password.length >= 8;\n}\n\nmodule.exports = { validateUser, validatePassword };\n"
+      },
+      {
+        "path": "src/auth/userStore.js",
+        "content": "const users = [\n  { id: '1', email: 'alice@example.com', active: true },\n  { id: '2', email: 'bob@example.com', active: false }\n];\n\nasync function findUserById(id) {\n  return users.find(u => u.id === id) || null;\n}\n\nasync function findUserByEmail(email) {\n  return users.find(u => u.email === email) || null;\n}\n\nmodule.exports = { findUserById, findUserByEmail };\n"
+      }
+    ],
+    "cleanBefore": true
+  },
+
+  "objectives": [
+    {
+      "id": "obj-1",
+      "description": "Create definitions.md",
+      "type": "file_exists",
+      "target": "definitions.md",
+      "required": true
+    },
+    {
+      "id": "obj-2",
+      "description": "Document formatCurrency location",
+      "type": "file_contains",
+      "target": "definitions.md",
+      "pattern": "formatCurrency.*formatting\\.js|formatting\\.js.*formatCurrency",
+      "required": true
+    },
+    {
+      "id": "obj-3",
+      "description": "Document validateUser location",
+      "type": "file_contains",
+      "target": "definitions.md",
+      "pattern": "validateUser.*validator\\.js|validator\\.js.*validateUser",
+      "required": true
+    }
+  ],
+
+  "bonusObjectives": [
+    {
+      "id": "bonus-1",
+      "description": "Include line numbers for definitions",
+      "type": "file_contains",
+      "target": "definitions.md",
+      "pattern": "line\\s*[0-9]+|:[0-9]+|\\([0-9]+\\)",
+      "xpBonus": 50
+    }
+  ],
+
+  "hints": [
+    {
+      "level": 1,
+      "text": "Ask Claude Code to find where a specific function is defined in the codebase.",
+      "xpCost": 15
+    },
+    {
+      "level": 2,
+      "text": "Try: 'Where is formatCurrency defined?' and 'Where is validateUser defined?'",
+      "xpCost": 35
+    },
+    {
+      "level": 3,
+      "text": "Ask: 'Find the definitions of formatCurrency and validateUser, then create definitions.md listing file paths and line numbers'",
+      "xpCost": 75
+    }
+  ],
+
+  "solution": {
+    "approach": "Use Claude Code to search for function definitions and document their locations.",
+    "example": "Find where formatCurrency and validateUser are defined and document in definitions.md",
+    "alternativeApproaches": [
+      "Search for function definitions and list them",
+      "Where are these functions implemented: formatCurrency, validateUser?"
+    ]
+  },
+
+  "learningPoints": [
+    "Claude Code can find function definitions across multiple files",
+    "Following import chains helps locate the source",
+    "Definition search works for functions, classes, and variables"
+  ],
+
+  "nextChallenge": "02-005"
+}

@@ -1,0 +1,105 @@
+{
+  "id": "02-002",
+  "module": "search-navigation",
+  "title": "Search File Contents",
+  "description": "Learn to search inside files for specific text or patterns. Find where functions are defined, where variables are used, and more.",
+  "difficulty": "beginner",
+  "xpReward": 125,
+  "estimatedMinutes": 7,
+  "skills": ["content-search", "grep"],
+
+  "setup": {
+    "workingDir": "~/dojo-workspace/challenge-02-002",
+    "initialFiles": [
+      {
+        "path": "README.md",
+        "content": "# Challenge: Search File Contents\n\nFind the TODO comments hidden in this codebase.\n\n## Objectives\n1. Find all TODO comments\n2. Create a todo-list.md with what you found\n"
+      },
+      {
+        "path": "src/app.js",
+        "content": "// Main application\nfunction init() {\n  // TODO: Add initialization logic\n  console.log('Starting app');\n}\n\nfunction cleanup() {\n  console.log('Cleaning up');\n}\n\nmodule.exports = { init, cleanup };\n"
+      },
+      {
+        "path": "src/database.js",
+        "content": "// Database module\nconst db = {\n  connect: () => {\n    // TODO: Implement database connection\n    return Promise.resolve();\n  },\n  query: (sql) => {\n    // TODO: Add query sanitization\n    return Promise.resolve([]);\n  }\n};\n\nmodule.exports = db;\n"
+      },
+      {
+        "path": "src/utils.js",
+        "content": "// Utility functions\nfunction formatDate(date) {\n  return date.toISOString();\n}\n\n// TODO: Add more utility functions\n\nmodule.exports = { formatDate };\n"
+      }
+    ],
+    "cleanBefore": true
+  },
+
+  "objectives": [
+    {
+      "id": "obj-1",
+      "description": "Create todo-list.md",
+      "type": "file_exists",
+      "target": "todo-list.md",
+      "required": true
+    },
+    {
+      "id": "obj-2",
+      "description": "List should mention initialization",
+      "type": "file_contains",
+      "target": "todo-list.md",
+      "pattern": "[Ii]nitiali[sz]|app\\.js",
+      "required": true
+    },
+    {
+      "id": "obj-3",
+      "description": "List should mention database",
+      "type": "file_contains",
+      "target": "todo-list.md",
+      "pattern": "[Dd]atabase|connection|query",
+      "required": true
+    }
+  ],
+
+  "bonusObjectives": [
+    {
+      "id": "bonus-1",
+      "description": "Find all 4 TODO comments",
+      "type": "file_contains",
+      "target": "todo-list.md",
+      "pattern": "4|four|utility",
+      "xpBonus": 25
+    }
+  ],
+
+  "hints": [
+    {
+      "level": 1,
+      "text": "Ask Claude Code to search for 'TODO' in all files.",
+      "xpCost": 10
+    },
+    {
+      "level": 2,
+      "text": "Try: 'Search for TODO comments in this project and list them'",
+      "xpCost": 25
+    },
+    {
+      "level": 3,
+      "text": "Ask: 'Find all TODO comments in the codebase and create todo-list.md documenting each one with its file location'",
+      "xpCost": 50
+    }
+  ],
+
+  "solution": {
+    "approach": "Use content search to find patterns across files.",
+    "example": "Search for 'TODO' in all files and create todo-list.md with the findings",
+    "alternativeApproaches": [
+      "Find all TODO comments and document them",
+      "Grep for TODO across the codebase"
+    ]
+  },
+
+  "learningPoints": [
+    "Claude Code can search file contents, not just names",
+    "Pattern matching works across multiple files",
+    "Combining search with documentation is powerful"
+  ],
+
+  "nextChallenge": "02-003"
+}

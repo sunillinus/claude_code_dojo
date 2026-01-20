@@ -1,0 +1,114 @@
+{
+  "id": "11-005",
+  "module": "testing-tdd",
+  "title": "Test Coverage Analysis",
+  "description": "Learn to measure and improve test coverage. Find untested code paths and add missing tests.",
+  "difficulty": "advanced",
+  "xpReward": 300,
+  "estimatedMinutes": 15,
+  "skills": ["coverage", "test-analysis"],
+
+  "setup": {
+    "workingDir": "~/dojo-workspace/challenge-11-005",
+    "initialFiles": [
+      {
+        "path": "README.md",
+        "content": "# Challenge: Test Coverage Analysis\n\nAnalyze the existing tests and find gaps in coverage. Add tests for uncovered code.\n\n## Objectives\n1. Review the existing tests\n2. Identify untested code paths\n3. Add tests to improve coverage\n"
+      },
+      {
+        "path": "package.json",
+        "content": "{\n  \"name\": \"coverage-challenge\",\n  \"scripts\": {\n    \"test\": \"node --test\",\n    \"test:coverage\": \"node --test --experimental-test-coverage\"\n  }\n}\n"
+      },
+      {
+        "path": "userService.js",
+        "content": "class UserService {\n  constructor(database) {\n    this.db = database;\n  }\n\n  async createUser(userData) {\n    if (!userData.email || !userData.name) {\n      throw new Error('Email and name are required');\n    }\n    \n    const existing = await this.db.findByEmail(userData.email);\n    if (existing) {\n      throw new Error('Email already exists');\n    }\n\n    const user = {\n      id: Date.now(),\n      ...userData,\n      createdAt: new Date().toISOString()\n    };\n\n    await this.db.save(user);\n    return user;\n  }\n\n  async getUser(id) {\n    const user = await this.db.findById(id);\n    if (!user) {\n      throw new Error('User not found');\n    }\n    return user;\n  }\n\n  async updateUser(id, updates) {\n    const user = await this.getUser(id);\n    \n    if (updates.email && updates.email !== user.email) {\n      const existing = await this.db.findByEmail(updates.email);\n      if (existing) {\n        throw new Error('Email already in use');\n      }\n    }\n\n    const updated = { ...user, ...updates, updatedAt: new Date().toISOString() };\n    await this.db.update(id, updated);\n    return updated;\n  }\n\n  async deleteUser(id) {\n    await this.getUser(id); // Throws if not found\n    await this.db.delete(id);\n    return { deleted: true };\n  }\n}\n\nmodule.exports = { UserService };\n"
+      },
+      {
+        "path": "userService.test.js",
+        "content": "const { test, mock } = require('node:test');\nconst assert = require('node:assert');\nconst { UserService } = require('./userService');\n\n// Mock database\nfunction createMockDb() {\n  const users = new Map();\n  return {\n    findByEmail: mock.fn(async (email) => {\n      for (const user of users.values()) {\n        if (user.email === email) return user;\n      }\n      return null;\n    }),\n    findById: mock.fn(async (id) => users.get(id) || null),\n    save: mock.fn(async (user) => users.set(user.id, user)),\n    update: mock.fn(async (id, user) => users.set(id, user)),\n    delete: mock.fn(async (id) => users.delete(id))\n  };\n}\n\ntest('createUser should create a new user', async () => {\n  const db = createMockDb();\n  const service = new UserService(db);\n  \n  const user = await service.createUser({ email: 'test@example.com', name: 'Test' });\n  \n  assert.ok(user.id);\n  assert.strictEqual(user.email, 'test@example.com');\n});\n\n// TODO: Many code paths are not tested!\n// - What happens with missing email/name?\n// - What happens with duplicate email?\n// - What about getUser, updateUser, deleteUser?\n"
+      }
+    ],
+    "cleanBefore": true
+  },
+
+  "objectives": [
+    {
+      "id": "obj-1",
+      "description": "Add test for missing required fields",
+      "type": "file_contains",
+      "target": "userService.test.js",
+      "pattern": "required|missing|Email and name",
+      "required": true
+    },
+    {
+      "id": "obj-2",
+      "description": "Add test for duplicate email",
+      "type": "file_contains",
+      "target": "userService.test.js",
+      "pattern": "duplicate|already exists|existing",
+      "required": true
+    },
+    {
+      "id": "obj-3",
+      "description": "Add tests for getUser",
+      "type": "file_contains",
+      "target": "userService.test.js",
+      "pattern": "getUser",
+      "required": true
+    },
+    {
+      "id": "obj-4",
+      "description": "Add tests for updateUser or deleteUser",
+      "type": "file_contains",
+      "target": "userService.test.js",
+      "pattern": "updateUser|deleteUser",
+      "required": true
+    }
+  ],
+
+  "bonusObjectives": [
+    {
+      "id": "bonus-1",
+      "description": "Test all CRUD operations",
+      "type": "file_contains",
+      "target": "userService.test.js",
+      "pattern": "(?=.*createUser)(?=.*getUser)(?=.*updateUser)(?=.*deleteUser)",
+      "xpBonus": 75
+    }
+  ],
+
+  "hints": [
+    {
+      "level": 1,
+      "text": "Look at the TODO comments in the test file. Run npm run test:coverage to see coverage.",
+      "xpCost": 20
+    },
+    {
+      "level": 2,
+      "text": "Try: 'Analyze the existing tests, identify untested paths, and add the missing tests'",
+      "xpCost": 60
+    },
+    {
+      "level": 3,
+      "text": "Ask: 'Add tests for: 1) createUser with missing fields, 2) createUser with duplicate email, 3) getUser success and not found, 4) updateUser with email conflict, 5) deleteUser'",
+      "xpCost": 120
+    }
+  ],
+
+  "solution": {
+    "approach": "Analyze existing tests, identify gaps, and add tests for uncovered code paths.",
+    "example": "Improve test coverage by adding tests for all code paths",
+    "alternativeApproaches": [
+      "Use coverage tool to find untested lines",
+      "Test each error condition separately"
+    ]
+  },
+
+  "learningPoints": [
+    "Coverage tools help identify untested code",
+    "100% coverage doesn't mean bug-free code",
+    "Focus on testing important code paths and edge cases"
+  ],
+
+  "nextChallenge": "10-001"
+}

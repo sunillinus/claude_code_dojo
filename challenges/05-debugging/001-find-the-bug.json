@@ -1,0 +1,97 @@
+{
+  "id": "05-001",
+  "module": "debugging",
+  "title": "Find the Bug",
+  "description": "Learn to analyze code and find logic bugs. Claude Code can help identify issues by understanding code behavior.",
+  "difficulty": "intermediate",
+  "xpReward": 200,
+  "estimatedMinutes": 8,
+  "skills": ["bug-finding", "code-analysis"],
+
+  "setup": {
+    "workingDir": "~/dojo-workspace/challenge-05-001",
+    "initialFiles": [
+      {
+        "path": "README.md",
+        "content": "# Challenge: Find the Bug\n\nThe shopping cart total is wrong! Find and fix the bug.\n\n## Objectives\n1. Find the bug in calculateTotal\n2. Fix the calculation\n3. Create bugfix-notes.md explaining what was wrong\n"
+      },
+      {
+        "path": "cart.js",
+        "content": "// Shopping cart module\n\nfunction calculateTotal(items) {\n  let total = 0;\n  \n  for (let i = 0; i <= items.length; i++) {\n    const item = items[i];\n    total += item.price * item.quantity;\n  }\n  \n  return total;\n}\n\nfunction applyDiscount(total, discountPercent) {\n  return total - (total * discountPercent / 100);\n}\n\nfunction calculateTax(total, taxRate) {\n  return total * (1 + taxRate);\n}\n\n// Test data\nconst testCart = [\n  { name: 'Apple', price: 1.00, quantity: 3 },\n  { name: 'Banana', price: 0.50, quantity: 6 },\n  { name: 'Orange', price: 0.75, quantity: 4 }\n];\n\n// Should be: 3.00 + 3.00 + 3.00 = 9.00\nconsole.log('Total:', calculateTotal(testCart));\n\nmodule.exports = { calculateTotal, applyDiscount, calculateTax };\n"
+      }
+    ],
+    "cleanBefore": true
+  },
+
+  "objectives": [
+    {
+      "id": "obj-1",
+      "description": "Fix the loop condition (use < instead of <=)",
+      "type": "file_contains",
+      "target": "cart.js",
+      "pattern": "i\\s*<\\s*items\\.length",
+      "required": true
+    },
+    {
+      "id": "obj-2",
+      "description": "Create bugfix-notes.md",
+      "type": "file_exists",
+      "target": "bugfix-notes.md",
+      "required": true
+    },
+    {
+      "id": "obj-3",
+      "description": "Explain the off-by-one error",
+      "type": "file_contains",
+      "target": "bugfix-notes.md",
+      "pattern": "off.by.one|<=|out of bounds|undefined|index",
+      "required": true
+    }
+  ],
+
+  "bonusObjectives": [
+    {
+      "id": "bonus-1",
+      "description": "Mention that accessing items[items.length] is undefined",
+      "type": "file_contains",
+      "target": "bugfix-notes.md",
+      "pattern": "undefined|NaN|crash|error",
+      "xpBonus": 50
+    }
+  ],
+
+  "hints": [
+    {
+      "level": 1,
+      "text": "Ask Claude Code to analyze the calculateTotal function and find the bug.",
+      "xpCost": 15
+    },
+    {
+      "level": 2,
+      "text": "Try: 'The calculateTotal function is broken. Can you find the bug?'",
+      "xpCost": 40
+    },
+    {
+      "level": 3,
+      "text": "Ask: 'Find and fix the bug in calculateTotal in cart.js, then create bugfix-notes.md explaining what was wrong'",
+      "xpCost": 75
+    }
+  ],
+
+  "solution": {
+    "approach": "Analyze the loop logic to find the off-by-one error.",
+    "example": "Find the bug in cart.js calculateTotal function and fix it",
+    "alternativeApproaches": [
+      "Why is calculateTotal giving wrong results?",
+      "Debug the shopping cart calculation"
+    ]
+  },
+
+  "learningPoints": [
+    "Claude Code can analyze code to find logic bugs",
+    "Off-by-one errors are common in loops",
+    "Documenting bugs helps prevent future issues"
+  ],
+
+  "nextChallenge": "05-002"
+}

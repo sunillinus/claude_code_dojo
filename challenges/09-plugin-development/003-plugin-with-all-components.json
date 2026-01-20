@@ -1,0 +1,120 @@
+{
+  "id": "09-003",
+  "module": "plugin-development",
+  "title": "Plugin with All Components",
+  "description": "Learn to build a comprehensive plugin with skills, hooks, agents, and commands working together.",
+  "difficulty": "intermediate",
+  "xpReward": 325,
+  "estimatedMinutes": 20,
+  "skills": ["full-plugin", "component-integration"],
+
+  "setup": {
+    "workingDir": "~/dojo-workspace/challenge-09-003",
+    "initialFiles": [
+      {
+        "path": "README.md",
+        "content": "# Challenge: Plugin with All Components\n\nBuild a 'code-quality' plugin with all component types working together.\n\n## Objectives\n1. Create a /lint skill that runs linting\n2. Create a PreToolUse hook that warns about large file edits\n3. Create a code-analyzer agent for deep analysis\n4. Create a quick-fix command for common issues\n5. All components should work together cohesively\n"
+      },
+      {
+        "path": "plugin.json",
+        "content": "{\n  \"name\": \"code-quality\",\n  \"version\": \"1.0.0\",\n  \"description\": \"Code quality tools for better code\",\n  \"author\": {\n    \"name\": \"Quality Team\"\n  }\n}\n"
+      }
+    ],
+    "cleanBefore": true
+  },
+
+  "objectives": [
+    {
+      "id": "obj-1",
+      "description": "Create a lint skill",
+      "type": "file_exists",
+      "target": "skills/lint/SKILL.md",
+      "required": true
+    },
+    {
+      "id": "obj-2",
+      "description": "Create a PreToolUse hook",
+      "type": "file_contains",
+      "target": "hooks/warn-large-edits.md",
+      "pattern": "PreToolUse|event:",
+      "required": true
+    },
+    {
+      "id": "obj-3",
+      "description": "Create a code-analyzer agent",
+      "type": "file_exists",
+      "target": "agents/code-analyzer.md",
+      "required": true
+    },
+    {
+      "id": "obj-4",
+      "description": "Create a quick-fix command",
+      "type": "file_exists",
+      "target": "commands/quick-fix.md",
+      "required": true
+    }
+  ],
+
+  "bonusObjectives": [
+    {
+      "id": "bonus-1",
+      "description": "Skill has tool restrictions",
+      "type": "file_contains",
+      "target": "skills/lint/SKILL.md",
+      "pattern": "allowed-tools:",
+      "xpBonus": 50
+    },
+    {
+      "id": "bonus-2",
+      "description": "Hook uses prompt-based decision making",
+      "type": "file_contains",
+      "target": "hooks/warn-large-edits.md",
+      "pattern": "decision|block|allow|warn",
+      "xpBonus": 50
+    },
+    {
+      "id": "bonus-3",
+      "description": "Agent has specific allowed-tools",
+      "type": "file_contains",
+      "target": "agents/code-analyzer.md",
+      "pattern": "allowed-tools:",
+      "xpBonus": 50
+    }
+  ],
+
+  "hints": [
+    {
+      "level": 1,
+      "text": "Each component type has a specific purpose: skills for commands, hooks for automation, agents for specialized tasks, commands for simple actions.",
+      "xpCost": 25
+    },
+    {
+      "level": 2,
+      "text": "Try: 'Add a lint skill, a hook that warns on large edits, an analyzer agent, and a quick-fix command to the code-quality plugin'",
+      "xpCost": 65
+    },
+    {
+      "level": 3,
+      "text": "Ask: 'Build out the code-quality plugin: 1) skills/lint/SKILL.md - runs eslint/prettier with allowed-tools [Bash, Read] 2) hooks/warn-large-edits.md - PreToolUse hook on Edit that warns if editing >100 lines 3) agents/code-analyzer.md - deep code analysis with Read, Grep, Glob tools 4) commands/quick-fix.md - fixes common issues like trailing whitespace'",
+      "xpCost": 120
+    }
+  ],
+
+  "solution": {
+    "approach": "Create all four component types with clear purposes and proper configuration.",
+    "example": "Build a complete code-quality plugin with lint skill, edit warning hook, analyzer agent, and quick-fix command",
+    "alternativeApproaches": [
+      "Add all component types to create a comprehensive plugin",
+      "Create a plugin where each component handles a different aspect of code quality"
+    ]
+  },
+
+  "learningPoints": [
+    "Different components serve different purposes",
+    "Skills are user-invoked, hooks are automatic, agents are for complex tasks",
+    "Components can work together in a cohesive plugin",
+    "Tool restrictions make components safer and more focused"
+  ],
+
+  "nextChallenge": "09-004"
+}

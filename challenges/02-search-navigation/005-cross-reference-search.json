@@ -1,0 +1,125 @@
+{
+  "id": "02-005",
+  "module": "search-navigation",
+  "title": "Cross-Reference Search",
+  "description": "Learn to find all usages of a function or variable across a codebase. This is essential for understanding impact before making changes.",
+  "difficulty": "intermediate",
+  "xpReward": 225,
+  "estimatedMinutes": 10,
+  "skills": ["reference-search", "impact-analysis"],
+
+  "setup": {
+    "workingDir": "~/dojo-workspace/challenge-02-005",
+    "initialFiles": [
+      {
+        "path": "README.md",
+        "content": "# Challenge: Cross-Reference Search\n\nYou need to rename the `getUserData` function. First, find all places it's used!\n\n## Objectives\n1. Find all files that use `getUserData`\n2. Find all files that use the `API_BASE_URL` constant\n3. Create impact-report.md listing all usages\n"
+      },
+      {
+        "path": "src/config.js",
+        "content": "// Application configuration\nconst API_BASE_URL = 'https://api.example.com';\nconst TIMEOUT = 5000;\nconst MAX_RETRIES = 3;\n\nmodule.exports = { API_BASE_URL, TIMEOUT, MAX_RETRIES };\n"
+      },
+      {
+        "path": "src/api/client.js",
+        "content": "const { API_BASE_URL, TIMEOUT } = require('../config');\n\nasync function fetchData(endpoint) {\n  const response = await fetch(`${API_BASE_URL}${endpoint}`, {\n    timeout: TIMEOUT\n  });\n  return response.json();\n}\n\nmodule.exports = { fetchData };\n"
+      },
+      {
+        "path": "src/api/userApi.js",
+        "content": "const { API_BASE_URL } = require('../config');\nconst { fetchData } = require('./client');\n\nasync function getUserData(userId) {\n  return fetchData(`/users/${userId}`);\n}\n\nasync function updateUser(userId, data) {\n  const response = await fetch(`${API_BASE_URL}/users/${userId}`, {\n    method: 'PUT',\n    body: JSON.stringify(data)\n  });\n  return response.json();\n}\n\nmodule.exports = { getUserData, updateUser };\n"
+      },
+      {
+        "path": "src/services/profileService.js",
+        "content": "const { getUserData } = require('../api/userApi');\n\nasync function loadUserProfile(userId) {\n  const userData = await getUserData(userId);\n  return {\n    name: userData.name,\n    email: userData.email,\n    avatar: userData.avatar\n  };\n}\n\nmodule.exports = { loadUserProfile };\n"
+      },
+      {
+        "path": "src/services/dashboardService.js",
+        "content": "const { getUserData } = require('../api/userApi');\nconst { getOrderHistory } = require('../api/orderApi');\n\nasync function loadDashboard(userId) {\n  const user = await getUserData(userId);\n  const orders = await getOrderHistory(userId);\n  return { user, orders };\n}\n\nmodule.exports = { loadDashboard };\n"
+      },
+      {
+        "path": "src/api/orderApi.js",
+        "content": "const { API_BASE_URL } = require('../config');\n\nasync function getOrderHistory(userId) {\n  const response = await fetch(`${API_BASE_URL}/users/${userId}/orders`);\n  return response.json();\n}\n\nmodule.exports = { getOrderHistory };\n"
+      },
+      {
+        "path": "src/components/UserCard.js",
+        "content": "const { getUserData } = require('../api/userApi');\n\nclass UserCard {\n  constructor(userId) {\n    this.userId = userId;\n  }\n\n  async render() {\n    const user = await getUserData(this.userId);\n    return `<div class=\"user-card\">${user.name}</div>`;\n  }\n}\n\nmodule.exports = UserCard;\n"
+      },
+      {
+        "path": "tests/userApi.test.js",
+        "content": "const { getUserData, updateUser } = require('../src/api/userApi');\n\ndescribe('userApi', () => {\n  test('getUserData returns user', async () => {\n    const user = await getUserData('123');\n    expect(user).toBeDefined();\n  });\n});\n"
+      }
+    ],
+    "cleanBefore": true
+  },
+
+  "objectives": [
+    {
+      "id": "obj-1",
+      "description": "Create impact-report.md",
+      "type": "file_exists",
+      "target": "impact-report.md",
+      "required": true
+    },
+    {
+      "id": "obj-2",
+      "description": "List files using getUserData (at least 4)",
+      "type": "file_contains",
+      "target": "impact-report.md",
+      "pattern": "profileService|dashboardService|UserCard|userApi\\.test",
+      "required": true
+    },
+    {
+      "id": "obj-3",
+      "description": "List files using API_BASE_URL (at least 3)",
+      "type": "file_contains",
+      "target": "impact-report.md",
+      "pattern": "client\\.js.*userApi|userApi.*orderApi|API_BASE_URL",
+      "required": true
+    }
+  ],
+
+  "bonusObjectives": [
+    {
+      "id": "bonus-1",
+      "description": "Include usage counts or summary statistics",
+      "type": "file_contains",
+      "target": "impact-report.md",
+      "pattern": "[0-9]+\\s*(file|usage|reference|time)|total|count",
+      "xpBonus": 50
+    }
+  ],
+
+  "hints": [
+    {
+      "level": 1,
+      "text": "Ask Claude Code to find all places where a function is used, not just where it's defined.",
+      "xpCost": 15
+    },
+    {
+      "level": 2,
+      "text": "Try: 'Find all files that import or use getUserData' and 'Where is API_BASE_URL used?'",
+      "xpCost": 40
+    },
+    {
+      "level": 3,
+      "text": "Ask: 'Search for all usages of getUserData and API_BASE_URL across the codebase. Create impact-report.md listing every file that references each one.'",
+      "xpCost": 85
+    }
+  ],
+
+  "solution": {
+    "approach": "Use cross-reference search to find all usages before refactoring.",
+    "example": "Find all usages of getUserData and API_BASE_URL, then create impact-report.md",
+    "alternativeApproaches": [
+      "What files use getUserData? What files use API_BASE_URL? Document the impact.",
+      "Before I rename getUserData, show me all the places it's used"
+    ]
+  },
+
+  "learningPoints": [
+    "Cross-reference search is essential before refactoring",
+    "Claude Code can find both imports and direct usages",
+    "Impact analysis prevents breaking changes"
+  ],
+
+  "nextChallenge": "03-001"
+}

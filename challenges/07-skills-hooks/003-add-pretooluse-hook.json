@@ -1,0 +1,117 @@
+{
+  "id": "07-003",
+  "module": "skills-hooks",
+  "title": "Add a PreToolUse Hook",
+  "description": "Learn to create hooks that run before tool execution. PreToolUse hooks can validate, log, or block operations.",
+  "difficulty": "advanced",
+  "xpReward": 350,
+  "estimatedMinutes": 15,
+  "skills": ["hook-creation", "pretooluse-validation"],
+
+  "setup": {
+    "workingDir": "~/dojo-workspace/challenge-07-003",
+    "initialFiles": [
+      {
+        "path": "README.md",
+        "content": "# Challenge: Add a PreToolUse Hook\n\nCreate a hook that prevents writing to protected directories.\n\n## Objectives\n1. Create a hooks folder with a protect-dirs hook\n2. Hook should trigger on Write and Edit tools\n3. Block writes to 'config/' or 'secrets/' directories\n"
+      },
+      {
+        "path": "plugin.json",
+        "content": "{\n  \"name\": \"safety-plugin\",\n  \"version\": \"1.0.0\",\n  \"description\": \"Safety and validation hooks\"\n}\n"
+      },
+      {
+        "path": "config/settings.json",
+        "content": "{\n  \"apiKey\": \"secret-key-123\",\n  \"environment\": \"production\"\n}\n"
+      },
+      {
+        "path": "secrets/.env",
+        "content": "DATABASE_PASSWORD=supersecret\nAPI_TOKEN=token123\n"
+      },
+      {
+        "path": "src/app.js",
+        "content": "// Safe to edit\nconsole.log('Hello');\n"
+      }
+    ],
+    "cleanBefore": true
+  },
+
+  "objectives": [
+    {
+      "id": "obj-1",
+      "description": "Create hooks folder with hook file",
+      "type": "file_exists",
+      "target": "hooks/protect-dirs.md",
+      "required": true
+    },
+    {
+      "id": "obj-2",
+      "description": "Hook triggers on PreToolUse event",
+      "type": "file_contains",
+      "target": "hooks/protect-dirs.md",
+      "pattern": "event:.*PreToolUse|PreToolUse",
+      "required": true
+    },
+    {
+      "id": "obj-3",
+      "description": "Hook targets Write or Edit tools",
+      "type": "file_contains",
+      "target": "hooks/protect-dirs.md",
+      "pattern": "Write|Edit|tools:",
+      "required": true
+    },
+    {
+      "id": "obj-4",
+      "description": "Hook mentions protected directories",
+      "type": "file_contains",
+      "target": "hooks/protect-dirs.md",
+      "pattern": "config|secrets|protected|block",
+      "required": true
+    }
+  ],
+
+  "bonusObjectives": [
+    {
+      "id": "bonus-1",
+      "description": "Hook returns proper block response",
+      "type": "file_contains",
+      "target": "hooks/protect-dirs.md",
+      "pattern": "block|deny|reject|prevent|stop",
+      "xpBonus": 50
+    }
+  ],
+
+  "hints": [
+    {
+      "level": 1,
+      "text": "Hooks are markdown files in hooks/ folder with event and tools in frontmatter.",
+      "xpCost": 25
+    },
+    {
+      "level": 2,
+      "text": "Try: 'Create a PreToolUse hook that blocks writes to config/ and secrets/ directories'",
+      "xpCost": 70
+    },
+    {
+      "level": 3,
+      "text": "Ask: 'Create hooks/protect-dirs.md with frontmatter (event: PreToolUse, tools: [Write, Edit]) and a prompt-based hook that checks if the target file is in config/ or secrets/ and blocks the operation if so'",
+      "xpCost": 130
+    }
+  ],
+
+  "solution": {
+    "approach": "Create a prompt-based hook that validates tool input before execution.",
+    "example": "Create a PreToolUse hook to protect config/ and secrets/ from writes",
+    "alternativeApproaches": [
+      "Add a safety hook that prevents editing sensitive directories",
+      "Build a file protection hook using PreToolUse"
+    ]
+  },
+
+  "learningPoints": [
+    "PreToolUse hooks run before tool execution",
+    "Hooks can validate, log, modify, or block operations",
+    "Prompt-based hooks use AI to make decisions"
+  ],
+
+  "nextChallenge": "07-004"
+}

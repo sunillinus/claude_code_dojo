@@ -1,0 +1,114 @@
+{
+  "id": "09-004",
+  "module": "plugin-development",
+  "title": "Plugin Configuration & Settings",
+  "description": "Learn to make your plugin configurable using .local.md files. User configuration makes plugins flexible.",
+  "difficulty": "intermediate",
+  "xpReward": 300,
+  "estimatedMinutes": 15,
+  "skills": ["plugin-settings", "local-md-pattern"],
+
+  "setup": {
+    "workingDir": "~/dojo-workspace/challenge-09-004",
+    "initialFiles": [
+      {
+        "path": "README.md",
+        "content": "# Challenge: Plugin Configuration & Settings\n\nMake a plugin that reads user configuration from a .local.md file.\n\n## Objectives\n1. Create a plugin that uses configurable settings\n2. Document the settings in a template file\n3. Create a skill that reads and uses the configuration\n4. The config should use YAML frontmatter pattern\n"
+      },
+      {
+        "path": "plugin.json",
+        "content": "{\n  \"name\": \"configurable-formatter\",\n  \"version\": \"1.0.0\",\n  \"description\": \"A formatter with configurable style settings\",\n  \"author\": {\n    \"name\": \"Config Demo\"\n  }\n}\n"
+      }
+    ],
+    "cleanBefore": true
+  },
+
+  "objectives": [
+    {
+      "id": "obj-1",
+      "description": "Create a config template file",
+      "type": "file_exists",
+      "target": "configurable-formatter.local.md.template",
+      "required": true
+    },
+    {
+      "id": "obj-2",
+      "description": "Template has YAML frontmatter",
+      "type": "file_contains",
+      "target": "configurable-formatter.local.md.template",
+      "pattern": "---",
+      "required": true
+    },
+    {
+      "id": "obj-3",
+      "description": "Template defines settings",
+      "type": "file_contains",
+      "target": "configurable-formatter.local.md.template",
+      "pattern": "indent|style|config|setting|tab|space",
+      "required": true
+    },
+    {
+      "id": "obj-4",
+      "description": "Create a skill that uses config",
+      "type": "file_contains",
+      "target": "skills/format/SKILL.md",
+      "pattern": "config|setting|.local.md|read.*configuration",
+      "required": true
+    }
+  ],
+
+  "bonusObjectives": [
+    {
+      "id": "bonus-1",
+      "description": "Config has sensible defaults documented",
+      "type": "file_contains",
+      "target": "configurable-formatter.local.md.template",
+      "pattern": "default|Default|recommended|Recommended",
+      "xpBonus": 50
+    },
+    {
+      "id": "bonus-2",
+      "description": "Skill mentions reading from .claude/ directory",
+      "type": "file_contains",
+      "target": "skills/format/SKILL.md",
+      "pattern": ".claude|CLAUDE_PLUGIN|local.md",
+      "xpBonus": 50
+    }
+  ],
+
+  "hints": [
+    {
+      "level": 1,
+      "text": "The .local.md pattern uses YAML frontmatter for settings and markdown body for documentation.",
+      "xpCost": 20
+    },
+    {
+      "level": 2,
+      "text": "Try: 'Create a configurable formatter plugin with settings for indent style (tabs/spaces), indent size, and max line length'",
+      "xpCost": 60
+    },
+    {
+      "level": 3,
+      "text": "Ask: 'Create: 1) configurable-formatter.local.md.template with YAML frontmatter containing indentStyle, indentSize, maxLineLength settings and markdown explaining each 2) skills/format/SKILL.md that reads config from ~/.claude/configurable-formatter.local.md and applies the formatting settings'",
+      "xpCost": 115
+    }
+  ],
+
+  "solution": {
+    "approach": "Use the .local.md pattern with YAML frontmatter for plugin configuration.",
+    "example": "Create a configurable plugin with a settings template and a skill that reads the config",
+    "alternativeApproaches": [
+      "Make the formatter customizable via a config file",
+      "Add user settings support to the plugin"
+    ]
+  },
+
+  "learningPoints": [
+    "The .local.md pattern stores plugin settings per-project",
+    "YAML frontmatter holds configuration values",
+    "Markdown body documents the settings",
+    "Skills can read config from ~/.claude/plugin-name.local.md"
+  ],
+
+  "nextChallenge": "09-005"
+}

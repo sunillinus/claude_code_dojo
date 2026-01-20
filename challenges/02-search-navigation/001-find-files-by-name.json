@@ -1,0 +1,117 @@
+{
+  "id": "02-001",
+  "module": "search-navigation",
+  "title": "Find Files by Name",
+  "description": "Learn to find files in a project by their name or pattern. Claude Code can quickly locate files even in large codebases.",
+  "difficulty": "beginner",
+  "xpReward": 100,
+  "estimatedMinutes": 5,
+  "skills": ["file-search", "glob-patterns"],
+
+  "setup": {
+    "workingDir": "~/dojo-workspace/challenge-02-001",
+    "initialFiles": [
+      {
+        "path": "README.md",
+        "content": "# Challenge: Find Files by Name\n\nThis project has many files scattered across folders.\n\n## Objectives\n1. Find all JavaScript files (*.js)\n2. Find the config file\n3. Create a report listing what you found\n"
+      },
+      {
+        "path": "src/index.js",
+        "content": "// Main entry point\nconsole.log('Hello');\n"
+      },
+      {
+        "path": "src/utils/helpers.js",
+        "content": "// Helper functions\nexport const helper = () => {};\n"
+      },
+      {
+        "path": "src/utils/format.js",
+        "content": "// Formatting utilities\nexport const format = () => {};\n"
+      },
+      {
+        "path": "config/app.config.js",
+        "content": "// App configuration\nmodule.exports = { port: 3000 };\n"
+      },
+      {
+        "path": "tests/app.test.js",
+        "content": "// Tests\ntest('works', () => {});\n"
+      },
+      {
+        "path": "docs/guide.md",
+        "content": "# Guide\nThis is documentation.\n"
+      }
+    ],
+    "cleanBefore": true
+  },
+
+  "objectives": [
+    {
+      "id": "obj-1",
+      "description": "Create files-report.md listing the JavaScript files found",
+      "type": "file_exists",
+      "target": "files-report.md",
+      "required": true
+    },
+    {
+      "id": "obj-2",
+      "description": "Report should mention index.js",
+      "type": "file_contains",
+      "target": "files-report.md",
+      "pattern": "index\\.js",
+      "required": true
+    },
+    {
+      "id": "obj-3",
+      "description": "Report should mention the config file",
+      "type": "file_contains",
+      "target": "files-report.md",
+      "pattern": "config|app\\.config",
+      "required": true
+    }
+  ],
+
+  "bonusObjectives": [
+    {
+      "id": "bonus-1",
+      "description": "List all 5 JavaScript files in the report",
+      "type": "file_contains",
+      "target": "files-report.md",
+      "pattern": "helpers\\.js.*format\\.js|format\\.js.*helpers\\.js",
+      "xpBonus": 25
+    }
+  ],
+
+  "hints": [
+    {
+      "level": 1,
+      "text": "Ask Claude Code to find all files matching a pattern, like '*.js' for JavaScript files.",
+      "xpCost": 10
+    },
+    {
+      "level": 2,
+      "text": "Try: 'Find all JavaScript files in this project' - Claude Code will search recursively.",
+      "xpCost": 25
+    },
+    {
+      "level": 3,
+      "text": "Ask: 'Find all .js files and create files-report.md listing them, including the config file'",
+      "xpCost": 50
+    }
+  ],
+
+  "solution": {
+    "approach": "Ask Claude Code to search for files by pattern and create a report.",
+    "example": "Find all JavaScript files (*.js) in this project and create files-report.md listing them",
+    "alternativeApproaches": [
+      "What JavaScript files are in this project? List them in a report.",
+      "Search for *.js files and document what you find"
+    ]
+  },
+
+  "learningPoints": [
+    "Claude Code can search for files using glob patterns",
+    "Searches are recursive by default",
+    "You can combine search with file creation for reports"
+  ],
+
+  "nextChallenge": "02-002"
+}
