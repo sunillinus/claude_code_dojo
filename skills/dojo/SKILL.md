@@ -2,6 +2,7 @@
 name: dojo
 description: Claude Code Dojo - Learn Claude Code through hands-on challenges. Use when the user says /dojo or wants to practice Claude Code skills.
 user-invocable: true
+allowed-tools: Read, Write, Edit, Bash, Glob, Grep, Task
 ---
 
 # Claude Code Dojo

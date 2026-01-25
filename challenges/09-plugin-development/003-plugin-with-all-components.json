@@ -13,7 +13,7 @@
     "initialFiles": [
       {
         "path": "README.md",
-        "content": "# Challenge: Plugin with All Components\n\nBuild a 'code-quality' plugin with all component types working together.\n\n## Objectives\n1. Create a /lint skill that runs linting\n2. Create a PreToolUse hook that warns about large file edits\n3. Create a code-analyzer agent for deep analysis\n4. Create a quick-fix command for common issues\n5. All components should work together cohesively\n"
+        "content": "# Challenge: Plugin with All Components\n\nBuild a 'code-quality' plugin with all component types working together.\n\n## Objectives\n1. Create a /lint skill that runs linting\n2. Create a PreToolUse hook that warns about large file edits\n3. Create a code-analyzer agent for deep analysis\n4. Create a /quick-fix skill for common issues\n5. All components should work together cohesively\n"
       },
       {
         "path": "plugin.json",
@@ -48,9 +48,9 @@
     },
     {
       "id": "obj-4",
-      "description": "Create a quick-fix command",
+      "description": "Create a quick-fix skill",
       "type": "file_exists",
-      "target": "commands/quick-fix.md",
+      "target": "skills/quick-fix/SKILL.md",
       "required": true
     }
   ],
@@ -95,7 +95,7 @@
     },
     {
       "level": 3,
-      "text": "Ask: 'Build out the code-quality plugin: 1) skills/lint/SKILL.md - runs eslint/prettier with allowed-tools [Bash, Read] 2) hooks/warn-large-edits.md - PreToolUse hook on Edit that warns if editing >100 lines 3) agents/code-analyzer.md - deep code analysis with Read, Grep, Glob tools 4) commands/quick-fix.md - fixes common issues like trailing whitespace'",
+      "text": "Ask: 'Build out the code-quality plugin: 1) skills/lint/SKILL.md - runs eslint/prettier with allowed-tools [Bash, Read] 2) hooks/warn-large-edits.md - PreToolUse hook on Edit that warns if editing >100 lines 3) agents/code-analyzer.md - deep code analysis with Read, Grep, Glob tools 4) skills/quick-fix/SKILL.md - user-invocable skill that fixes common issues like trailing whitespace'",
       "xpCost": 120
     }
   ],

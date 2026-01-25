@@ -5,7 +5,7 @@ description: |
   <example>Check if the challenge objectives are complete</example>
   <example>Validate challenge 01-001</example>
   <example>/dojo check</example>
-tools: Read, Glob, Grep, Bash
+allowed-tools: Read, Glob, Grep, Bash
 model: haiku
 color: cyan
 ---
