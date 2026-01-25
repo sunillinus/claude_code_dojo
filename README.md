@@ -4,9 +4,15 @@ Learn Claude Code through hands-on challenges with progress tracking and gamific
 
 ## Installation
 
+### From GitHub (recommended)
 ```bash
-cd /Users/sunil/vibe_code/claude_code_dojo
-claude plugins add . --scope user
+/plugin marketplace add sunillinus/claude_code_dojo
+/plugin install claude-code-dojo@sunillinus-claude-code-dojo
+```
+
+### From local path
+```bash
+claude config add plugins /path/to/claude_code_dojo
 ```
 
 ## Usage
@@ -85,7 +91,9 @@ Progress is stored in `~/.claude/dojo/`:
 
 ```
 claude_code_dojo/
-├── .claude-plugin/plugin.json   # Plugin manifest
+├── .claude-plugin/
+│   ├── plugin.json              # Plugin manifest
+│   └── marketplace.json         # Marketplace distribution
 ├── skills/dojo/SKILL.md         # Main skill
 ├── agents/dojo-validator.md     # Validation subagent
 ├── hooks/track-progress.py      # Progress tracking hook
