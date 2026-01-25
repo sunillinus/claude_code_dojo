@@ -64,16 +64,31 @@ QUICK START
   3. Run /dojo check when you think you're done
   4. Earn XP, level up, and unlock new modules!
 
-MODULES (35 challenges total)
-─────────────────────────────
+MODULES (70 challenges across 16 modules)
+─────────────────────────────────────────
+  Phase 1: Core Skills
   📁 Fundamentals      (5)   File operations basics
   🔍 Search & Nav      (5)   Finding files and code
   📚 Git Basics        (5)   Version control essentials
   ✏️ Code Editing      (5)   Refactoring and editing
   🐛 Debugging         (4)   Finding and fixing bugs
-  🤖 Subagents         (4)   Working with agents
-  🪝 Skills & Hooks    (4)   Extending Claude Code
-  🔌 MCP Integration   (3)   External tool integration
+  🧪 Testing & TDD     (5)   Write tests, TDD, coverage
+
+  Phase 2: Optimize Workflow
+  ⚙️ Project Config    (5)   CLAUDE.md and settings
+  💬 Prompting         (4)   Effective communication
+  🏗️ Code Generation   (4)   Scaffolding and generation
+  🌐 Web Research      (4)   Docs, search, APIs
+
+  Phase 3: Advanced Execution
+  🤖 Subagents         (4)   Specialized agents
+  ⏳ Background Tasks  (4)   Parallel execution
+  🔄 Agentic Loops     (4)   Ralph Loop autonomy
+
+  Phase 4: Build Tools
+  🪝 Skills & Hooks    (4)   Custom commands
+  🔌 MCP Integration   (3)   External tools
+  📦 Plugin Dev        (5)   Build plugins
 
 TIPS
 ────
@@ -127,7 +142,7 @@ Display formatted stats:
 ║  ████████░░░░░░░░░░░░  83%           ║
 ╠══════════════════════════════════════╣
 ║  🔥 Streak: 3 days                   ║
-║  ✅ Challenges: 12 / 35              ║
+║  ✅ Challenges: 12 / 70              ║
 ║  🏆 Badges: 4                        ║
 ╚══════════════════════════════════════╝
 
@@ -177,9 +192,17 @@ When initializing progress.json:
     "git-basics": { "completed": 0, "total": 5, "unlocked": false },
     "code-editing": { "completed": 0, "total": 5, "unlocked": false },
     "debugging": { "completed": 0, "total": 4, "unlocked": false },
+    "testing-tdd": { "completed": 0, "total": 5, "unlocked": false },
+    "project-config": { "completed": 0, "total": 5, "unlocked": false },
+    "effective-prompting": { "completed": 0, "total": 4, "unlocked": false },
+    "code-generation": { "completed": 0, "total": 4, "unlocked": false },
+    "web-research": { "completed": 0, "total": 4, "unlocked": false },
     "subagents": { "completed": 0, "total": 4, "unlocked": false },
+    "background-tasks": { "completed": 0, "total": 4, "unlocked": false },
+    "agentic-loops": { "completed": 0, "total": 4, "unlocked": false },
     "skills-hooks": { "completed": 0, "total": 4, "unlocked": false },
-    "mcp-integration": { "completed": 0, "total": 3, "unlocked": false }
+    "mcp-integration": { "completed": 0, "total": 3, "unlocked": false },
+    "plugin-development": { "completed": 0, "total": 5, "unlocked": false }
   },
   "skills": {},
   "badges": [],
@@ -221,14 +244,29 @@ Level 10: 3,162 XP
 
 ## Module Unlocking
 
+Phase 1 - Core Skills:
 - Fundamentals: Always unlocked
 - Search & Navigation: Always unlocked
 - Git Basics: Complete 3 challenges from Fundamentals
 - Code Editing: Complete Git Basics module
 - Debugging: Complete Code Editing module
-- Subagents: Complete 15 total challenges
-- Skills & Hooks: Complete Subagents module
+- Testing & TDD: Complete Debugging module
+
+Phase 2 - Optimize Workflow:
+- Project Config: Complete Testing & TDD module
+- Effective Prompting: Complete Project Config module
+- Code Generation: Complete Effective Prompting module
+- Web Research: Complete Code Generation module
+
+Phase 3 - Advanced Execution:
+- Subagents: Complete Web Research module
+- Background Tasks: Complete Subagents module
+- Agentic Loops: Complete Background Tasks module
+
+Phase 4 - Build Tools:
+- Skills & Hooks: Complete Agentic Loops module
 - MCP Integration: Complete Skills & Hooks module
+- Plugin Development: Complete Skills & Hooks module
 
 ## Important
 

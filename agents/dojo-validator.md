@@ -1,8 +1,13 @@
 ---
 name: dojo-validator
-description: Validates Claude Code Dojo challenge objectives. Use when user runs /dojo check or completes a challenge.
+description: |
+  Validates Claude Code Dojo challenge objectives. Use when user runs /dojo check or completes a challenge.
+  <example>Check if the challenge objectives are complete</example>
+  <example>Validate challenge 01-001</example>
+  <example>/dojo check</example>
 tools: Read, Glob, Grep, Bash
 model: haiku
+color: cyan
 ---
 
 # Dojo Challenge Validator
