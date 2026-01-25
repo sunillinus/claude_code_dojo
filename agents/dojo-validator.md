@@ -71,12 +71,16 @@ Check if a commit with message pattern exists:
 cd "<workingDir>" && git log --oneline | grep -E "<pattern>"
 ```
 
-### command_output
-Run command and check output:
+### command_output_contains
+Run command and check if output matches a regex pattern:
 ```bash
 cd "<workingDir>" && <command>
 ```
-Compare output against expected value.
+Then check if the output matches the `pattern` regex:
+```bash
+echo "<output>" | grep -E "<pattern>"
+```
+If the pattern matches any part of the output, the objective passes.
 
 ## Output Format
 
