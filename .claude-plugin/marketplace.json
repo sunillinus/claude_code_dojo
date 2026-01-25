@@ -1,0 +1,10 @@
+{
+  "name": "sunillinus-claude-code-dojo",
+  "plugins": [
+    {
+      "name": "claude-code-dojo",
+      "description": "Learn Claude Code through hands-on challenges with progress tracking and gamification",
+      "path": "."
+    }
+  ]
+}
