@@ -2,54 +2,100 @@
   "id": "03-005",
   "module": "git-basics",
   "title": "Resolve Simple Conflict",
-  "description": "Learn to resolve a merge conflict with Claude Code's help. Conflicts happen - knowing how to fix them is essential.",
+  "description": "Learn why merge conflicts happen, what conflict markers mean, and how to resolve them. Understand merge strategies and how Claude Code approaches conflict resolution safely and thoughtfully.",
   "difficulty": "intermediate",
   "xpReward": 250,
-  "estimatedMinutes": 10,
-  "skills": ["git-merge", "conflict-resolution"],
+  "estimatedMinutes": 15,
+  "skills": ["git-merge", "conflict-resolution", "conflict-markers", "merge-strategies"],
 
   "setup": {
     "workingDir": "~/dojo-workspace/challenge-03-005",
     "initialFiles": [
       {
         "path": "README.md",
-        "content": "# Challenge: Resolve Simple Conflict\n\nTwo branches have conflicting changes. Merge them!\n\n## Objectives\n1. Merge the 'feature' branch into 'main'\n2. Resolve the conflict (keep both changes if possible)\n3. Complete the merge commit\n"
+        "content": "# Challenge: Resolve Simple Conflict\n\nLearn to handle merge conflicts -- an inevitable part of collaborative\ndevelopment. Conflicts are not errors; they are git asking for your\njudgment on how to combine changes.\n\n## What Is a Merge?\n\nA merge combines changes from two branches into one. When you run\n`git merge feature-branch` while on main, git:\n\n1. Finds the **common ancestor** (where the branches diverged)\n2. Compares both branches' changes against that ancestor\n3. Combines the changes automatically where possible\n4. Creates a **merge commit** with two parents\n\n```\n        D --- E        (feature)\n       /       \\\nA --- B --- C --- M    (main, M = merge commit)\n```\n\n## Why Conflicts Happen\n\nGit can automatically merge changes when they don't overlap:\n- Branch A modifies file1.js, Branch B modifies file2.js -- no conflict\n- Branch A adds lines at the top of a file, Branch B adds at the bottom -- no conflict\n\nConflicts happen when **two branches change the same lines** in the\nsame file. Git can't know which change you want (or if you want both),\nso it asks you to decide.\n\nExample scenario:\n- Main branch: changes line 5 of config.js to `name: \"MyApp\"`\n- Feature branch: changes line 5 of config.js to `name: \"App\", debug: true`\n- Git doesn't know: Should the name be \"MyApp\" or \"App\"? Should debug be there?\n\n## Conflict Markers: What They Look Like\n\nWhen a conflict occurs, git inserts markers into the file:\n\n```\nconst config = {\n<<<<<<< HEAD\n  name: \"MyApp\",\n  version: \"2.0.0\"\n=======\n  name: \"App\",\n  version: \"1.0.0\",\n  debug: true\n>>>>>>> feature/add-debug\n};\n```\n\n### Understanding the markers:\n\n| Marker | Meaning |\n|--------|--------|\n| `<<<<<<< HEAD` | Start of YOUR branch's version (the branch you're ON) |\n| `=======` | Divider between the two versions |\n| `>>>>>>> feature/add-debug` | End of the INCOMING branch's version |\n\nSo the structure is:\n```\n<<<<<<< HEAD\n  [your current branch's changes]\n=======\n  [incoming branch's changes]\n>>>>>>> branch-name\n```\n\n## Resolution Strategies\n\n### 1. Keep your version (\"ours\")\nRemove the incoming changes, keep HEAD's version:\n```\nconst config = {\n  name: \"MyApp\",\n  version: \"2.0.0\"\n};\n```\n\n### 2. Accept incoming version (\"theirs\")\nRemove HEAD's changes, keep the incoming version:\n```\nconst config = {\n  name: \"App\",\n  version: \"1.0.0\",\n  debug: true\n};\n```\n\n### 3. Combine both (most common)\nManually merge the best parts of both:\n```\nconst config = {\n  name: \"MyApp\",\n  version: \"2.0.0\",\n  debug: true\n};\n```\n\n### 4. Rewrite entirely\nSometimes neither version is right; write something new:\n```\nconst config = {\n  name: \"MyApp\",\n  version: \"2.0.0\",\n  debug: process.env.NODE_ENV !== 'production'\n};\n```\n\n## The Resolution Process\n\n1. **Attempt the merge**: `git merge branch-name`\n2. **Git reports conflicts**: tells you which files have conflicts\n3. **Open conflicted files**: find the `<<<<<<<` markers\n4. **Resolve each conflict**: choose a strategy, edit the file\n5. **Remove ALL markers**: delete `<<<<<<<`, `=======`, `>>>>>>>` lines\n6. **Stage resolved files**: `git add resolved-file.js`\n7. **Complete the merge**: `git commit` (creates the merge commit)\n\n## Emergency Exit\n\nOverwhelmed? You can cancel the merge entirely:\n```\ngit merge --abort\n```\nThis resets everything to before the merge attempt.\n\n## How Claude Code Handles Conflicts\n\nWhen Claude Code encounters merge conflicts, it:\n1. Reads the conflicted file to understand both sides\n2. Analyzes what each branch was trying to achieve\n3. Proposes a resolution that preserves intent from both branches\n4. Removes all conflict markers cleanly\n5. Explains its reasoning so you can verify the resolution\n\nClaude Code never blindly picks one side -- it tries to understand\nthe intent behind each change.\n\n## Your Task\n\nThis challenge uses a setup script to create a conflict scenario.\nRun it first:\n```\nbash setup-conflict.sh\n```\n\nThe script creates:\n- A main branch with a config file and some updates\n- A `feature/add-settings` branch with different changes to the same file\n- Both branches modify `config.js` in conflicting ways\n\nAfter running the setup script, you need to:\n\n1. **Attempt the merge**: merge `feature/add-settings` into main\n2. **Examine the conflict**: read the conflicted file, understand both sides\n3. **Resolve the conflict**: combine changes from both branches\n   (keep the best of both -- the updated name AND the new settings)\n4. **Complete the merge**: stage and commit\n5. **Verify resolution**: ensure no conflict markers remain in any file\n6. **Create conflict-notes.md** explaining:\n   - What conflict markers mean (`<<<<<<<`, `=======`, `>>>>>>>`)\n   - The resolution strategy you chose and why\n   - How to abort a merge if needed\n\n## Tips\n- After the merge attempt, run `git status` to see conflicted files\n- Read the conflicted file carefully -- understand what EACH branch wanted\n- After resolving, search for `<<<<<<<` to make sure NO markers remain\n- The merge commit is created when you `git commit` after staging\n"
+      },
+      {
+        "path": "setup-conflict.sh",
+        "content": "#!/bin/bash\n# Creates a merge conflict scenario for the student to resolve.\n# Run this script first: bash setup-conflict.sh\n\ncd ~/dojo-workspace/challenge-03-005\n\n# Initialize repo\ngit init\n\n# --- Commit 1: Initial config ---\ncat > config.js << 'EOF'\n// Application Configuration\nconst config = {\n  name: \"App\",\n  version: \"1.0.0\",\n  port: 3000,\n  database: {\n    host: \"localhost\",\n    port: 5432,\n    name: \"appdb\"\n  }\n};\n\nmodule.exports = config;\nEOF\n\ncat > app.js << 'EOF'\nconst config = require('./config');\n\nfunction startApp() {\n  console.log(`Starting ${config.name} v${config.version}`);\n  console.log(`Port: ${config.port}`);\n  console.log(`Database: ${config.database.host}:${config.database.port}/${config.database.name}`);\n}\n\nstartApp();\nEOF\n\ngit add config.js app.js README.md\ngit commit -m \"Initial project with config and app\"\n\n# --- Create feature branch ---\ngit checkout -b feature/add-settings\n\n# --- Feature branch: add logging and debug settings ---\ncat > config.js << 'EOF'\n// Application Configuration\nconst config = {\n  name: \"App\",\n  version: \"1.0.0\",\n  port: 3000,\n  debug: true,\n  logLevel: \"verbose\",\n  database: {\n    host: \"localhost\",\n    port: 5432,\n    name: \"appdb\"\n  },\n  logging: {\n    enabled: true,\n    file: \"app.log\",\n    maxSize: \"10mb\"\n  }\n};\n\nmodule.exports = config;\nEOF\n\ngit add config.js\ngit commit -m \"Add debug, logging, and log level settings\"\n\n# --- Switch to main and make conflicting changes ---\ngit checkout main\n\n# --- Main branch: rename app, update version, change port ---\ncat > config.js << 'EOF'\n// Application Configuration\nconst config = {\n  name: \"SuperApp\",\n  version: \"2.0.0\",\n  port: 8080,\n  database: {\n    host: \"localhost\",\n    port: 5432,\n    name: \"superappdb\"\n  }\n};\n\nmodule.exports = config;\nEOF\n\ncat > app.js << 'EOF'\nconst config = require('./config');\n\nfunction startApp() {\n  console.log(`Starting ${config.name} v${config.version}`);\n  console.log(`Listening on port ${config.port}`);\n  console.log(`Database: ${config.database.host}:${config.database.port}/${config.database.name}`);\n  console.log('Application ready!');\n}\n\nstartApp();\nEOF\n\ngit add config.js app.js\ngit commit -m \"Rename to SuperApp, bump to v2.0.0, change port to 8080\"\n\necho \"\"\necho \"=== Conflict Scenario Ready ===\"\necho \"You are on the 'main' branch.\"\necho \"The 'feature/add-settings' branch has conflicting changes to config.js.\"\necho \"\"\necho \"Your task: merge feature/add-settings into main and resolve the conflict.\"\necho \"Run: git merge feature/add-settings\"\necho \"\"\necho \"Expected conflict in config.js:\"\necho \"  - main: renamed to SuperApp, v2.0.0, port 8080, db name superappdb\"\necho \"  - feature: kept App, v1.0.0, port 3000, added debug/logging settings\"\necho \"\"\necho \"Best resolution: keep main's naming/version/port + feature's debug/logging\"\necho \"\"\n"
+      },
+      {
+        "path": "config.js",
+        "content": "// This file will be overwritten by setup-conflict.sh\n// Run: bash setup-conflict.sh\n"
+      },
+      {
+        "path": "app.js",
+        "content": "// This file will be overwritten by setup-conflict.sh\n// Run: bash setup-conflict.sh\n"
       }
     ],
     "cleanBefore": true,
     "postSetup": [
-      "cd ~/dojo-workspace/challenge-03-005 && git init",
-      "cd ~/dojo-workspace/challenge-03-005 && echo 'const config = { name: \"App\", version: \"1.0.0\" };\\nmodule.exports = config;' > config.js && git add . && git commit -m 'Initial config'",
-      "cd ~/dojo-workspace/challenge-03-005 && git checkout -b feature",
-      "cd ~/dojo-workspace/challenge-03-005 && echo 'const config = { name: \"App\", version: \"1.0.0\", debug: true };\\nmodule.exports = config;' > config.js && git add . && git commit -m 'Add debug flag'",
-      "cd ~/dojo-workspace/challenge-03-005 && git checkout main",
-      "cd ~/dojo-workspace/challenge-03-005 && echo 'const config = { name: \"MyApp\", version: \"1.0.0\" };\\nmodule.exports = config;' > config.js && git add . && git commit -m 'Update app name'"
+      "cd ~/dojo-workspace/challenge-03-005 && chmod +x setup-conflict.sh && bash setup-conflict.sh"
     ]
   },
 
   "objectives": [
     {
       "id": "obj-1",
-      "description": "Merge is complete (no MERGE_HEAD)",
+      "description": "Merge is complete (no unresolved merge in progress)",
       "type": "command_output_contains",
-      "command": "test -f .git/MERGE_HEAD && echo 'merging' || echo 'clean'",
+      "command": "cd ~/dojo-workspace/challenge-03-005 && test -f .git/MERGE_HEAD && echo 'merging' || echo 'clean'",
       "pattern": "clean",
       "required": true
     },
     {
       "id": "obj-2",
-      "description": "config.js contains MyApp (from main)",
-      "type": "file_contains",
+      "description": "config.js has no remaining conflict markers (<<<<<<<)",
+      "type": "file_not_contains",
       "target": "config.js",
-      "pattern": "MyApp",
+      "pattern": "<<<<<<<|=======|>>>>>>>",
       "required": true
     },
     {
       "id": "obj-3",
-      "description": "config.js contains debug (from feature)",
+      "description": "config.js contains SuperApp from main branch",
       "type": "file_contains",
       "target": "config.js",
-      "pattern": "debug",
+      "pattern": "SuperApp",
+      "required": true
+    },
+    {
+      "id": "obj-4",
+      "description": "config.js contains debug or logging settings from feature branch",
+      "type": "file_contains",
+      "target": "config.js",
+      "pattern": "debug|logging|logLevel",
+      "required": true
+    },
+    {
+      "id": "obj-5",
+      "description": "A merge commit exists in the history",
+      "type": "command_output_contains",
+      "command": "cd ~/dojo-workspace/challenge-03-005 && git log --oneline 2>&1",
+      "pattern": "[Mm]erge|[Rr]esolv|feature/add-settings",
+      "required": true
+    },
+    {
+      "id": "obj-6",
+      "description": "Create conflict-notes.md",
+      "type": "file_exists",
+      "target": "conflict-notes.md",
+      "required": true
+    },
+    {
+      "id": "obj-7",
+      "description": "conflict-notes.md explains conflict markers",
+      "type": "file_contains",
+      "target": "conflict-notes.md",
+      "pattern": "<<<<|====|>>>>|HEAD|[Mm]arker|[Dd]ivider|[Ss]ection",
+      "required": true
+    },
+    {
+      "id": "obj-8",
+      "description": "conflict-notes.md describes the resolution strategy used",
+      "type": "file_contains",
+      "target": "conflict-notes.md",
+      "pattern": "[Cc]ombin|[Mm]erge.*both|[Kk]eep.*both|[Rr]esolv|[Ss]trateg|chose|[Dd]ecid",
       "required": true
     }
   ],
@@ -57,45 +103,64 @@
   "bonusObjectives": [
     {
       "id": "bonus-1",
-      "description": "Merge commit message mentions 'merge' or 'conflict'",
-      "type": "command_output_contains",
-      "command": "git log --format='%s' -1 2>/dev/null",
-      "pattern": "[Mm]erge|[Cc]onflict|[Ff]eature",
-      "xpBonus": 50
+      "description": "config.js preserves version 2.0.0 from main and logging config from feature",
+      "type": "file_contains",
+      "target": "config.js",
+      "pattern": "2\\.0\\.0",
+      "xpBonus": 25
+    },
+    {
+      "id": "bonus-2",
+      "description": "conflict-notes.md mentions git merge --abort as an escape hatch",
+      "type": "file_contains",
+      "target": "conflict-notes.md",
+      "pattern": "merge --abort|[Aa]bort|[Cc]ancel.*merge|[Ee]scape|[Ee]mergency",
+      "xpBonus": 25
+    },
+    {
+      "id": "bonus-3",
+      "description": "conflict-notes.md explains how Claude Code handles conflicts",
+      "type": "file_contains",
+      "target": "conflict-notes.md",
+      "pattern": "[Cc]laude|[Aa]nalyze.*both|understand.*intent|[Rr]eason",
+      "xpBonus": 25
     }
   ],
 
   "hints": [
     {
       "level": 1,
-      "text": "Ask Claude Code to merge the feature branch and help resolve any conflicts.",
+      "text": "Start by running 'git merge feature/add-settings'. Git will report a conflict in config.js. Open the file and you'll see markers: <<<<<<< HEAD shows your branch (main), ======= divides them, >>>>>>> shows the incoming branch. You need to combine the best of both and remove all markers.",
       "xpCost": 20
     },
     {
       "level": 2,
-      "text": "Try: 'Merge the feature branch into main and resolve any conflicts by keeping both changes'",
+      "text": "The ideal resolution: keep SuperApp name, version 2.0.0, and port 8080 from main, but also include the debug, logLevel, and logging settings from the feature branch. Edit config.js to have all of these, remove all <<<<<<< ======= >>>>>>> markers, then 'git add config.js' and 'git commit'.",
       "xpCost": 50
     },
     {
       "level": 3,
-      "text": "Ask: 'Merge feature into main. There will be a conflict in config.js - resolve it by keeping the name from main (MyApp) and the debug flag from feature (debug: true), then complete the merge'",
+      "text": "Ask Claude Code: 'Merge feature/add-settings into main. There will be a conflict in config.js. Resolve it by keeping SuperApp name, v2.0.0, port 8080 from main, AND adding the debug, logLevel, and logging settings from the feature branch. Complete the merge commit. Then create conflict-notes.md explaining conflict markers, the resolution strategy used, and that git merge --abort can cancel a merge.'",
       "xpCost": 100
     }
   ],
 
   "solution": {
-    "approach": "Merge branches, identify conflicts, and combine changes thoughtfully.",
-    "example": "Merge feature into main and resolve the conflict by combining both changes",
+    "approach": "Attempt the merge, read and understand the conflicted file, combine the best of both branches, remove all markers, stage, commit, and document the process.",
+    "example": "Merge the feature branch, resolve the config.js conflict by combining both branches' improvements, complete the merge, and document what conflict markers mean",
     "alternativeApproaches": [
-      "Integrate the feature branch and fix the merge conflict",
-      "Complete the merge keeping changes from both branches"
+      "Ask Claude to merge the branches, resolve any conflicts by keeping the best of both, and explain the conflict resolution process in notes",
+      "Help me merge feature/add-settings into main, handle the conflict by combining changes, and write up what I learned about merge conflicts"
     ]
   },
 
   "learningPoints": [
-    "Merge conflicts occur when the same lines are changed differently",
-    "Claude Code can help identify and resolve conflicts",
-    "Often the best resolution combines changes from both branches"
+    "Merge conflicts happen when two branches change the same lines in the same file",
+    "Conflict markers: <<<<<<< HEAD (your version), ======= (divider), >>>>>>> branch (incoming version)",
+    "Resolution strategies: keep ours, accept theirs, combine both, or rewrite entirely",
+    "After resolving: remove ALL markers, git add the file, then git commit to complete the merge",
+    "git merge --abort cancels a merge in progress and returns to the pre-merge state",
+    "Claude Code resolves conflicts by understanding the intent behind each branch's changes"
   ],
 
   "nextChallenge": "04-001"

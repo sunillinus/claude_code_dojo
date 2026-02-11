@@ -2,22 +2,22 @@
   "id": "01-003",
   "module": "fundamentals",
   "title": "Edit an Existing File",
-  "description": "Learn to modify existing files precisely. Claude Code can make surgical edits without disturbing the rest of your code.",
+  "description": "Learn how Claude Code uses the Edit tool to make precise, surgical changes to existing files. Understand exact string replacement, the uniqueness requirement, the replace_all parameter, and why Edit is preferred over Write for modifications.",
   "difficulty": "beginner",
-  "xpReward": 100,
-  "estimatedMinutes": 5,
-  "skills": ["file-editing"],
+  "xpReward": 125,
+  "estimatedMinutes": 10,
+  "skills": ["file-editing", "edit-tool", "debugging"],
 
   "setup": {
     "workingDir": "~/dojo-workspace/challenge-01-003",
     "initialFiles": [
       {
         "path": "README.md",
-        "content": "# Challenge: Edit an Existing File\n\nYour task: Fix the bug in `calculator.js`\n\n## Objectives\n1. The `multiply` function has a bug - it adds instead of multiplies\n2. Fix the bug without changing anything else\n"
+        "content": "# Challenge: Edit an Existing File\n\nLearn how the Edit tool works, then apply that knowledge to fix\nreal issues in a JavaScript file.\n\n---\n\n## How Claude Code Edits Files\n\nWhen you ask Claude Code to change something in an existing file,\nit uses the **Edit** tool -- not Write. Understanding Edit is\ncritical because most of your work involves modifying existing\ncode, not creating files from scratch.\n\n### The Edit Tool\n\nEdit performs **exact string replacement**. It takes these parameters:\n\n| Parameter     | Required | Description                                      |\n|---------------|----------|--------------------------------------------------|\n| `file_path`   | Yes      | Absolute path to the file                        |\n| `old_string`  | Yes      | The exact text to find and replace                |\n| `new_string`  | Yes      | The replacement text                              |\n| `replace_all` | No       | If true, replaces ALL occurrences (default: false)|\n\n### How It Works Step-by-Step\n\n1. Claude Code **Reads** the file first (required -- Edit fails\n   without a prior Read)\n2. It finds the exact `old_string` in the file content\n3. It replaces that text with `new_string`\n4. Everything else in the file is preserved unchanged\n\nExample:\n```\nold_string: \"return a + b; // BUG\"\nnew_string: \"return a * b;\"\n```\n\nThis replaces only that specific line. The rest of the file is\nuntouched.\n\n### The Uniqueness Requirement\n\nThe `old_string` must appear **exactly once** in the file. If it\nappears zero times (typo or wrong text), the Edit fails. If it\nappears multiple times, the Edit also fails because Claude Code\ncannot know which occurrence you meant.\n\nWhen the text is not unique, you have two options:\n\n1. **Include more context** -- add surrounding lines to make the\n   match unique:\n   ```\n   old_string: \"function multiply(a, b) {\\n  return a + b;\"\n   new_string: \"function multiply(a, b) {\\n  return a * b;\"\n   ```\n\n2. **Use replace_all** -- if you want to change every occurrence:\n   ```\n   old_string: \"var \"\n   new_string: \"const \"\n   replace_all: true\n   ```\n\n### Edit vs. Write: When to Use Each\n\n| Scenario                        | Use        | Why                                       |\n|---------------------------------|------------|-------------------------------------------|\n| Fix a bug on one line           | **Edit**   | Preserves the rest of the file            |\n| Rename a variable everywhere    | **Edit**   | Use replace_all for bulk renaming         |\n| Add a function to a file        | **Edit**   | Insert at a specific location             |\n| Create a new file               | **Write**  | File does not exist yet                   |\n| Completely rewrite a file       | **Write**  | When most content changes                 |\n\nThe key principle: **Edit is for targeted changes. Write is for\ncreating from scratch.** Using Edit preserves unchanged code and\nreduces the risk of accidentally losing content.\n\n### The replace_all Parameter\n\nWhen you need to rename something throughout a file, `replace_all`\nsaves time. Instead of making separate Edit calls for each\noccurrence, a single call with `replace_all: true` handles them all.\n\nThis is perfect for:\n- Renaming a variable or function across the file\n- Changing a repeated string (like an API base URL)\n- Updating a coding convention (e.g., `var` to `const`)\n\n---\n\n## Your Task\n\nThe file `userService.js` has several issues that need fixing.\nYou must make targeted edits to solve each one:\n\n1. **Bug fix** -- The `isAdult` function uses `>` when it should\n   use `>=`. A person who is exactly 18 should be considered an\n   adult.\n\n2. **Configuration fix** -- The API base URL is hardcoded as\n   `http://localhost:3000`. Change it to `https://api.example.com`.\n\n3. **Naming improvement** -- The variable `d` in the `formatUser`\n   function is poorly named. Rename it to `displayName` everywhere\n   it appears in that function.\n\n4. **Remove outdated code** -- Delete the `deprecatedHelper`\n   function entirely (it is marked as deprecated and unused).\n\n## Objectives\n1. Fix the age comparison bug in `isAdult`\n2. Update the hardcoded API URL\n3. Rename the poorly-named variable\n4. Remove the deprecated function\n"
       },
       {
-        "path": "calculator.js",
-        "content": "// Simple calculator module\n\nfunction add(a, b) {\n  return a + b;\n}\n\nfunction subtract(a, b) {\n  return a - b;\n}\n\nfunction multiply(a, b) {\n  return a + b; // BUG: should multiply!\n}\n\nfunction divide(a, b) {\n  if (b === 0) throw new Error('Cannot divide by zero');\n  return a / b;\n}\n\nmodule.exports = { add, subtract, multiply, divide };\n"
+        "path": "userService.js",
+        "content": "// User Service Module\n// Handles user data processing and API communication\n\nconst API_BASE = 'http://localhost:3000';\n\nfunction isAdult(age) {\n  return age > 18;\n}\n\nfunction formatUser(user) {\n  const d = `${user.firstName} ${user.lastName}`;\n  return {\n    id: user.id,\n    displayName: d,\n    email: user.email,\n    isAdult: isAdult(user.age),\n    profile: `${API_BASE}/users/${user.id}/profile`\n  };\n}\n\nfunction fetchUsers() {\n  return fetch(`${API_BASE}/api/users`)\n    .then(res => res.json())\n    .then(users => users.map(formatUser));\n}\n\nfunction fetchUserById(id) {\n  return fetch(`${API_BASE}/api/users/${id}`)\n    .then(res => {\n      if (!res.ok) throw new Error(`User ${id} not found`);\n      return res.json();\n    })\n    .then(formatUser);\n}\n\n// DEPRECATED: This function is no longer used anywhere.\n// It was replaced by formatUser in v2.0.\nfunction deprecatedHelper(data) {\n  return {\n    name: data.name,\n    active: true\n  };\n}\n\nfunction createUser(userData) {\n  return fetch(`${API_BASE}/api/users`, {\n    method: 'POST',\n    headers: { 'Content-Type': 'application/json' },\n    body: JSON.stringify(userData)\n  }).then(res => res.json());\n}\n\nmodule.exports = {\n  isAdult,\n  formatUser,\n  fetchUsers,\n  fetchUserById,\n  createUser\n};\n"
       }
     ],
     "cleanBefore": true
@@ -26,18 +26,66 @@
   "objectives": [
     {
       "id": "obj-1",
-      "description": "The multiply function should use the * operator",
+      "description": "The `isAdult` function uses `>=` instead of `>` for the age comparison",
       "type": "file_contains",
-      "target": "calculator.js",
-      "pattern": "function multiply[^}]+\\*",
+      "target": "userService.js",
+      "pattern": "age\\s*>=\\s*18",
       "required": true
     },
     {
       "id": "obj-2",
-      "description": "The add function should still use + operator (not broken)",
+      "description": "The original wrong comparison `age > 18` is no longer present",
+      "type": "file_not_contains",
+      "target": "userService.js",
+      "pattern": "age\\s*>\\s*18[^=]|age\\s*>\\s*18$",
+      "required": true
+    },
+    {
+      "id": "obj-3",
+      "description": "The API base URL has been changed to `https://api.example.com`",
       "type": "file_contains",
-      "target": "calculator.js",
-      "pattern": "function add\\(a, b\\)[^}]+return a \\+ b",
+      "target": "userService.js",
+      "pattern": "https://api\\.example\\.com",
+      "required": true
+    },
+    {
+      "id": "obj-4",
+      "description": "The old localhost URL is no longer present",
+      "type": "file_not_contains",
+      "target": "userService.js",
+      "pattern": "localhost:3000",
+      "required": true
+    },
+    {
+      "id": "obj-5",
+      "description": "The variable `d` in formatUser has been renamed to `displayName`",
+      "type": "file_contains",
+      "target": "userService.js",
+      "pattern": "const displayName = .+firstName",
+      "required": true
+    },
+    {
+      "id": "obj-6",
+      "description": "The deprecated function has been removed",
+      "type": "file_not_contains",
+      "target": "userService.js",
+      "pattern": "deprecatedHelper",
+      "required": true
+    },
+    {
+      "id": "obj-7",
+      "description": "The `formatUser` function still exists and works correctly",
+      "type": "file_contains",
+      "target": "userService.js",
+      "pattern": "function formatUser",
+      "required": true
+    },
+    {
+      "id": "obj-8",
+      "description": "The `fetchUsers` function still exists (not accidentally removed)",
+      "type": "file_contains",
+      "target": "userService.js",
+      "pattern": "function fetchUsers",
       "required": true
     }
   ],
@@ -45,45 +93,56 @@
   "bonusObjectives": [
     {
       "id": "bonus-1",
-      "description": "Remove or update the bug comment",
+      "description": "The DEPRECATED comment is also removed (not just the function)",
       "type": "file_not_contains",
-      "target": "calculator.js",
-      "pattern": "BUG:",
-      "xpBonus": 25
+      "target": "userService.js",
+      "pattern": "DEPRECATED",
+      "xpBonus": 15
+    },
+    {
+      "id": "bonus-2",
+      "description": "The module.exports no longer lists deprecatedHelper",
+      "type": "file_not_contains",
+      "target": "userService.js",
+      "pattern": "deprecatedHelper",
+      "xpBonus": 10
     }
   ],
 
   "hints": [
     {
       "level": 1,
-      "text": "Ask Claude Code to fix the multiply function. Be specific about what's wrong.",
+      "text": "There are 4 distinct issues to fix. Read the file first, then tackle each one separately: (1) age comparison operator, (2) API URL string, (3) variable name, (4) deprecated function. Think about which issues might use replace_all.",
       "xpCost": 10
     },
     {
       "level": 2,
-      "text": "Say something like: 'In calculator.js, the multiply function uses + but should use *'",
-      "xpCost": 25
+      "text": "For the age bug, change `> 18` to `>= 18`. For the URL, the string 'http://localhost:3000' appears once as a constant, so just change that line. For the variable rename, note that `d` is used in two places within formatUser -- `const d = ...` and `displayName: d,`. For the deprecated function, remove the comment and the function body.",
+      "xpCost": 30
     },
     {
       "level": 3,
-      "text": "Type: 'Fix the bug in calculator.js - change the multiply function to use * instead of +'",
+      "text": "Ask Claude Code: 'In userService.js: (1) Fix isAdult to use >= instead of >, (2) Change API_BASE from http://localhost:3000 to https://api.example.com, (3) Rename the variable d to displayName in the formatUser function, (4) Remove the deprecatedHelper function and its DEPRECATED comment entirely, and remove it from module.exports if present.'",
       "xpCost": 50
     }
   ],
 
   "solution": {
-    "approach": "Describe the specific edit you want to make. Claude Code will make targeted changes.",
-    "example": "Fix the multiply function in calculator.js - it should multiply (use *) not add",
+    "approach": "Make four targeted edits to userService.js: fix the comparison operator, update the URL constant, rename the variable, and remove the deprecated code. Each edit preserves all other code in the file.",
+    "example": "Fix the 4 issues in userService.js: change age > 18 to age >= 18 in isAdult, update API_BASE to https://api.example.com, rename variable d to displayName in formatUser, and remove the deprecatedHelper function with its comment.",
     "alternativeApproaches": [
-      "There's a bug in calculator.js where multiply uses + instead of *. Fix it.",
-      "Edit calculator.js to fix the multiply function"
+      "Fix each issue one at a time with separate requests: 'Fix the isAdult comparison', then 'Update the API URL', then 'Rename d to displayName', then 'Remove deprecatedHelper'.",
+      "Describe all issues at once and let Claude Code handle them in sequence: 'There are 4 bugs in userService.js -- the age check is wrong, the URL is hardcoded to localhost, a variable is poorly named, and there is dead code to remove.'"
     ]
   },
 
   "learningPoints": [
-    "Claude Code can make precise, surgical edits to existing code",
-    "Describing the change specifically helps ensure accuracy",
-    "Claude Code preserves the rest of the file when making edits"
+    "The Edit tool uses exact string replacement: old_string is found and replaced with new_string",
+    "The old_string must be unique in the file, or Edit fails -- include surrounding context to ensure uniqueness",
+    "Use replace_all when renaming variables or changing repeated patterns",
+    "Claude Code must Read a file before it can Edit -- this is enforced by the tool",
+    "Edit preserves all unchanged content, making it safer than Write for modifications",
+    "Removing code is an edit too: set new_string to empty or omit the removed section"
   ],
 
   "nextChallenge": "01-004"

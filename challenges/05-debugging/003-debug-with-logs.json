@@ -2,22 +2,30 @@
   "id": "05-003",
   "module": "debugging",
   "title": "Debug with Logs",
-  "description": "Learn to add strategic logging to trace program execution. Good logging reveals where things go wrong.",
+  "description": "Learn strategic logging as a debugging technique: where to place logs, what to log, how to trace data through an async pipeline, and the importance of cleaning up debug logs afterward.",
   "difficulty": "intermediate",
-  "xpReward": 200,
-  "estimatedMinutes": 8,
-  "skills": ["logging", "debugging-strategy"],
+  "xpReward": 225,
+  "estimatedMinutes": 15,
+  "skills": ["strategic-logging", "async-debugging", "data-tracing"],
 
   "setup": {
     "workingDir": "~/dojo-workspace/challenge-05-003",
     "initialFiles": [
       {
         "path": "README.md",
-        "content": "# Challenge: Debug with Logs\n\nThe order processing isn't working correctly. Add logging to find out why!\n\n## Objectives\n1. Add console.log statements to trace execution\n2. Find where the process fails\n3. Fix the issue once you understand it\n"
+        "content": "# Challenge: Debug with Logs\n\nLearn to use strategic logging to trace data flow through a program\nand find bugs that do not throw errors -- the hardest kind to debug.\n\n## Why Logging Matters\n\nSome bugs crash your program with a clear error message. Those are\nthe easy ones. The hard bugs are **silent** -- the program runs\nwithout errors but produces wrong output. When there is no error\nmessage to guide you, strategic logging is your best debugging tool.\n\n## Log Placement Strategy\n\nDon't scatter console.log randomly. Place logs at these strategic points:\n\n### 1. Function Entry (Log Inputs)\n\n```javascript\nfunction processOrder(order) {\n  console.log('processOrder input:', JSON.stringify(order));\n  // ...\n}\n```\n\nThis tells you: What data is this function receiving? Is it what I\nexpect? Are any fields missing or wrong?\n\n### 2. Before Conditionals (Log the Condition Value)\n\n```javascript\nfunction applyDiscount(total, tier) {\n  console.log('applyDiscount:', { total, tier, check: tier === 'gold' });\n  if (tier === 'gold') {\n    return total * 0.8;\n  }\n  return total;\n}\n```\n\nThis tells you: Which branch will execute? Is the condition evaluating\nas expected?\n\n### 3. At Transformation Points (Log Before and After)\n\n```javascript\nfunction transform(data) {\n  console.log('transform input:', data);\n  const result = data.map(item => ({ ...item, total: item.price * item.qty }));\n  console.log('transform output:', result);\n  return result;\n}\n```\n\nThis tells you: Did the transformation produce the expected result?\nThis is the most powerful technique -- it reveals exactly where data\ngoes wrong.\n\n### 4. At Return Points (Log Output)\n\n```javascript\nfunction calculate(items) {\n  const total = items.reduce((sum, i) => sum + i.amount, 0);\n  console.log('calculate returning:', total);\n  return total;\n}\n```\n\n## What to Log\n\nLog more than just raw values. Include context:\n\n```javascript\n// BAD: What does this number mean? Which function? What variable?\nconsole.log(42);\n\n// GOOD: Function name, variable name, value, and type\nconsole.log('calculateTotal:', { total: 42, type: typeof total });\n\n// For arrays: log length AND contents\nconsole.log('items:', { length: items.length, items });\n\n// For objects: log the keys\nconsole.log('user:', { keys: Object.keys(user), user });\n```\n\n### Useful console Methods\n\n| Method | Purpose | Example |\n|---|---|---|\n| `console.log` | General output | `console.log('step 1:', data)` |\n| `console.table` | Format arrays/objects as tables | `console.table(users)` |\n| `console.time` / `timeEnd` | Measure execution time | `console.time('fetch'); ... console.timeEnd('fetch');` |\n| `console.group` / `groupEnd` | Group related logs | Indent nested operations |\n| `console.dir` | Deep object inspection | `console.dir(obj, {depth: null})` |\n\n## Tracing Async Pipelines\n\nAsync code is especially hard to debug because operations happen in\na non-obvious order. Log each step with timestamps or step numbers:\n\n```javascript\nasync function pipeline(input) {\n  console.log('[Step 1] Raw input:', input);\n  \n  const step1 = await fetchData(input);\n  console.log('[Step 2] After fetch:', step1);\n  \n  const step2 = transformData(step1);\n  console.log('[Step 3] After transform:', step2);\n  \n  const step3 = await saveData(step2);\n  console.log('[Step 4] After save:', step3);\n  \n  return step3;\n}\n```\n\nWhen you read the output, you can see exactly where the data goes\nwrong. If Step 2 output looks correct but Step 3 output is wrong,\nthe bug is in transformData.\n\n## The Debug-Fix-Clean Cycle\n\nThis is a three-phase process:\n\n1. **Add logs**: Strategically place console.log statements\n2. **Find and fix the bug**: Use log output to locate the problem\n3. **Remove debug logs**: This is critical!\n\nLeaving debug logs in production code:\n- Clutters output and makes real errors harder to spot\n- Can expose sensitive data (user info, tokens, etc.)\n- Indicates sloppy engineering practices\n\nIf you need persistent logging, use a proper logging library with\nlog levels (debug, info, warn, error) and a DEBUG flag:\n\n```javascript\nconst DEBUG = process.env.DEBUG === 'true';\n\nfunction debugLog(...args) {\n  if (DEBUG) console.log('[DEBUG]', ...args);\n}\n```\n\n## Your Task\n\nThe file `dataProcessor.js` contains an async data processing pipeline\nthat produces WRONG output but does NOT throw any errors. The pipeline:\n\n1. Fetches raw sales data\n2. Normalizes the data format\n3. Filters out invalid entries\n4. Calculates summary statistics\n5. Returns the final report\n\nSomewhere in this pipeline, data gets silently corrupted. The output\nis wrong but there are no errors to guide you.\n\n**Your debugging process:**\n\n1. Run `node dataProcessor.js` to see the wrong output\n2. Add strategic console.log statements to trace data through each step\n3. Identify WHERE the data goes wrong (which function corrupts it)\n4. Fix the bug\n5. **Remove ALL debug console.log statements** from the final code\n6. Create `debug-log.md` documenting:\n   - What logs you added and where\n   - What the logs revealed\n   - What the bug was and how you fixed it\n\nThe final `dataProcessor.js` should have NO console.log statements\nexcept the single output line at the bottom.\n"
       },
       {
-        "path": "orderProcessor.js",
-        "content": "// Order processor - something's wrong but what?\n\nasync function processOrder(order) {\n  const validated = await validateOrder(order);\n  const priced = await calculatePricing(validated);\n  const result = await submitOrder(priced);\n  return result;\n}\n\nasync function validateOrder(order) {\n  if (!order.items || order.items.length === 0) {\n    return { valid: false, error: 'No items' };\n  }\n  return { ...order, valid: true };\n}\n\nasync function calculatePricing(order) {\n  if (!order.valid) {\n    return order;\n  }\n  \n  let total = 0;\n  for (const item of order.items) {\n    total += item.price * item.qty; // Note: qty not quantity\n  }\n  \n  return { ...order, total };\n}\n\nasync function submitOrder(order) {\n  if (!order.valid) {\n    return { success: false, error: order.error };\n  }\n  if (order.total === 0 || isNaN(order.total)) {\n    return { success: false, error: 'Invalid total' };\n  }\n  return { success: true, orderId: 'ORD-' + Date.now() };\n}\n\n// Test order\nconst testOrder = {\n  customerId: '123',\n  items: [\n    { name: 'Widget', price: 10, quantity: 2 },\n    { name: 'Gadget', price: 25, quantity: 1 }\n  ]\n};\n\nprocessOrder(testOrder).then(console.log);\n\nmodule.exports = { processOrder, validateOrder, calculatePricing, submitOrder };\n"
+        "path": "package.json",
+        "content": "{\n  \"name\": \"debug-with-logs\",\n  \"version\": \"1.0.0\",\n  \"description\": \"Debug an async pipeline using strategic logging\",\n  \"scripts\": {\n    \"test\": \"node --test\",\n    \"start\": \"node dataProcessor.js\"\n  }\n}\n"
+      },
+      {
+        "path": "dataProcessor.js",
+        "content": "// Data processing pipeline\n// Produces wrong output but throws no errors.\n// Use logging to find where the data goes wrong!\n\n/**\n * Simulates fetching raw sales data from an API.\n * Returns records with: id, product, quantity, unitPrice, region, date\n */\nasync function fetchSalesData() {\n  return [\n    { id: 1, product: 'Widget', quantity: 10, unitPrice: 25.00, region: 'north', date: '2024-01-15' },\n    { id: 2, product: 'Gadget', quantity: 5,  unitPrice: 49.99, region: 'south', date: '2024-01-16' },\n    { id: 3, product: 'Widget', quantity: 8,  unitPrice: 25.00, region: 'north', date: '2024-01-16' },\n    { id: 4, product: 'Doohickey', quantity: -3, unitPrice: 15.00, region: 'east', date: '2024-01-17' },\n    { id: 5, product: 'Gadget', quantity: 12, unitPrice: 49.99, region: 'south', date: '2024-01-17' },\n    { id: 6, product: 'Widget', quantity: 0,  unitPrice: 25.00, region: 'west', date: '2024-01-18' },\n    { id: 7, product: 'Thingamajig', quantity: 7, unitPrice: 35.50, region: 'north', date: '2024-01-18' },\n    { id: 8, product: 'Gadget', quantity: 3,  unitPrice: 49.99, region: 'east', date: '2024-01-19' }\n  ];\n}\n\n/**\n * Normalizes data: adds a 'total' field (quantity * unitPrice)\n * and uppercases the region.\n */\nfunction normalizeData(records) {\n  return records.map(record => ({\n    ...record,\n    total: record.quantity + record.unitPrice,\n    region: record.region.toUpperCase()\n  }));\n}\n\n/**\n * Filters out invalid entries:\n * - quantity must be positive (> 0)\n * - total must be positive (> 0)\n */\nfunction filterValid(records) {\n  return records.filter(record => {\n    return record.quantity > 0 && record.total > 0;\n  });\n}\n\n/**\n * Calculates summary statistics from valid records.\n * Returns: totalRevenue, averageOrderValue, recordCount, topRegion\n */\nfunction calculateSummary(records) {\n  if (records.length === 0) {\n    return { totalRevenue: 0, averageOrderValue: 0, recordCount: 0, topRegion: 'none' };\n  }\n\n  const totalRevenue = records.reduce((sum, r) => sum + r.total, 0);\n  const averageOrderValue = totalRevenue / records.length;\n\n  // Find the region with the highest total revenue\n  const regionTotals = {};\n  for (const record of records) {\n    regionTotals[record.region] = (regionTotals[record.region] || 0) + record.total;\n  }\n\n  let topRegion = '';\n  let topAmount = 0;\n  for (const [region, amount] of Object.entries(regionTotals)) {\n    if (amount >= topAmount) {\n      topRegion = region;\n      topAmount = amount;\n    }\n  }\n\n  return {\n    totalRevenue: Math.round(totalRevenue * 100) / 100,\n    averageOrderValue: Math.round(averageOrderValue * 100) / 100,\n    recordCount: records.length,\n    topRegion\n  };\n}\n\n/**\n * Main pipeline: fetch -> normalize -> filter -> summarize\n *\n * Expected output (correct values):\n *   totalRevenue: 1148.82 (sum of quantity*unitPrice for valid records)\n *   averageOrderValue: 191.47\n *   recordCount: 6\n *   topRegion: SOUTH\n */\nasync function generateReport() {\n  const raw = await fetchSalesData();\n  const normalized = normalizeData(raw);\n  const valid = filterValid(normalized);\n  const summary = calculateSummary(valid);\n  return summary;\n}\n\n// Run the pipeline and show results\ngenerateReport().then(report => {\n  console.log('Sales Report:', JSON.stringify(report, null, 2));\n});\n\nmodule.exports = { fetchSalesData, normalizeData, filterValid, calculateSummary, generateReport };\n"
+      },
+      {
+        "path": "dataProcessor.test.js",
+        "content": "const { test } = require('node:test');\nconst assert = require('node:assert/strict');\nconst { normalizeData, filterValid, calculateSummary, generateReport } = require('./dataProcessor');\n\ntest('normalizeData calculates total as quantity * unitPrice', () => {\n  const input = [{ id: 1, product: 'A', quantity: 10, unitPrice: 25.00, region: 'north', date: '2024-01-01' }];\n  const result = normalizeData(input);\n  assert.strictEqual(result[0].total, 250.00);\n});\n\ntest('normalizeData uppercases region', () => {\n  const input = [{ id: 1, product: 'A', quantity: 1, unitPrice: 10, region: 'south', date: '2024-01-01' }];\n  const result = normalizeData(input);\n  assert.strictEqual(result[0].region, 'SOUTH');\n});\n\ntest('filterValid removes records with quantity <= 0', () => {\n  const input = [\n    { id: 1, quantity: 5, total: 50 },\n    { id: 2, quantity: 0, total: 0 },\n    { id: 3, quantity: -1, total: -10 }\n  ];\n  const result = filterValid(input);\n  assert.strictEqual(result.length, 1);\n  assert.strictEqual(result[0].id, 1);\n});\n\ntest('calculateSummary returns correct totals', () => {\n  const input = [\n    { total: 100, region: 'NORTH' },\n    { total: 200, region: 'SOUTH' },\n    { total: 150, region: 'NORTH' }\n  ];\n  const result = calculateSummary(input);\n  assert.strictEqual(result.totalRevenue, 450);\n  assert.strictEqual(result.averageOrderValue, 150);\n  assert.strictEqual(result.recordCount, 3);\n  assert.strictEqual(result.topRegion, 'NORTH');\n});\n\ntest('generateReport returns correct final summary', async () => {\n  const report = await generateReport();\n  assert.strictEqual(report.totalRevenue, 1148.82);\n  assert.strictEqual(report.recordCount, 6);\n  assert.strictEqual(report.topRegion, 'SOUTH');\n});\n\ntest('generateReport average is totalRevenue / recordCount', async () => {\n  const report = await generateReport();\n  const expectedAvg = Math.round((1148.82 / 6) * 100) / 100;\n  assert.strictEqual(report.averageOrderValue, expectedAvg);\n});\n"
       }
     ],
     "cleanBefore": true
@@ -26,26 +34,49 @@
   "objectives": [
     {
       "id": "obj-1",
-      "description": "Add logging statements",
+      "description": "Fix normalizeData to multiply quantity * unitPrice (not add them)",
       "type": "file_contains",
-      "target": "orderProcessor.js",
-      "pattern": "console\\.log",
+      "target": "dataProcessor.js",
+      "pattern": "record\\.quantity\\s*\\*\\s*record\\.unitPrice",
       "required": true
     },
     {
       "id": "obj-2",
-      "description": "Fix the qty/quantity mismatch",
-      "type": "file_contains",
-      "target": "orderProcessor.js",
-      "pattern": "item\\.quantity|quantity",
+      "description": "No debug console.log statements remain in dataProcessor.js (only the final output log)",
+      "type": "file_not_contains",
+      "target": "dataProcessor.js",
+      "pattern": "console\\.log\\('[\\[Ss]tep|console\\.log\\('normalize|console\\.log\\('filter|console\\.log\\('calculate|console\\.log\\('fetch|console\\.log\\('DEBUG|console\\.log\\('\\[",
       "required": true
     },
     {
       "id": "obj-3",
-      "description": "Order processes successfully (no NaN)",
-      "type": "file_not_contains",
-      "target": "orderProcessor.js",
-      "pattern": "item\\.qty[^u]",
+      "description": "Create debug-log.md documenting the debugging process",
+      "type": "file_exists",
+      "target": "debug-log.md",
+      "required": true
+    },
+    {
+      "id": "obj-4",
+      "description": "debug-log.md describes what was logged (inputs, outputs, data at each step)",
+      "type": "file_contains",
+      "target": "debug-log.md",
+      "pattern": "log|trace|output|input|step|console",
+      "required": true
+    },
+    {
+      "id": "obj-5",
+      "description": "debug-log.md identifies the bug (addition instead of multiplication in normalizeData)",
+      "type": "file_contains",
+      "target": "debug-log.md",
+      "pattern": "normalizeData|multiply|multiplication|\\*|addition|\\+|total|unitPrice",
+      "required": true
+    },
+    {
+      "id": "obj-6",
+      "description": "All tests pass",
+      "type": "command_output_contains",
+      "command": "cd ~/dojo-workspace/challenge-05-003 && npm test 2>&1",
+      "pattern": "tests passed|pass.*\\d|# pass",
       "required": true
     }
   ],
@@ -53,45 +84,57 @@
   "bonusObjectives": [
     {
       "id": "bonus-1",
-      "description": "Log includes function names or step indicators",
+      "description": "debug-log.md describes the step-by-step debugging process (what logs were added, what they revealed)",
       "type": "file_contains",
-      "target": "orderProcessor.js",
-      "pattern": "validateOrder|calculatePricing|submitOrder|Step|\\[.*\\]",
+      "target": "debug-log.md",
+      "pattern": "[Ss]tep|[Ff]irst|[Tt]hen|[Nn]ext|[Aa]dded.*log|[Pp]laced.*log|[Rr]eveal|[Ss]how",
       "xpBonus": 50
+    },
+    {
+      "id": "bonus-2",
+      "description": "The single remaining console.log uses structured output (JSON.stringify or object notation)",
+      "type": "file_contains",
+      "target": "dataProcessor.js",
+      "pattern": "JSON\\.stringify|console\\.log\\('Sales Report",
+      "xpBonus": 25
     }
   ],
 
   "hints": [
     {
       "level": 1,
-      "text": "Add console.log at the start of each function to trace execution.",
+      "text": "Run `node dataProcessor.js` to see the wrong output, then compare with the expected values in the comments. The totalRevenue is wrong -- add console.log after each pipeline step to see where the numbers diverge. Start by logging the output of normalizeData.",
       "xpCost": 15
     },
     {
       "level": 2,
-      "text": "Try: 'Add logging to trace the order through each step. Log the order state after each function.'",
-      "xpCost": 40
+      "text": "Add `console.log('After normalize:', normalized.map(r => ({ product: r.product, qty: r.quantity, price: r.unitPrice, total: r.total })))` in generateReport. Look at the 'total' field -- does it look like quantity * unitPrice, or something else? The normalizeData function is using the wrong arithmetic operator.",
+      "xpCost": 45
     },
     {
       "level": 3,
-      "text": "Ask: 'Add console.log to each function in orderProcessor.js to see the order state at each step. Find why the total is NaN and fix it.'",
+      "text": "The bug is in normalizeData: `record.quantity + record.unitPrice` should be `record.quantity * record.unitPrice`. The + (addition) instead of * (multiplication) produces wrong totals silently. After fixing, remove all debug logs and create debug-log.md explaining your process.",
       "xpCost": 75
     }
   ],
 
   "solution": {
-    "approach": "Add logging to trace execution, find the bug, and fix it.",
-    "example": "Add logging to orderProcessor.js to find where it fails, then fix the bug",
+    "approach": "Add strategic console.log statements at each pipeline step to trace data flow, identify that normalizeData uses + instead of *, fix it, remove all debug logs, document the process.",
+    "example": "Add logs to trace data through the pipeline, find and fix the bug in normalizeData, remove debug logs, create debug-log.md",
     "alternativeApproaches": [
-      "Debug the order processor by adding trace logs",
-      "Find why order total is wrong using logging"
+      "Ask Claude Code: 'Run this pipeline, add logs to trace data at each step, find why the output is wrong, fix it, clean up logs, and document the process'",
+      "Read the pipeline carefully and spot the arithmetic operator error directly"
     ]
   },
 
   "learningPoints": [
-    "Strategic logging reveals execution flow",
-    "Log variable values to spot data issues",
-    "Property name mismatches are a common bug"
+    "Silent bugs (wrong output, no error) are harder to debug than crashes -- strategic logging is the key technique",
+    "Place logs at function entry (inputs), transformation points (before/after), and return points (output)",
+    "Always log with context: function name, variable name, value -- never just console.log(x)",
+    "Tracing data through a pipeline step by step reveals exactly where corruption occurs",
+    "A single wrong operator (+ instead of *) can produce plausible-looking but incorrect results",
+    "Always remove debug logs after fixing the bug -- leaving them in production is sloppy and can leak sensitive data",
+    "Documenting your debugging process helps you recognize similar patterns faster in the future"
   ],
 
   "nextChallenge": "05-004"

@@ -2,22 +2,26 @@
   "id": "04-002",
   "module": "code-editing",
   "title": "Refactor Variable Names",
-  "description": "Learn to rename variables consistently across a file. Good naming makes code self-documenting.",
+  "description": "Learn to systematically rename variables for clarity and consistency. Good naming is the most impactful refactoring you can do - it makes code self-documenting and prevents bugs caused by misunderstanding what a variable holds.",
   "difficulty": "intermediate",
   "xpReward": 200,
-  "estimatedMinutes": 7,
-  "skills": ["refactoring", "naming-conventions"],
+  "estimatedMinutes": 12,
+  "skills": ["refactoring", "naming-conventions", "replace-all", "code-clarity"],
 
   "setup": {
     "workingDir": "~/dojo-workspace/challenge-04-002",
     "initialFiles": [
       {
         "path": "README.md",
-        "content": "# Challenge: Refactor Variable Names\n\nThis code has poor variable names. Improve them!\n\n## Objectives\n1. Rename `d` to `data` or `userData`\n2. Rename `cb` to `callback` or `onComplete`\n3. Rename `x` to something meaningful (like `user` or `item`)\n"
+        "content": "# Challenge: Refactor Variable Names\n\nLearn to systematically rename variables for clarity and consistency.\n\n## Why Variable Naming Matters\n\nVariable names are read far more often than they are written. A well-named\nvariable eliminates the need for a comment, while a poorly-named one\nrequires readers to trace through code to understand what it holds.\n\nConsider this:\n\n```javascript\nconst d = await fetch(url);\nconst x = await d.json();\nfor (const i of x) { ... }\n```\n\nvs.\n\n```javascript\nconst response = await fetch(url);\nconst users = await response.json();\nfor (const user of users) { ... }\n```\n\nThe second version requires zero mental effort to understand.\n\n## JavaScript Naming Conventions\n\n| Convention | Usage | Examples |\n|------------|-------|----------|\n| camelCase | Variables, functions, methods | `userName`, `fetchData`, `isValid` |\n| PascalCase | Classes, constructors, React components | `UserProfile`, `EventEmitter` |\n| UPPER_SNAKE_CASE | Constants (true constants, not just `const`) | `MAX_RETRIES`, `API_BASE_URL` |\n| _prefixed | Private/internal (convention only) | `_internalCache`, `_parseRaw` |\n\n## Common Naming Problems\n\n1. **Single-letter variables**: `d`, `x`, `i` (except `i` in simple loops)\n2. **Abbreviations**: `btn`, `msg`, `usr`, `cb` - save a few characters\n   but cost readability\n3. **Snake_case in JS**: `user_name`, `fetch_data` - valid but breaks\n   convention in JavaScript (use camelCase instead)\n4. **Misleading names**: `data` when it holds a response, `temp` that\n   lives forever\n5. **Inconsistent style**: mixing camelCase and snake_case in the same file\n\n## The Edit Tool's replace_all Parameter\n\nClaude Code's Edit tool has a `replace_all` parameter that replaces\nevery occurrence of a string in a file. This is perfect for renaming\nbecause you want to change all usages, not just one.\n\nHowever, beware of naive replacement:\n- Renaming `id` could accidentally match `width`, `valid`, `grid`\n- Renaming `name` could match `username`, `filename`\n- The tool matches exact strings, so `user_data` won't accidentally\n  match `user_database`\n\nWhen you ask Claude Code to rename a variable, it understands scope\nand context. It won't rename the `name` in `username` when you ask it\nto rename the `name` parameter.\n\n## Scoping: One File vs. Many Files\n\nThis challenge focuses on single-file renaming. But in real projects,\nrenaming an exported symbol means updating every file that imports it.\nChallenge 04-005 covers multi-file renaming.\n\n## The Workspace\n\nYou have `orderProcessor.js` - an order processing module with several\nproblems:\n- Mix of camelCase and snake_case naming\n- Single-letter variables in non-trivial contexts\n- Abbreviated variable names that hurt readability\n- A constant that should be UPPER_SNAKE_CASE\n- Inconsistent function parameter naming\n\n## Objectives\n\n1. Rename ALL snake_case variables and parameters to camelCase\n2. Rename ALL single-letter variables to descriptive names\n3. Rename ALL abbreviated variables to their full words\n4. Rename the constant `max_retries` to UPPER_SNAKE_CASE (`MAX_RETRIES`)\n5. Ensure all functions, parameters, and local variables use\n   consistent camelCase naming\n\nThe code's behavior must not change - only the names.\n"
       },
       {
-        "path": "userService.js",
-        "content": "// User service with poor variable names\n\nasync function fetchUsers(cb) {\n  const d = await fetch('/api/users');\n  const x = await d.json();\n  \n  for (const x of x.users) {\n    console.log(x.name);\n  }\n  \n  if (cb) {\n    cb(x);\n  }\n  \n  return x;\n}\n\nfunction processUser(d) {\n  const x = d.name.toUpperCase();\n  return { ...d, displayName: x };\n}\n\nmodule.exports = { fetchUsers, processUser };\n"
+        "path": "orderProcessor.js",
+        "content": "// Order processing module\n\nconst max_retries = 3;\nconst api_base = 'https://api.store.com';\n\n/**\n * Fetch order details from the API.\n * @param {string} order_id - The order identifier.\n * @returns {Promise<Object>} The order data.\n */\nasync function fetch_order(order_id) {\n  let r = null;\n  for (let i = 0; i < max_retries; i++) {\n    const resp = await fetch(`${api_base}/orders/${order_id}`);\n    if (resp.ok) {\n      r = await resp.json();\n      break;\n    }\n  }\n  return r;\n}\n\n/**\n * Calculate the total price for an order.\n * @param {Array} items - Array of order items.\n * @param {number} tax_rate - Tax rate as a decimal.\n * @returns {number} The total price including tax.\n */\nfunction calc_total(items, tax_rate) {\n  let s = 0;\n  for (const itm of items) {\n    const p = itm.price * itm.qty;\n    s += p;\n  }\n  const t = s * tax_rate;\n  return s + t;\n}\n\n/**\n * Format an order for display.\n * @param {Object} o - The order object.\n * @returns {Object} Formatted order.\n */\nfunction fmt_order(o) {\n  const d = new Date(o.created_at);\n  const customer_name = o.customer.first_name + ' ' + o.customer.last_name;\n  const item_count = o.items.length;\n  const total_price = calc_total(o.items, o.tax_rate);\n\n  return {\n    id: o.id,\n    customer: customer_name,\n    date: d.toLocaleDateString(),\n    items: item_count,\n    total: total_price\n  };\n}\n\n/**\n * Process a batch of orders.\n * @param {Array} order_ids - Array of order IDs to process.\n * @param {Function} cb - Callback function for each processed order.\n * @returns {Promise<Array>} Array of processed orders.\n */\nasync function process_batch(order_ids, cb) {\n  const results = [];\n  for (const oid of order_ids) {\n    const o = await fetch_order(oid);\n    if (o) {\n      const f = fmt_order(o);\n      results.push(f);\n      if (cb) cb(f);\n    }\n  }\n  return results;\n}\n\nmodule.exports = {\n  fetch_order,\n  calc_total,\n  fmt_order,\n  process_batch\n};\n"
+      },
+      {
+        "path": "test.js",
+        "content": "const { fetch_order, calc_total, fmt_order, process_batch } = require('./orderProcessor');\n\n// Quick test of calc_total\nconst items = [\n  { price: 10, qty: 2 },\n  { price: 25, qty: 1 }\n];\nconsole.log('Total:', calc_total(items, 0.08));\n"
       }
     ],
     "cleanBefore": true
@@ -26,26 +30,58 @@
   "objectives": [
     {
       "id": "obj-1",
-      "description": "No single-letter variable 'd' for data",
+      "description": "No snake_case function names remain (fetch_order, calc_total, fmt_order, process_batch)",
       "type": "file_not_contains",
-      "target": "userService.js",
-      "pattern": "const d\\s*=|let d\\s*=|var d\\s*=",
+      "target": "orderProcessor.js",
+      "pattern": "function fetch_order|function calc_total|function fmt_order|function process_batch",
       "required": true
     },
     {
       "id": "obj-2",
-      "description": "No 'cb' - should be 'callback' or similar",
+      "description": "No snake_case parameters remain (order_id, tax_rate, order_ids)",
       "type": "file_not_contains",
-      "target": "userService.js",
-      "pattern": "\\(cb\\)|cb\\(|if.*cb",
+      "target": "orderProcessor.js",
+      "pattern": "order_id|tax_rate|order_ids",
       "required": true
     },
     {
       "id": "obj-3",
-      "description": "Uses descriptive names (data, response, user, callback, etc.)",
+      "description": "No abbreviated variable names remain (r, s, p, t, o, f, itm, oid, cb, resp)",
+      "type": "file_not_contains",
+      "target": "orderProcessor.js",
+      "pattern": "let r \\=|let s \\=|const p \\=|const t \\=|const f \\=|const resp \\=|of itm\\b|\\boid\\b|\\(cb\\)|cb\\(",
+      "required": true
+    },
+    {
+      "id": "obj-4",
+      "description": "The constant max_retries is renamed to MAX_RETRIES (UPPER_SNAKE_CASE)",
       "type": "file_contains",
-      "target": "userService.js",
-      "pattern": "data|response|user|callback|onComplete|result",
+      "target": "orderProcessor.js",
+      "pattern": "const MAX_RETRIES",
+      "required": true
+    },
+    {
+      "id": "obj-5",
+      "description": "The constant api_base is renamed to API_BASE_URL or similar UPPER_SNAKE_CASE",
+      "type": "file_contains",
+      "target": "orderProcessor.js",
+      "pattern": "const API_BASE|const API_URL|const API_BASE_URL",
+      "required": true
+    },
+    {
+      "id": "obj-6",
+      "description": "Functions use camelCase names (fetchOrder, calculateTotal or calcTotal equivalent)",
+      "type": "file_contains",
+      "target": "orderProcessor.js",
+      "pattern": "function fetchOrder|function calculateTotal|function formatOrder|function processBatch",
+      "required": true
+    },
+    {
+      "id": "obj-7",
+      "description": "The exports use the new camelCase names",
+      "type": "file_contains",
+      "target": "orderProcessor.js",
+      "pattern": "module\\.exports.*fetchOrder|module\\.exports.*calculateTotal|module\\.exports.*formatOrder",
       "required": true
     }
   ],
@@ -53,45 +89,64 @@
   "bonusObjectives": [
     {
       "id": "bonus-1",
-      "description": "Fix the loop variable shadowing issue",
+      "description": "The test.js file is updated to use the new function names",
       "type": "file_not_contains",
-      "target": "userService.js",
-      "pattern": "for.*const.*of.*\\.users",
-      "xpBonus": 50
+      "target": "test.js",
+      "pattern": "fetch_order|calc_total|fmt_order|process_batch",
+      "xpBonus": 40
+    },
+    {
+      "id": "bonus-2",
+      "description": "JSDoc comments are updated with the new parameter names",
+      "type": "file_not_contains",
+      "target": "orderProcessor.js",
+      "pattern": "@param.*order_id|@param.*tax_rate|@param.*order_ids",
+      "xpBonus": 30
+    },
+    {
+      "id": "bonus-3",
+      "description": "The fmt_order function is renamed to the full word formatOrder",
+      "type": "file_contains",
+      "target": "orderProcessor.js",
+      "pattern": "function formatOrder",
+      "xpBonus": 20
     }
   ],
 
   "hints": [
     {
       "level": 1,
-      "text": "Ask Claude Code to rename variables to more descriptive names.",
+      "text": "Look at the file and categorize the naming problems: snake_case functions (fetch_order, calc_total, etc.), single-letter variables (r, s, p, t, o, f), abbreviations (itm, oid, cb, resp), and constants that should be UPPER_SNAKE_CASE. Ask Claude Code to fix all these following JavaScript conventions.",
       "xpCost": 15
     },
     {
       "level": 2,
-      "text": "Try: 'Refactor userService.js to use meaningful variable names instead of single letters'",
+      "text": "Be thorough in your request: 'Refactor all variable names in orderProcessor.js to follow JavaScript conventions: 1) Rename snake_case functions to camelCase (fetch_order -> fetchOrder, calc_total -> calculateTotal, fmt_order -> formatOrder, process_batch -> processBatch). 2) Rename single-letter variables to descriptive names. 3) Rename abbreviations to full words. 4) Make max_retries and api_base UPPER_SNAKE_CASE constants. 5) Update the exports.'",
       "xpCost": 40
     },
     {
       "level": 3,
-      "text": "Ask: 'In userService.js, rename d to response or data, cb to callback, and x to appropriate names based on context (user, result, etc.)'",
-      "xpCost": 75
+      "text": "Here's a complete mapping: Functions: fetch_order->fetchOrder, calc_total->calculateTotal, fmt_order->formatOrder, process_batch->processBatch. Constants: max_retries->MAX_RETRIES, api_base->API_BASE_URL. Variables: r->result or orderData, s->subtotal, p->lineTotal, t->tax, o->order, f->formattedOrder, itm->item, oid->orderId, cb->callback or onProcessed, resp->response. Also update test.js imports and JSDoc comments.",
+      "xpCost": 80
     }
   ],
 
   "solution": {
-    "approach": "Ask Claude Code to rename variables to be more descriptive.",
-    "example": "Refactor the variable names in userService.js to be more descriptive",
+    "approach": "Ask Claude Code to rename all variables following JavaScript naming conventions. Specify the categories of problems: snake_case to camelCase, abbreviations to full words, single-letter to descriptive, constants to UPPER_SNAKE_CASE.",
+    "example": "Refactor all variable names in orderProcessor.js to follow JavaScript conventions. Rename snake_case to camelCase, expand abbreviations, replace single-letter variables with descriptive names, and use UPPER_SNAKE_CASE for constants. Update exports and test.js too.",
     "alternativeApproaches": [
-      "Improve the naming in this file - d, cb, and x are not clear",
-      "Make the variable names self-documenting"
+      "Rename one category at a time (constants first, then functions, then local variables)",
+      "Provide a specific old-name -> new-name mapping for every variable"
     ]
   },
 
   "learningPoints": [
-    "Claude Code understands context and suggests appropriate names",
-    "Good variable names make code self-documenting",
-    "Refactoring improves code without changing behavior"
+    "JavaScript convention uses camelCase for variables/functions, PascalCase for classes, and UPPER_SNAKE_CASE for true constants",
+    "The Edit tool's replace_all parameter is ideal for renaming - it changes every occurrence in the file at once",
+    "Single-letter variables are acceptable only in trivial loops (i, j) - everything else needs a descriptive name",
+    "When renaming exported functions, you must also update the exports and any files that import them",
+    "Abbreviations save typing but cost readability - prefer calculateTotal over calcTotal, formatOrder over fmtOrder",
+    "Consistent naming across a file (and a codebase) reduces cognitive load for every reader"
   ],
 
   "nextChallenge": "04-003"

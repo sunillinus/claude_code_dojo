@@ -2,26 +2,30 @@
   "id": "03-001",
   "module": "git-basics",
   "title": "Initialize and First Commit",
-  "description": "Learn to initialize a git repository and make your first commit. Claude Code can help you with git commands naturally.",
+  "description": "Learn what git is, how it tracks changes as snapshots, and master the fundamental workflow: init, add, commit. Understand git's three states and how Claude Code interacts with git safely.",
   "difficulty": "beginner",
   "xpReward": 125,
-  "estimatedMinutes": 5,
-  "skills": ["git-init", "git-commit"],
+  "estimatedMinutes": 10,
+  "skills": ["git-init", "git-add", "git-commit", "git-three-states"],
 
   "setup": {
     "workingDir": "~/dojo-workspace/challenge-03-001",
     "initialFiles": [
       {
         "path": "README.md",
-        "content": "# Challenge: Initialize and First Commit\n\nStart tracking this project with git!\n\n## Objectives\n1. Initialize a git repository\n2. Add all files\n3. Create your first commit with message 'Initial commit'\n"
+        "content": "# Challenge: Initialize and First Commit\n\nLearn git fundamentals by initializing a repository and making your first commits.\n\n## What Is Git?\n\nGit is a **distributed version control system** -- it tracks every change\nyou make to your code over time. Unlike older systems that stored diffs\n(the differences between file versions), git stores **snapshots**. Every\ntime you commit, git takes a picture of what ALL your files look like at\nthat moment and stores a reference to that snapshot.\n\nThis means you can always go back to any previous state of your project.\nYou can experiment freely, knowing that nothing is ever truly lost.\n\n## The .git Directory\n\nWhen you run `git init`, git creates a hidden `.git` directory. This IS\nthe repository -- it contains:\n- The complete history of all your commits\n- The staging area (index)\n- Branch pointers and configuration\n- Object database (where snapshots are stored)\n\nEverything outside `.git` is your **working directory** -- the files you\nactually edit. Delete the `.git` folder and the history is gone (but your\ncurrent files remain).\n\n## Git's Three States: The Core Mental Model\n\nEvery file in a git project lives in one of three states:\n\n```\n  Working Directory    --->    Staging Area    --->    Repository\n  (your actual files)         (next commit)          (permanent history)\n       |                          |                       |\n   edit files              git add file             git commit\n       |                          |                       |\n  \"modified\"               \"staged\"                \"committed\"\n```\n\n### 1. Working Directory\nThe files you see and edit. When you change a file, it becomes \"modified\"\nbut git hasn't recorded anything yet.\n\n### 2. Staging Area (Index)\nA holding area for changes you want in your NEXT commit. Running\n`git add filename` moves changes from working directory to staging.\nThis lets you choose exactly what goes into each commit.\n\nThink of it like a loading dock -- you carefully select which boxes\n(changes) go onto the truck (commit) before it departs.\n\n### 3. Repository (.git directory)\nWhen you run `git commit`, everything in the staging area becomes a\npermanent snapshot in the repository. Each commit gets:\n- A **SHA-1 hash** -- a unique 40-character ID (e.g., `a1b2c3d4...`)\n- A **commit message** -- your description of what changed\n- An **author** and **timestamp**\n- A **parent commit** -- which commit came before (building a chain)\n\n## Key Commands\n\n| Command | What It Does |\n|---------|-------------|\n| `git init` | Creates a new repository (the .git directory) |\n| `git status` | Shows which files are modified, staged, or untracked |\n| `git add file1 file2` | Stages specific files for the next commit |\n| `git add -A` | Stages ALL changes (use with caution) |\n| `git commit -m \"message\"` | Creates a snapshot from staged changes |\n| `git log` | Shows commit history |\n\n## How Claude Code Uses Git\n\nClaude Code runs git commands through the Bash tool. Key behaviors:\n\n- **Prefers specific file adds**: Instead of `git add -A` (which might\n  accidentally include secrets or large files), Claude Code adds files\n  by name: `git add src/app.js src/utils.js`\n- **Uses heredoc for commit messages**: For proper formatting:\n  ```\n  git commit -m \"$(cat <<'EOF'\n  Your commit message here\n  \n  Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>\n  EOF\n  )\"\n  ```\n- **Git safety rules**: Claude Code NEVER force pushes, NEVER amends\n  commits without asking, NEVER skips hooks, and always adds a\n  Co-Authored-By line to commits it helps create\n- **Creates NEW commits**: If a pre-commit hook fails, Claude Code\n  creates a new commit rather than amending the previous one\n\n## Your Task\n\nThis workspace has no git repository yet. You need to:\n\n1. **Initialize a git repository** in this directory\n2. **Create a small project** -- the workspace has starter files, but\n   add at least one more file to make it a meaningful project\n3. **Make at least 2 commits** with descriptive messages:\n   - First commit: the initial project setup\n   - Second commit: add or improve something\n4. **Create git-notes.md** explaining git's three states in your own\n   words (working directory, staging area, repository)\n\n## Tips\n- Use `git status` between operations to see how files move between states\n- Write commit messages that explain WHY, not just what\n- Your git-notes.md should demonstrate understanding, not just repeat definitions\n"
       },
       {
-        "path": "index.js",
-        "content": "// My first tracked project\nconsole.log('Hello, Git!');\n"
+        "path": "src/app.js",
+        "content": "// Task Tracker - A simple task management module\n\nconst tasks = [];\n\nfunction addTask(title, priority) {\n  const task = {\n    id: tasks.length + 1,\n    title,\n    priority: priority || 'medium',\n    completed: false,\n    createdAt: new Date().toISOString()\n  };\n  tasks.push(task);\n  return task;\n}\n\nfunction completeTask(id) {\n  const task = tasks.find(t => t.id === id);\n  if (task) {\n    task.completed = true;\n    task.completedAt = new Date().toISOString();\n  }\n  return task;\n}\n\nfunction listTasks(filter) {\n  if (filter === 'completed') return tasks.filter(t => t.completed);\n  if (filter === 'pending') return tasks.filter(t => !t.completed);\n  return [...tasks];\n}\n\nmodule.exports = { addTask, completeTask, listTasks };\n"
+      },
+      {
+        "path": "src/index.js",
+        "content": "const { addTask, completeTask, listTasks } = require('./app');\n\n// Demo: create some tasks\naddTask('Learn git init', 'high');\naddTask('Understand staging area', 'high');\naddTask('Make first commit', 'medium');\n\nconsole.log('All tasks:', listTasks());\nconsole.log('Pending:', listTasks('pending'));\n"
       },
       {
         "path": "package.json",
-        "content": "{\n  \"name\": \"my-project\",\n  \"version\": \"1.0.0\"\n}\n"
+        "content": "{\n  \"name\": \"task-tracker\",\n  \"version\": \"1.0.0\",\n  \"description\": \"A simple task tracking module\",\n  \"main\": \"src/index.js\",\n  \"scripts\": {\n    \"start\": \"node src/index.js\"\n  }\n}\n"
       }
     ],
     "cleanBefore": true
@@ -30,25 +34,56 @@
   "objectives": [
     {
       "id": "obj-1",
-      "description": "Initialize git repository (.git folder exists)",
+      "description": "Initialize a git repository (.git directory exists)",
       "type": "file_exists",
       "target": ".git/HEAD",
       "required": true
     },
     {
       "id": "obj-2",
-      "description": "Make at least one commit",
+      "description": "Make at least 2 commits (git log shows 2+ entries)",
       "type": "command_output_contains",
-      "command": "git log --oneline 2>/dev/null | head -1",
-      "pattern": ".",
+      "command": "cd ~/dojo-workspace/challenge-03-001 && git log --oneline 2>&1 | wc -l | tr -d ' '",
+      "pattern": "^[2-9]|^[1-9][0-9]",
       "required": true
     },
     {
       "id": "obj-3",
-      "description": "Commit message contains 'Initial' or 'first'",
+      "description": "First commit has a descriptive message (not just 'test' or 'asdf')",
       "type": "command_output_contains",
-      "command": "git log --format='%s' -1 2>/dev/null",
-      "pattern": "[Ii]nitial|[Ff]irst",
+      "command": "cd ~/dojo-workspace/challenge-03-001 && git log --format='%s' --reverse 2>&1 | head -1",
+      "pattern": "[Ii]nitial|[Ss]etup|[Ff]irst|[Ss]tart|[Aa]dd|[Cc]reate|[Tt]ask",
+      "required": true
+    },
+    {
+      "id": "obj-4",
+      "description": "Create git-notes.md explaining git's three states",
+      "type": "file_exists",
+      "target": "git-notes.md",
+      "required": true
+    },
+    {
+      "id": "obj-5",
+      "description": "git-notes.md discusses the working directory concept",
+      "type": "file_contains",
+      "target": "git-notes.md",
+      "pattern": "[Ww]orking.*(directory|tree|dir)|[Mm]odified|[Ee]dit.*files",
+      "required": true
+    },
+    {
+      "id": "obj-6",
+      "description": "git-notes.md discusses the staging area concept",
+      "type": "file_contains",
+      "target": "git-notes.md",
+      "pattern": "[Ss]taging|[Ii]ndex|git add|[Ss]taged",
+      "required": true
+    },
+    {
+      "id": "obj-7",
+      "description": "git-notes.md discusses the repository/committed state",
+      "type": "file_contains",
+      "target": "git-notes.md",
+      "pattern": "[Rr]epository|[Cc]ommit|[Ss]napshot|[Hh]istory|\\.git",
       "required": true
     }
   ],
@@ -58,8 +93,16 @@
       "id": "bonus-1",
       "description": "All files are committed (clean working directory)",
       "type": "command_output_contains",
-      "command": "git status --porcelain 2>/dev/null | wc -l | tr -d ' '",
+      "command": "cd ~/dojo-workspace/challenge-03-001 && git status --porcelain 2>&1 | wc -l | tr -d ' '",
       "pattern": "^0$",
+      "xpBonus": 25
+    },
+    {
+      "id": "bonus-2",
+      "description": "git-notes.md mentions how Claude Code uses git (Co-Authored-By, specific adds, safety rules)",
+      "type": "file_contains",
+      "target": "git-notes.md",
+      "pattern": "[Cc]laude|[Cc]o-[Aa]uthored|specific.*add|safety",
       "xpBonus": 25
     }
   ],
@@ -67,34 +110,37 @@
   "hints": [
     {
       "level": 1,
-      "text": "Ask Claude Code to help you initialize a git repo and make your first commit.",
+      "text": "Start by reading the README carefully -- it explains the three states model. Then think about the workflow: init creates the repo, add stages files, commit saves a snapshot. You need to do this at least twice to get 2 commits.",
       "xpCost": 10
     },
     {
       "level": 2,
-      "text": "Try: 'Initialize a git repository and commit all files'",
+      "text": "Break it into steps: (1) git init, (2) git add specific files, (3) git commit with a message like 'Initial project setup with task tracker', (4) create or modify a file, (5) git add and commit again. Then write git-notes.md explaining the three states in your own words.",
       "xpCost": 25
     },
     {
       "level": 3,
-      "text": "Ask: 'Initialize git in this folder, add all files, and create a commit with message Initial commit'",
+      "text": "Ask Claude Code: 'Initialize a git repo here. Add and commit the existing project files with a descriptive message. Then create a utils.js helper file and commit it as a second commit. Finally, create git-notes.md explaining working directory, staging area, and repository in my own words.'",
       "xpCost": 50
     }
   ],
 
   "solution": {
-    "approach": "Use natural language to ask Claude Code to perform git operations.",
-    "example": "Initialize git here and create an initial commit with all files",
+    "approach": "Initialize git, make two logical commits with descriptive messages, then document your understanding of git's three states.",
+    "example": "Initialize git here, commit the existing project files, add a new utility file and commit it, then create git-notes.md documenting what I learned about git's three states",
     "alternativeApproaches": [
-      "Set up version control and commit everything",
-      "Start tracking this project with git"
+      "Set up version control, make the initial commit, improve the project and commit again, then write notes about how git tracks changes through working directory, staging, and repository",
+      "Help me start tracking this project with git, make at least 2 meaningful commits, and explain the three-state model in a notes file"
     ]
   },
 
   "learningPoints": [
-    "Claude Code can execute git commands for you",
-    "Natural language works for version control tasks",
-    "git init, git add, and git commit are the basics"
+    "git init creates the .git directory which IS the repository database",
+    "Git's three states: working directory (edit), staging area (prepare), repository (save)",
+    "The staging area lets you craft commits carefully -- choosing exactly what goes in each one",
+    "Each commit is a snapshot with a unique SHA-1 hash, message, author, and parent",
+    "Claude Code prefers adding specific files by name rather than git add -A for safety",
+    "Claude Code always adds Co-Authored-By and never force pushes or amends without permission"
   ],
 
   "nextChallenge": "03-002"

@@ -1,27 +1,47 @@
 {
   "id": "06-003",
   "module": "subagents",
-  "title": "Create Custom Subagent",
-  "description": "Learn to create a custom subagent for your Claude Code plugin. Custom agents extend Claude Code's capabilities.",
+  "title": "Resuming Agents & Agent Types Deep Dive",
+  "description": "Learn to resume subagents for follow-up work, understand the full list of specialized agent types, and know which tools each type has access to.",
   "difficulty": "advanced",
   "xpReward": 350,
   "estimatedMinutes": 15,
-  "skills": ["agent-creation", "plugin-development"],
+  "skills": ["agent-resume", "agent-types-advanced"],
 
   "setup": {
     "workingDir": "~/dojo-workspace/challenge-06-003",
     "initialFiles": [
       {
         "path": "README.md",
-        "content": "# Challenge: Create Custom Subagent\n\nCreate a custom subagent that reviews code for security issues.\n\n## Objectives\n1. Create an agents folder with a security-reviewer agent\n2. Define the agent's system prompt and tools\n3. Test it works by asking it to review sample code\n"
+        "content": "# Challenge: Resuming Agents & Agent Types Deep Dive\n\nMaster agent resumption and understand all available agent types.\n\n## Resuming Agents\n\nEvery subagent returns an agent ID when it finishes. This ID lets you\ncontinue the agent's work with its full context preserved:\n\n```\n[Agent finishes] → agentId: abc123\n\nYou: \"Resume that agent to dig deeper into the auth module\"\nClaude Code: resumes agent abc123 with full prior context\n```\n\nThis is powerful because:\n- The agent remembers everything it already found\n- No need to re-explain context\n- Can iteratively deepen research\n\n## All Specialized Agent Types\n\nBeyond the basic 4, Claude Code has many specialized agents:\n\n| Type | Purpose |\n|------|--------|\n| **Explore** | Fast codebase search and exploration |\n| **Bash** | Shell command execution |\n| **Plan** | Architecture and implementation planning |\n| **general-purpose** | Any complex multi-step task |\n| **feature-dev:code-reviewer** | Reviews code for bugs and issues |\n| **feature-dev:code-explorer** | Deep analysis of existing features |\n| **feature-dev:code-architect** | Designs feature architectures |\n| **code-simplifier:code-simplifier** | Simplifies and refines code |\n\n## Choosing the Right Agent\n\n- Need to find something? → **Explore** (fastest)\n- Need to run commands? → **Bash**\n- Need a plan? → **Plan** (can't modify files)\n- Need deep code analysis? → **feature-dev:code-explorer**\n- Need code reviewed? → **feature-dev:code-reviewer**\n- Need anything else? → **general-purpose**\n\n## Objectives\n1. Use an Explore agent, then resume it for follow-up research\n2. Create agent-deep-dive.md documenting specialized agent types\n3. Include a decision guide for choosing the right agent type\n"
       },
       {
-        "path": "plugin.json",
-        "content": "{\n  \"name\": \"security-plugin\",\n  \"version\": \"1.0.0\",\n  \"description\": \"Security review tools\"\n}\n"
+        "path": "src/api/routes.js",
+        "content": "const express = require('express');\nconst router = express.Router();\nconst { authenticate } = require('../middleware/auth');\nconst { validate } = require('../middleware/validation');\nconst { rateLimit } = require('../middleware/rateLimit');\nconst userController = require('../controllers/users');\nconst productController = require('../controllers/products');\nconst orderController = require('../controllers/orders');\n\n// User routes\nrouter.post('/users/register', validate('register'), userController.register);\nrouter.post('/users/login', validate('login'), userController.login);\nrouter.get('/users/profile', authenticate, userController.getProfile);\nrouter.put('/users/profile', authenticate, validate('updateProfile'), userController.updateProfile);\n\n// Product routes\nrouter.get('/products', productController.list);\nrouter.get('/products/:id', productController.getById);\nrouter.post('/products', authenticate, validate('createProduct'), productController.create);\nrouter.put('/products/:id', authenticate, validate('updateProduct'), productController.update);\nrouter.delete('/products/:id', authenticate, productController.remove);\n\n// Order routes\nrouter.get('/orders', authenticate, orderController.list);\nrouter.post('/orders', authenticate, rateLimit(10), validate('createOrder'), orderController.create);\nrouter.get('/orders/:id', authenticate, orderController.getById);\nrouter.patch('/orders/:id/status', authenticate, validate('updateStatus'), orderController.updateStatus);\n\nmodule.exports = router;\n"
       },
       {
-        "path": "sample-code/auth.js",
-        "content": "// Sample code with security issues\nconst express = require('express');\nconst router = express.Router();\n\nrouter.post('/login', (req, res) => {\n  const { username, password } = req.body;\n  \n  // Direct SQL query - SQL injection vulnerability!\n  const query = `SELECT * FROM users WHERE username='${username}' AND password='${password}'`;\n  \n  // Hardcoded secret\n  const SECRET = 'super-secret-key-12345';\n  \n  // Logging sensitive data\n  console.log('Login attempt:', { username, password });\n  \n  res.json({ token: 'generated-token' });\n});\n\nmodule.exports = router;\n"
+        "path": "src/controllers/users.js",
+        "content": "const UserService = require('../services/UserService');\n\nmodule.exports = {\n  async register(req, res, next) {\n    try {\n      const user = await UserService.create(req.body);\n      const token = await UserService.generateToken(user);\n      res.status(201).json({ user, token });\n    } catch (err) {\n      next(err);\n    }\n  },\n\n  async login(req, res, next) {\n    try {\n      const { email, password } = req.body;\n      const { user, token } = await UserService.authenticate(email, password);\n      res.json({ user, token });\n    } catch (err) {\n      next(err);\n    }\n  },\n\n  async getProfile(req, res, next) {\n    try {\n      const user = await UserService.findById(req.user.id);\n      res.json(user);\n    } catch (err) {\n      next(err);\n    }\n  },\n\n  async updateProfile(req, res, next) {\n    try {\n      const user = await UserService.update(req.user.id, req.body);\n      res.json(user);\n    } catch (err) {\n      next(err);\n    }\n  }\n};\n"
+      },
+      {
+        "path": "src/controllers/products.js",
+        "content": "const ProductService = require('../services/ProductService');\n\nmodule.exports = {\n  async list(req, res, next) {\n    try {\n      const products = await ProductService.findAll(req.query);\n      res.json(products);\n    } catch (err) {\n      next(err);\n    }\n  },\n\n  async getById(req, res, next) {\n    try {\n      const product = await ProductService.findById(req.params.id);\n      res.json(product);\n    } catch (err) {\n      next(err);\n    }\n  },\n\n  async create(req, res, next) {\n    try {\n      const product = await ProductService.create(req.body);\n      res.status(201).json(product);\n    } catch (err) {\n      next(err);\n    }\n  },\n\n  async update(req, res, next) {\n    try {\n      const product = await ProductService.update(req.params.id, req.body);\n      res.json(product);\n    } catch (err) {\n      next(err);\n    }\n  },\n\n  async remove(req, res, next) {\n    try {\n      await ProductService.delete(req.params.id);\n      res.status(204).end();\n    } catch (err) {\n      next(err);\n    }\n  }\n};\n"
+      },
+      {
+        "path": "src/controllers/orders.js",
+        "content": "const OrderService = require('../services/OrderService');\n\nmodule.exports = {\n  async list(req, res, next) {\n    try {\n      const orders = await OrderService.findByUser(req.user.id);\n      res.json(orders);\n    } catch (err) {\n      next(err);\n    }\n  },\n\n  async create(req, res, next) {\n    try {\n      const order = await OrderService.create(req.user.id, req.body);\n      res.status(201).json(order);\n    } catch (err) {\n      next(err);\n    }\n  },\n\n  async getById(req, res, next) {\n    try {\n      const order = await OrderService.findById(req.params.id, req.user.id);\n      res.json(order);\n    } catch (err) {\n      next(err);\n    }\n  },\n\n  async updateStatus(req, res, next) {\n    try {\n      const order = await OrderService.updateStatus(req.params.id, req.body.status);\n      res.json(order);\n    } catch (err) {\n      next(err);\n    }\n  }\n};\n"
+      },
+      {
+        "path": "src/middleware/auth.js",
+        "content": "const jwt = require('jsonwebtoken');\n\nfunction authenticate(req, res, next) {\n  const token = req.headers.authorization?.split(' ')[1];\n  if (!token) return res.status(401).json({ error: 'Authentication required' });\n  try {\n    req.user = jwt.verify(token, process.env.JWT_SECRET);\n    next();\n  } catch {\n    res.status(401).json({ error: 'Invalid or expired token' });\n  }\n}\n\nmodule.exports = { authenticate };\n"
+      },
+      {
+        "path": "src/middleware/validation.js",
+        "content": "const schemas = {\n  register: { required: ['email', 'password', 'name'] },\n  login: { required: ['email', 'password'] },\n  updateProfile: { required: ['name'] },\n  createProduct: { required: ['name', 'price'] },\n  updateProduct: { required: ['name', 'price'] },\n  createOrder: { required: ['productId', 'quantity'] },\n  updateStatus: { required: ['status'] }\n};\n\nfunction validate(schemaName) {\n  return (req, res, next) => {\n    const schema = schemas[schemaName];\n    if (!schema) return next();\n    const missing = schema.required.filter(f => !req.body[f]);\n    if (missing.length) {\n      return res.status(400).json({ error: `Missing fields: ${missing.join(', ')}` });\n    }\n    next();\n  };\n}\n\nmodule.exports = { validate };\n"
+      },
+      {
+        "path": "src/middleware/rateLimit.js",
+        "content": "const limits = new Map();\n\nfunction rateLimit(maxPerMinute) {\n  return (req, res, next) => {\n    const key = `${req.ip}-${req.path}`;\n    const now = Date.now();\n    const windowStart = now - 60000;\n    \n    if (!limits.has(key)) limits.set(key, []);\n    const hits = limits.get(key).filter(t => t > windowStart);\n    \n    if (hits.length >= maxPerMinute) {\n      return res.status(429).json({ error: 'Rate limit exceeded' });\n    }\n    \n    hits.push(now);\n    limits.set(key, hits);\n    next();\n  };\n}\n\nmodule.exports = { rateLimit };\n"
       }
     ],
     "cleanBefore": true
@@ -30,25 +50,33 @@
   "objectives": [
     {
       "id": "obj-1",
-      "description": "Create agents folder",
+      "description": "Create agent-deep-dive.md",
       "type": "file_exists",
-      "target": "agents/security-reviewer.md",
+      "target": "agent-deep-dive.md",
       "required": true
     },
     {
       "id": "obj-2",
-      "description": "Agent has description in frontmatter",
+      "description": "Document at least 5 agent types with their purposes",
       "type": "file_contains",
-      "target": "agents/security-reviewer.md",
-      "pattern": "description:",
+      "target": "agent-deep-dive.md",
+      "pattern": "[Ee]xplore|[Bb]ash|[Pp]lan|general.purpose|code.reviewer|code.explorer|code.architect|code.simplifier",
       "required": true
     },
     {
       "id": "obj-3",
-      "description": "Agent prompt mentions security review",
+      "description": "Include a decision guide for choosing agent types",
       "type": "file_contains",
-      "target": "agents/security-reviewer.md",
-      "pattern": "[Ss]ecurity|[Vv]ulnerabilit|[Rr]eview|OWASP",
+      "target": "agent-deep-dive.md",
+      "pattern": "[Cc]hoose|[Dd]ecision|[Ww]hen to|[Ww]hich agent|[Ff]lowchart|[Gg]uide",
+      "required": true
+    },
+    {
+      "id": "obj-4",
+      "description": "Document agent resumption with examples",
+      "type": "file_contains",
+      "target": "agent-deep-dive.md",
+      "pattern": "[Rr]esum|agent.?[Ii][Dd]|continue.*context|previous.*context",
       "required": true
     }
   ],
@@ -56,17 +84,10 @@
   "bonusObjectives": [
     {
       "id": "bonus-1",
-      "description": "Define allowed-tools for the agent",
+      "description": "Include real examples from exploring this codebase",
       "type": "file_contains",
-      "target": "agents/security-reviewer.md",
-      "pattern": "allowed-tools:|tools:",
-      "xpBonus": 50
-    },
-    {
-      "id": "bonus-2",
-      "description": "Create a security review report for sample code",
-      "type": "file_exists",
-      "target": "security-report.md",
+      "target": "agent-deep-dive.md",
+      "pattern": "routes|controllers|middleware|UserService|ProductService|OrderService",
       "xpBonus": 75
     }
   ],
@@ -74,34 +95,36 @@
   "hints": [
     {
       "level": 1,
-      "text": "Custom agents are markdown files in an 'agents' folder with frontmatter and a system prompt.",
+      "text": "Start by asking Claude to explore the API routes. When it finishes, ask it to resume that agent to also look at the middleware layer.",
       "xpCost": 25
     },
     {
       "level": 2,
-      "text": "Try: 'Create a custom agent called security-reviewer that analyzes code for security vulnerabilities'",
+      "text": "For the deep dive document, list each agent type with: name, purpose, available tools, and a concrete example of when you'd use it. Add a decision flowchart.",
       "xpCost": 70
     },
     {
       "level": 3,
-      "text": "Ask: 'Create agents/security-reviewer.md with frontmatter (description, allowed-tools: Read, Grep, Glob) and a system prompt that instructs the agent to review code for security issues like SQL injection, hardcoded secrets, and sensitive data logging'",
+      "text": "Create agent-deep-dive.md with sections: 1) Agent types table (name, purpose, tools), 2) Decision guide (need to search? → Explore, need commands? → Bash, etc.), 3) How resuming works (agent ID, preserved context, use cases), 4) Real examples from exploring this project.",
       "xpCost": 125
     }
   ],
 
   "solution": {
-    "approach": "Create an agent definition file with appropriate frontmatter and system prompt.",
-    "example": "Create a security review agent in the agents folder with proper configuration",
+    "approach": "Use an explore agent, resume it, then document all agent types and the resume mechanism.",
+    "example": "Explore the codebase, resume the agent for deeper analysis, create comprehensive agent documentation",
     "alternativeApproaches": [
-      "Build a custom agent for security analysis",
-      "Add a security-reviewer subagent to this plugin"
+      "Research agent types while using different agents on this project",
+      "Ask Claude to demonstrate different agent types on this codebase"
     ]
   },
 
   "learningPoints": [
-    "Custom agents are markdown files with YAML frontmatter",
-    "The system prompt defines the agent's behavior",
-    "allowed-tools restricts what the agent can do"
+    "Agents can be resumed by ID to continue with full context",
+    "Resuming avoids re-explaining context and builds on prior work",
+    "Specialized agents (code-reviewer, code-explorer, code-architect) exist for specific tasks",
+    "Choosing the right agent type makes tasks faster and more focused",
+    "Read-only agents (Explore, Plan) are safer for research tasks"
   ],
 
   "nextChallenge": "06-004"

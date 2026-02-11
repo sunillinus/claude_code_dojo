@@ -2,22 +2,18 @@
   "id": "08-003",
   "module": "mcp-integration",
   "title": "Build Custom MCP Tool",
-  "description": "Learn to build your own MCP server with custom tools. This is the ultimate way to extend Claude Code's capabilities.",
+  "description": "Learn to build your own MCP server from scratch using the TypeScript SDK. Create a note-taking MCP server with tools to save, list, and search notes, complete with proper tool schemas, error handling, and configuration.",
   "difficulty": "expert",
-  "xpReward": 500,
-  "estimatedMinutes": 30,
-  "skills": ["mcp-development", "server-creation"],
+  "xpReward": 275,
+  "estimatedMinutes": 15,
+  "skills": ["mcp-development", "server-creation", "tool-schemas", "typescript"],
 
   "setup": {
     "workingDir": "~/dojo-workspace/challenge-08-003",
     "initialFiles": [
       {
         "path": "README.md",
-        "content": "# Challenge: Build Custom MCP Tool\n\nCreate your own MCP server with custom tools!\n\n## Objectives\n1. Create a simple MCP server in Python or Node.js\n2. Implement at least one custom tool\n3. Configure .mcp.json to use your server\n4. Document how to use it in usage.md\n"
-      },
-      {
-        "path": "plugin.json",
-        "content": "{\n  \"name\": \"custom-mcp\",\n  \"version\": \"1.0.0\",\n  \"description\": \"Custom MCP server development\"\n}\n"
+        "content": "# Challenge: Build a Custom MCP Server\n\nLearn to build your own MCP server from scratch and expose custom\ntools that Claude Code can call.\n\n---\n\n## Why Build Custom MCP Servers?\n\nThe official MCP servers (filesystem, GitHub, Playwright, etc.) cover\ncommon use cases, but every team has unique tools and workflows:\n\n- Query your company's internal API\n- Manage a custom task tracking system\n- Interface with proprietary hardware\n- Access a specialized database or data format\n\nBuilding a custom MCP server lets you expose ANY functionality as\ntools that Claude Code can call naturally. Once configured, Claude\ncan use your tools just like built-in ones.\n\n## The MCP SDK\n\nMCP servers can be built in two languages with official SDKs:\n\n| Language | Package | Install |\n|----------|---------|--------|\n| TypeScript | `@modelcontextprotocol/sdk` | `npm install @modelcontextprotocol/sdk` |\n| Python | `mcp` | `pip install mcp` |\n\nThis challenge uses the **TypeScript SDK** because it is the most\nwidely used and has the most examples available.\n\n## Minimal MCP Server Structure\n\nHere is the skeleton of an MCP server in TypeScript:\n\n```typescript\nimport { McpServer } from \"@modelcontextprotocol/sdk/server/mcp.js\";\nimport { StdioServerTransport } from \"@modelcontextprotocol/sdk/server/stdio.js\";\nimport { z } from \"zod\";\n\n// 1. Create server instance\nconst server = new McpServer({\n  name: \"my-server\",\n  version: \"1.0.0\"\n});\n\n// 2. Define a tool\nserver.tool(\n  \"tool-name\",\n  \"Description of what this tool does\",\n  {\n    // Input schema using Zod\n    paramName: z.string().describe(\"Description of this parameter\")\n  },\n  async ({ paramName }) => {\n    // 3. Handle the tool call\n    const result = doSomething(paramName);\n    return {\n      content: [{ type: \"text\", text: JSON.stringify(result) }]\n    };\n  }\n);\n\n// 4. Connect via stdio transport\nconst transport = new StdioServerTransport();\nawait server.connect(transport);\n```\n\nLet's break down each part in detail.\n\n## Part 1: Creating the Server Instance\n\n```typescript\nimport { McpServer } from \"@modelcontextprotocol/sdk/server/mcp.js\";\n\nconst server = new McpServer({\n  name: \"notes\",        // Server identifier\n  version: \"1.0.0\"      // Semantic version\n});\n```\n\nThe `name` becomes part of the tool namespace. If your server is\nnamed `notes` and you define a tool called `save`, Claude Code\nsees it as `mcp__notes__save`.\n\n## Part 2: Defining Tools with Schemas\n\nTools are the core of any MCP server. Each tool needs:\n\n1. **A name** -- short, descriptive, snake_case\n2. **A description** -- tells Claude WHEN to use this tool (this is\n   critical -- Claude reads this to decide if the tool fits the task)\n3. **An input schema** -- defines parameters using Zod schemas\n4. **A handler function** -- runs when Claude calls the tool\n\n```typescript\nserver.tool(\n  \"save_note\",                                    // name\n  \"Save a note with a title and content\",          // description\n  {                                                 // input schema (Zod)\n    title: z.string().describe(\"Title of the note\"),\n    content: z.string().describe(\"The note content\"),\n    tags: z.array(z.string()).optional().describe(\"Optional tags\")\n  },\n  async ({ title, content, tags }) => {             // handler\n    // Your logic here\n    return {\n      content: [{ type: \"text\", text: \"Note saved successfully\" }]\n    };\n  }\n);\n```\n\n### Writing Good Tool Descriptions\n\nThe `description` field is crucial. Claude uses it to decide whether\nto use your tool. Compare:\n\n- Bad:  `\"Saves stuff\"` -- too vague, Claude won't know when to use it\n- Good: `\"Save a note with a title and content. Use this when the user\n  wants to store information for later retrieval.\"` -- clear and\n  specific\n\n### Input Schema with Zod\n\nThe SDK uses Zod for input validation. Common patterns:\n\n```typescript\n// Required string\ntitle: z.string().describe(\"The note title\")\n\n// Optional string with default\ncategory: z.string().optional().default(\"general\").describe(\"Note category\")\n\n// Number with constraints\nlimit: z.number().min(1).max(100).describe(\"Max results to return\")\n\n// Array of strings\ntags: z.array(z.string()).describe(\"Tags for the note\")\n\n// Enum (fixed choices)\npriority: z.enum([\"low\", \"medium\", \"high\"]).describe(\"Note priority\")\n```\n\n## Part 3: Handling Tool Calls\n\nThe handler function receives the validated parameters and must return\na response object:\n\n```typescript\nasync ({ title, content }) => {\n  try {\n    // Do the actual work\n    const note = { title, content, createdAt: new Date().toISOString() };\n    notes.push(note);\n    \n    // Return success\n    return {\n      content: [{\n        type: \"text\",\n        text: JSON.stringify({ success: true, note })\n      }]\n    };\n  } catch (error) {\n    // Return error\n    return {\n      content: [{\n        type: \"text\",\n        text: JSON.stringify({ error: error.message })\n      }],\n      isError: true\n    };\n  }\n}\n```\n\nKey points about responses:\n- The `content` array can contain text or image items\n- Text content is typically JSON-stringified for structured data\n- Set `isError: true` to signal that something went wrong\n- Always handle errors gracefully -- don't let the server crash\n\n## Part 4: The Stdio Transport\n\nMCP servers communicate with Claude Code through **stdio** (standard\ninput/output). The server reads JSON-RPC messages from stdin and\nwrites responses to stdout.\n\n```typescript\nimport { StdioServerTransport } from \"@modelcontextprotocol/sdk/server/stdio.js\";\n\nconst transport = new StdioServerTransport();\nawait server.connect(transport);\n```\n\nThis is why MCP servers are started with a `command` in `.mcp.json`:\nClaude Code launches the process and pipes messages through\nstdin/stdout.\n\n**Important:** Never use `console.log()` in an MCP server for\ndebugging -- stdout is reserved for the MCP protocol. Use\n`console.error()` instead (writes to stderr, which is separate).\n\n## Part 5: Configuring in .mcp.json\n\nOnce your server is built, configure it in `.mcp.json`:\n\n```json\n{\n  \"mcpServers\": {\n    \"notes\": {\n      \"command\": \"node\",\n      \"args\": [\"server.js\"]\n    }\n  }\n}\n```\n\nOr if using `npx` with a published package:\n\n```json\n{\n  \"mcpServers\": {\n    \"notes\": {\n      \"command\": \"npx\",\n      \"args\": [\"-y\", \"my-notes-mcp-server\"]\n    }\n  }\n}\n```\n\nAfter configuring, restart Claude Code. It will start the server\nprocess and discover available tools.\n\n## Part 6: A Complete Example\n\nHere is a complete, minimal MCP server with two tools:\n\n```typescript\nimport { McpServer } from \"@modelcontextprotocol/sdk/server/mcp.js\";\nimport { StdioServerTransport } from \"@modelcontextprotocol/sdk/server/stdio.js\";\nimport { z } from \"zod\";\n\nconst server = new McpServer({ name: \"greeter\", version: \"1.0.0\" });\n\nserver.tool(\n  \"greet\",\n  \"Generate a greeting for a person\",\n  { name: z.string().describe(\"Person's name\") },\n  async ({ name }) => ({\n    content: [{ type: \"text\", text: `Hello, ${name}! Welcome.` }]\n  })\n);\n\nserver.tool(\n  \"farewell\",\n  \"Generate a farewell message for a person\",\n  { name: z.string().describe(\"Person's name\") },\n  async ({ name }) => ({\n    content: [{ type: \"text\", text: `Goodbye, ${name}! See you soon.` }]\n  })\n);\n\nconst transport = new StdioServerTransport();\nawait server.connect(transport);\n```\n\n## Best Practices\n\n1. **Clear descriptions** -- Claude relies on tool descriptions to\n   know when and how to use your tools\n2. **Validate inputs** -- Use Zod constraints (min, max, regex) to\n   catch bad inputs early\n3. **Return structured data** -- JSON.stringify your results so\n   Claude can parse and present them\n4. **Handle errors gracefully** -- Catch exceptions and return\n   error objects with `isError: true`\n5. **Keep tools focused** -- One tool per action (save, list, search)\n   rather than one tool that does everything\n6. **Use console.error for logging** -- stdout is reserved for MCP\n   protocol messages\n\n---\n\n## Your Task\n\nBuild a **note-taking MCP server** with the following tools:\n\n### Required Tools\n\n1. **save_note** -- Save a note with a title and content\n   - Parameters: `title` (string, required), `content` (string, required),\n     `tags` (array of strings, optional)\n   - Returns: confirmation with the saved note\n\n2. **list_notes** -- List all saved notes\n   - Parameters: none required (optional `tag` filter)\n   - Returns: array of all notes\n\n3. **search_notes** -- Search notes by keyword\n   - Parameters: `query` (string, required)\n   - Returns: matching notes\n\n### Deliverables\n\n1. `server.js` -- The MCP server with all three tools\n2. `package.json` -- With the correct dependencies\n3. `.mcp.json` -- Configuration to use the server\n4. `usage.md` -- Documentation explaining:\n   - What the server does\n   - What tools it provides (with parameter descriptions)\n   - How to configure and test it\n   - Example usage scenarios\n\n## Objectives\n1. Create server.js with the MCP server implementation\n2. Server imports the MCP SDK\n3. Server defines at least 3 tools (save, list, search)\n4. Tools have proper input schemas with descriptions\n5. Server includes error handling\n6. Create package.json with MCP SDK dependency\n7. Create .mcp.json to configure the server\n8. Create usage.md documenting the tools and setup\n"
       }
     ],
     "cleanBefore": true
@@ -26,40 +22,110 @@
   "objectives": [
     {
       "id": "obj-1",
-      "description": "Create MCP server file",
+      "description": "Create the server.js MCP server file",
       "type": "file_exists",
-      "target": "server.py",
-      "alternateTarget": "server.js",
+      "target": "server.js",
       "required": true
     },
     {
       "id": "obj-2",
-      "description": "Server imports MCP SDK",
+      "description": "Server imports the MCP SDK (@modelcontextprotocol/sdk)",
       "type": "file_contains",
-      "target": "server.py",
-      "pattern": "from mcp|import.*mcp|require.*mcp|@anthropic/sdk",
+      "target": "server.js",
+      "pattern": "@modelcontextprotocol/sdk|McpServer|StdioServerTransport",
       "required": true
     },
     {
       "id": "obj-3",
-      "description": "Server defines at least one tool",
+      "description": "Server defines a save tool (save_note or similar)",
       "type": "file_contains",
-      "target": "server.py",
-      "pattern": "@tool|tool|Tool|def.*\\(|function.*\\(",
+      "target": "server.js",
+      "pattern": "save_note|save|create_note|add_note",
       "required": true
     },
     {
       "id": "obj-4",
-      "description": "Configure .mcp.json to use custom server",
+      "description": "Server defines a list tool (list_notes or similar)",
+      "type": "file_contains",
+      "target": "server.js",
+      "pattern": "list_notes|list|get_notes|get_all",
+      "required": true
+    },
+    {
+      "id": "obj-5",
+      "description": "Server defines a search tool (search_notes or similar)",
+      "type": "file_contains",
+      "target": "server.js",
+      "pattern": "search_notes|search|find_notes|find",
+      "required": true
+    },
+    {
+      "id": "obj-6",
+      "description": "Tools have input schemas with parameter descriptions (using Zod or JSON Schema)",
+      "type": "file_contains",
+      "target": "server.js",
+      "pattern": "z\\.string|z\\.array|z\\.number|z\\.object|describe\\(|inputSchema|properties",
+      "required": true
+    },
+    {
+      "id": "obj-7",
+      "description": "Server includes error handling (try/catch or isError)",
+      "type": "file_contains",
+      "target": "server.js",
+      "pattern": "try|catch|isError|error|Error",
+      "required": true
+    },
+    {
+      "id": "obj-8",
+      "description": "Server connects via stdio transport",
+      "type": "file_contains",
+      "target": "server.js",
+      "pattern": "StdioServerTransport|stdio|connect",
+      "required": true
+    },
+    {
+      "id": "obj-9",
+      "description": "Create package.json with MCP SDK dependency",
+      "type": "file_exists",
+      "target": "package.json",
+      "required": true
+    },
+    {
+      "id": "obj-10",
+      "description": "package.json references the MCP SDK",
+      "type": "file_contains",
+      "target": "package.json",
+      "pattern": "@modelcontextprotocol/sdk",
+      "required": true
+    },
+    {
+      "id": "obj-11",
+      "description": "Create .mcp.json to configure the custom server",
       "type": "file_exists",
       "target": ".mcp.json",
       "required": true
     },
     {
-      "id": "obj-5",
-      "description": "Create usage documentation",
+      "id": "obj-12",
+      "description": ".mcp.json configures the notes server with command and args",
+      "type": "file_contains",
+      "target": ".mcp.json",
+      "pattern": "mcpServers",
+      "required": true
+    },
+    {
+      "id": "obj-13",
+      "description": "Create usage.md documenting the server and its tools",
       "type": "file_exists",
       "target": "usage.md",
+      "required": true
+    },
+    {
+      "id": "obj-14",
+      "description": "usage.md describes the available tools",
+      "type": "file_contains",
+      "target": "usage.md",
+      "pattern": "save|list|search|tool",
       "required": true
     }
   ],
@@ -67,53 +133,56 @@
   "bonusObjectives": [
     {
       "id": "bonus-1",
-      "description": "Tool has proper input schema",
+      "description": "Server uses Zod for input validation with constraints (min, max, optional, etc.)",
       "type": "file_contains",
-      "target": "server.py",
-      "pattern": "schema|parameters|inputSchema|properties",
-      "xpBonus": 100
+      "target": "server.js",
+      "pattern": "z\\.string\\(\\)|z\\.array\\(|z\\.optional|z\\.enum|z\\.number",
+      "xpBonus": 50
     },
     {
       "id": "bonus-2",
-      "description": "Implement multiple tools",
+      "description": "Server returns structured JSON responses (JSON.stringify in content)",
       "type": "file_contains",
-      "target": "server.py",
-      "pattern": "@tool.*@tool|tool.*tool|def.*def|function.*function",
-      "xpBonus": 100
+      "target": "server.js",
+      "pattern": "JSON\\.stringify",
+      "xpBonus": 50
     }
   ],
 
   "hints": [
     {
       "level": 1,
-      "text": "MCP servers can be built in Python or Node.js using the official SDKs.",
-      "xpCost": 35
+      "text": "Start with the server skeleton from the README: import McpServer and StdioServerTransport, create a server instance, define tools with server.tool(), and connect via stdio. Store notes in a simple in-memory array. Each tool needs a name, description, Zod input schema, and an async handler function.",
+      "xpCost": 20
     },
     {
       "level": 2,
-      "text": "Try: 'Create a Python MCP server with a tool that converts text to uppercase'",
-      "xpCost": 100
+      "text": "For save_note: accept title (z.string()) and content (z.string()), push to an array, return the saved note. For list_notes: accept an optional tag parameter, filter the array if tag is provided, return all notes. For search_notes: accept query (z.string()), filter notes where title or content includes the query string. Wrap each handler in try/catch and return {isError: true} on failure. Don't forget package.json needs @modelcontextprotocol/sdk and zod as dependencies.",
+      "xpCost": 55
     },
     {
       "level": 3,
-      "text": "Ask: 'Create server.py using the MCP Python SDK (pip install mcp). Define a simple tool like \"convert_case\" that takes text and a direction (upper/lower). Create .mcp.json to configure this server, and usage.md explaining how to use the tool.'",
-      "xpCost": 185
+      "text": "Full structure: (1) server.js -- import McpServer from '@modelcontextprotocol/sdk/server/mcp.js', StdioServerTransport from '@modelcontextprotocol/sdk/server/stdio.js', z from 'zod'. Create server with name 'notes'. Define save_note tool with title:z.string(), content:z.string(), tags:z.array(z.string()).optional(). Define list_notes with optional tag:z.string(). Define search_notes with query:z.string(). Each pushes/filters an in-memory notes array. Connect with StdioServerTransport. (2) package.json with dependencies @modelcontextprotocol/sdk and zod, type:'module'. (3) .mcp.json with mcpServers.notes = {command:'node', args:['server.js']}. (4) usage.md describing each tool's purpose and parameters.",
+      "xpCost": 105
     }
   ],
 
   "solution": {
-    "approach": "Build an MCP server with the official SDK and expose custom tools.",
-    "example": "Create a Python MCP server with custom tools and configure Claude Code to use it",
+    "approach": "Build an MCP server using the TypeScript SDK with three tools (save_note, list_notes, search_notes), each with Zod input schemas and error handling. Create package.json with dependencies, .mcp.json for configuration, and usage.md for documentation.",
+    "example": "Create a notes MCP server with save, list, and search tools using @modelcontextprotocol/sdk, configure it in .mcp.json, and document usage",
     "alternativeApproaches": [
-      "Build a Node.js MCP server with custom functionality",
-      "Create your own tools that Claude Code can use via MCP"
+      "Store notes in a JSON file instead of in-memory for persistence across restarts",
+      "Add additional tools like delete_note or update_note for a more complete server"
     ]
   },
 
   "learningPoints": [
-    "MCP servers expose tools that Claude can call",
-    "Python and Node.js SDKs make MCP development easy",
-    "Custom MCP tools can do anything: API calls, database queries, system operations"
+    "Custom MCP servers are built using @modelcontextprotocol/sdk with McpServer and StdioServerTransport",
+    "Each tool is defined with server.tool() taking a name, description, Zod input schema, and async handler function",
+    "Tool descriptions are critical -- Claude reads them to decide when and how to use each tool",
+    "Zod schemas provide input validation and parameter documentation in a single declaration",
+    "Stdio transport means the server reads from stdin and writes to stdout -- never use console.log for debugging",
+    "Error handling with try/catch and isError:true prevents server crashes and gives Claude useful error information"
   ],
 
   "nextChallenge": "09-001"

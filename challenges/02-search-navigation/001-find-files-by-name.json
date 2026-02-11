@@ -2,42 +2,162 @@
   "id": "02-001",
   "module": "search-navigation",
   "title": "Find Files by Name",
-  "description": "Learn to find files in a project by their name or pattern. Claude Code can quickly locate files even in large codebases.",
+  "description": "Master the Glob tool for finding files by name patterns. Learn glob syntax including wildcards, recursive matching, alternatives, and character classes to efficiently locate files in any project structure.",
   "difficulty": "beginner",
   "xpReward": 100,
-  "estimatedMinutes": 5,
-  "skills": ["file-search", "glob-patterns"],
+  "estimatedMinutes": 10,
+  "skills": ["glob-tool", "file-search", "glob-patterns", "project-navigation"],
 
   "setup": {
     "workingDir": "~/dojo-workspace/challenge-02-001",
     "initialFiles": [
       {
         "path": "README.md",
-        "content": "# Challenge: Find Files by Name\n\nThis project has many files scattered across folders.\n\n## Objectives\n1. Find all JavaScript files (*.js)\n2. Find the config file\n3. Create a report listing what you found\n"
+        "content": "# Challenge 02-001: Find Files by Name\n\n## What You Will Learn\n\nClaude Code has a built-in **Glob tool** for finding files by their name or path pattern.\nThis is one of the three core search tools you will use constantly:\n\n| Tool | Purpose | Example |\n|------|---------|--------|\n| **Glob** | Find files by name/path pattern | \"Find all .ts files in src/\" |\n| **Grep** | Search file contents | \"Find files containing TODO\" |\n| **Read** | Read a specific file | \"Show me src/index.ts\" |\n\nThis challenge focuses entirely on **Glob** - your go-to tool for locating files.\n\n## How the Glob Tool Works\n\nThe Glob tool takes a **pattern** and an optional **path** (directory to search in).\nIt returns matching file paths **sorted by modification time** (most recent first).\n\nKey parameters:\n- `pattern` (required): The glob pattern to match against file paths\n- `path` (optional): Directory to scope the search to. Defaults to the working directory.\n\n## Glob Pattern Syntax\n\nGlob patterns use special characters to match file paths:\n\n### `*` - Match anything within ONE directory level\n```\n*.js          -> matches: app.js, index.js\n                 skips:   src/app.js (different level)\nconfig.*      -> matches: config.js, config.json, config.yaml\n```\n\n### `**` - Match across ALL directory levels (recursive)\n```\n**/*.js       -> matches: app.js, src/app.js, src/utils/helpers.js\n**/test*      -> matches: test.js, src/tests/, lib/testUtils.js\n```\n\n### `?` - Match exactly ONE character\n```\napp.?s        -> matches: app.js, app.ts\n                 skips:   app.css (two chars after dot)\n```\n\n### `{a,b}` - Match alternatives\n```\n**/*.{js,ts}      -> matches: app.js, app.ts, src/utils.ts\n{src,lib}/**/*.js -> matches: src/app.js, lib/utils.js\n                     skips:   test/app.js\n```\n\n### `[abc]` - Match character class\n```\n*.[jt]s       -> matches: app.js, app.ts\n                 skips:   app.cs\n```\n\n## Common Patterns You Will Use Often\n\n| Pattern | What It Finds |\n|---------|---------------|\n| `**/*.js` | All JavaScript files, any depth |\n| `**/*.test.*` | All test files (any extension) |\n| `**/*.{ts,tsx}` | All TypeScript files including React |\n| `src/**/*.js` | JS files only inside src/ |\n| `**/index.*` | All index files at any depth |\n| `**/*.config.*` | All config files (webpack.config.js, etc.) |\n| `**/{package,tsconfig}.json` | Specific JSON config files |\n\n## Glob vs the `find` Command\n\nYou might know the Unix `find` command. In Claude Code, **always prefer Glob**:\n- Glob is a built-in tool (no shell needed)\n- Glob is optimized for Claude Code's workflow\n- Glob results are sorted by modification time (most useful order)\n- The `find` command should only be used when Glob cannot express your query\n\n## When to Use Glob vs Grep\n\n- **Glob**: You know something about the FILE NAME or PATH\n  - \"Find all TypeScript files\" -> Glob `**/*.ts`\n  - \"Find config files\" -> Glob `**/*.config.*`\n\n- **Grep**: You know something about the FILE CONTENTS\n  - \"Find files containing TODO\" -> Grep for `TODO`\n  - \"Find where formatDate is used\" -> Grep for `formatDate`\n\n## Your Task\n\nThis project contains 25+ files across multiple directories simulating a real web application.\nYou need to explore it using different glob patterns and document what you find.\n\nCreate a file called `glob-findings.md` with these sections:\n\n1. **All JavaScript files** - List every .js file found with `**/*.js`\n2. **All test files** - List files found with a pattern matching test files\n3. **All config files** - List files found matching configuration files\n4. **All TypeScript files** - List .ts and .tsx files found\n5. **All files in src/components/** - List files scoped to that directory\n6. **Pattern reference** - For each section, document the exact glob pattern you used\n\nHint: Ask Claude Code to use the Glob tool with specific patterns and compile the results.\n"
+      },
+      {
+        "path": "package.json",
+        "content": "{\n  \"name\": \"webapp-project\",\n  \"version\": \"2.1.0\",\n  \"main\": \"src/index.js\",\n  \"scripts\": {\n    \"start\": \"node src/index.js\",\n    \"build\": \"webpack --config webpack.config.js\",\n    \"test\": \"jest\",\n    \"lint\": \"eslint src/\"\n  }\n}\n"
+      },
+      {
+        "path": "tsconfig.json",
+        "content": "{\n  \"compilerOptions\": {\n    \"target\": \"ES2020\",\n    \"module\": \"commonjs\",\n    \"strict\": true,\n    \"outDir\": \"./dist\"\n  },\n  \"include\": [\"src/**/*.ts\", \"src/**/*.tsx\"]\n}\n"
+      },
+      {
+        "path": "webpack.config.js",
+        "content": "const path = require('path');\n\nmodule.exports = {\n  entry: './src/index.js',\n  output: {\n    path: path.resolve(__dirname, 'dist'),\n    filename: 'bundle.js'\n  }\n};\n"
+      },
+      {
+        "path": "jest.config.js",
+        "content": "module.exports = {\n  testMatch: ['**/*.test.js', '**/*.test.ts'],\n  coverageDirectory: 'coverage'\n};\n"
+      },
+      {
+        "path": ".eslintrc.json",
+        "content": "{\n  \"env\": { \"node\": true, \"jest\": true },\n  \"extends\": \"eslint:recommended\"\n}\n"
       },
       {
         "path": "src/index.js",
-        "content": "// Main entry point\nconsole.log('Hello');\n"
+        "content": "const app = require('./app');\nconst config = require('./config/database');\n\napp.listen(config.port, () => {\n  console.log(`Server running on port ${config.port}`);\n});\n"
+      },
+      {
+        "path": "src/app.js",
+        "content": "const express = require('express');\nconst routes = require('./routes');\nconst middleware = require('./middleware/logger');\n\nconst app = express();\napp.use(middleware);\napp.use('/api', routes);\n\nmodule.exports = app;\n"
+      },
+      {
+        "path": "src/config/database.js",
+        "content": "module.exports = {\n  host: process.env.DB_HOST || 'localhost',\n  port: process.env.PORT || 3000,\n  database: 'webapp_db'\n};\n"
+      },
+      {
+        "path": "src/config/auth.config.js",
+        "content": "module.exports = {\n  jwtSecret: process.env.JWT_SECRET || 'dev-secret',\n  tokenExpiry: '24h'\n};\n"
+      },
+      {
+        "path": "src/routes/index.js",
+        "content": "const router = require('express').Router();\nconst users = require('./users');\nconst posts = require('./posts');\n\nrouter.use('/users', users);\nrouter.use('/posts', posts);\n\nmodule.exports = router;\n"
+      },
+      {
+        "path": "src/routes/users.js",
+        "content": "const router = require('express').Router();\nconst UserController = require('../controllers/UserController');\n\nrouter.get('/', UserController.list);\nrouter.post('/', UserController.create);\nrouter.get('/:id', UserController.getById);\n\nmodule.exports = router;\n"
+      },
+      {
+        "path": "src/routes/posts.js",
+        "content": "const router = require('express').Router();\nconst PostController = require('../controllers/PostController');\n\nrouter.get('/', PostController.list);\nrouter.post('/', PostController.create);\nrouter.get('/:id', PostController.getById);\n\nmodule.exports = router;\n"
+      },
+      {
+        "path": "src/controllers/UserController.js",
+        "content": "const UserService = require('../services/UserService');\n\nclass UserController {\n  static async list(req, res) {\n    const users = await UserService.findAll();\n    res.json(users);\n  }\n  static async create(req, res) {\n    const user = await UserService.create(req.body);\n    res.status(201).json(user);\n  }\n  static async getById(req, res) {\n    const user = await UserService.findById(req.params.id);\n    res.json(user);\n  }\n}\n\nmodule.exports = UserController;\n"
+      },
+      {
+        "path": "src/controllers/PostController.js",
+        "content": "const PostService = require('../services/PostService');\n\nclass PostController {\n  static async list(req, res) {\n    const posts = await PostService.findAll();\n    res.json(posts);\n  }\n  static async create(req, res) {\n    const post = await PostService.create(req.body);\n    res.status(201).json(post);\n  }\n  static async getById(req, res) {\n    const post = await PostService.findById(req.params.id);\n    res.json(post);\n  }\n}\n\nmodule.exports = PostController;\n"
+      },
+      {
+        "path": "src/services/UserService.js",
+        "content": "const User = require('../models/User');\n\nclass UserService {\n  static async findAll() { return User.findAll(); }\n  static async findById(id) { return User.findById(id); }\n  static async create(data) { return User.create(data); }\n}\n\nmodule.exports = UserService;\n"
+      },
+      {
+        "path": "src/services/PostService.js",
+        "content": "const Post = require('../models/Post');\n\nclass PostService {\n  static async findAll() { return Post.findAll(); }\n  static async findById(id) { return Post.findById(id); }\n  static async create(data) { return Post.create(data); }\n}\n\nmodule.exports = PostService;\n"
+      },
+      {
+        "path": "src/models/User.js",
+        "content": "class User {\n  static async findAll() { return []; }\n  static async findById(id) { return null; }\n  static async create(data) { return { id: '1', ...data }; }\n}\n\nmodule.exports = User;\n"
+      },
+      {
+        "path": "src/models/Post.js",
+        "content": "class Post {\n  static async findAll() { return []; }\n  static async findById(id) { return null; }\n  static async create(data) { return { id: '1', ...data }; }\n}\n\nmodule.exports = Post;\n"
+      },
+      {
+        "path": "src/middleware/logger.js",
+        "content": "function logger(req, res, next) {\n  console.log(`${req.method} ${req.url}`);\n  next();\n}\n\nmodule.exports = logger;\n"
+      },
+      {
+        "path": "src/middleware/auth.js",
+        "content": "const config = require('../config/auth.config');\n\nfunction authenticate(req, res, next) {\n  const token = req.headers.authorization;\n  if (!token) return res.status(401).json({ error: 'No token' });\n  next();\n}\n\nmodule.exports = authenticate;\n"
       },
       {
         "path": "src/utils/helpers.js",
-        "content": "// Helper functions\nexport const helper = () => {};\n"
+        "content": "function slugify(text) {\n  return text.toLowerCase().replace(/\\s+/g, '-');\n}\n\nfunction capitalize(text) {\n  return text.charAt(0).toUpperCase() + text.slice(1);\n}\n\nmodule.exports = { slugify, capitalize };\n"
       },
       {
-        "path": "src/utils/format.js",
-        "content": "// Formatting utilities\nexport const format = () => {};\n"
+        "path": "src/utils/validators.js",
+        "content": "function isEmail(str) {\n  return /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(str);\n}\n\nfunction isNotEmpty(str) {\n  return str && str.trim().length > 0;\n}\n\nmodule.exports = { isEmail, isNotEmpty };\n"
       },
       {
-        "path": "config/app.config.js",
-        "content": "// App configuration\nmodule.exports = { port: 3000 };\n"
+        "path": "src/components/Header.tsx",
+        "content": "import React from 'react';\n\ninterface HeaderProps {\n  title: string;\n}\n\nexport const Header: React.FC<HeaderProps> = ({ title }) => {\n  return <header><h1>{title}</h1></header>;\n};\n"
       },
       {
-        "path": "tests/app.test.js",
-        "content": "// Tests\ntest('works', () => {});\n"
+        "path": "src/components/Footer.tsx",
+        "content": "import React from 'react';\n\nexport const Footer: React.FC = () => {\n  return <footer><p>Copyright 2025</p></footer>;\n};\n"
       },
       {
-        "path": "docs/guide.md",
-        "content": "# Guide\nThis is documentation.\n"
+        "path": "src/components/UserList.tsx",
+        "content": "import React from 'react';\n\ninterface User {\n  id: string;\n  name: string;\n}\n\nexport const UserList: React.FC<{ users: User[] }> = ({ users }) => {\n  return <ul>{users.map(u => <li key={u.id}>{u.name}</li>)}</ul>;\n};\n"
+      },
+      {
+        "path": "src/types/models.ts",
+        "content": "export interface User {\n  id: string;\n  name: string;\n  email: string;\n}\n\nexport interface Post {\n  id: string;\n  title: string;\n  content: string;\n  authorId: string;\n}\n"
+      },
+      {
+        "path": "src/types/api.ts",
+        "content": "export interface ApiResponse<T> {\n  data: T;\n  status: number;\n  message: string;\n}\n\nexport interface PaginatedResponse<T> extends ApiResponse<T[]> {\n  total: number;\n  page: number;\n}\n"
+      },
+      {
+        "path": "tests/controllers/UserController.test.js",
+        "content": "const UserController = require('../../src/controllers/UserController');\n\ndescribe('UserController', () => {\n  test('list returns users', async () => {\n    // test implementation\n  });\n});\n"
+      },
+      {
+        "path": "tests/controllers/PostController.test.js",
+        "content": "const PostController = require('../../src/controllers/PostController');\n\ndescribe('PostController', () => {\n  test('list returns posts', async () => {\n    // test implementation\n  });\n});\n"
+      },
+      {
+        "path": "tests/services/UserService.test.js",
+        "content": "const UserService = require('../../src/services/UserService');\n\ndescribe('UserService', () => {\n  test('findAll returns array', async () => {\n    // test implementation\n  });\n});\n"
+      },
+      {
+        "path": "tests/utils/helpers.test.js",
+        "content": "const { slugify, capitalize } = require('../../src/utils/helpers');\n\ndescribe('helpers', () => {\n  test('slugify works', () => {\n    expect(slugify('Hello World')).toBe('hello-world');\n  });\n});\n"
+      },
+      {
+        "path": "tests/integration/api.test.ts",
+        "content": "describe('API Integration', () => {\n  test('GET /api/users returns 200', async () => {\n    // integration test\n  });\n});\n"
+      },
+      {
+        "path": "docs/api-reference.md",
+        "content": "# API Reference\n\n## Users\n- GET /api/users - List all users\n- POST /api/users - Create a user\n- GET /api/users/:id - Get user by ID\n\n## Posts\n- GET /api/posts - List all posts\n- POST /api/posts - Create a post\n- GET /api/posts/:id - Get post by ID\n"
+      },
+      {
+        "path": "docs/setup-guide.md",
+        "content": "# Setup Guide\n\n1. Install dependencies: `npm install`\n2. Set environment variables\n3. Run: `npm start`\n"
+      },
+      {
+        "path": "styles/main.css",
+        "content": "body {\n  font-family: Arial, sans-serif;\n  margin: 0;\n  padding: 0;\n}\n\n.container {\n  max-width: 1200px;\n  margin: 0 auto;\n}\n"
+      },
+      {
+        "path": "styles/components.css",
+        "content": ".header {\n  background: #333;\n  color: white;\n  padding: 1rem;\n}\n\n.footer {\n  background: #f5f5f5;\n  padding: 1rem;\n  text-align: center;\n}\n"
       }
     ],
     "cleanBefore": true
@@ -46,25 +166,49 @@
   "objectives": [
     {
       "id": "obj-1",
-      "description": "Create files-report.md listing the JavaScript files found",
+      "description": "Create glob-findings.md documenting your file search results",
       "type": "file_exists",
-      "target": "files-report.md",
+      "target": "glob-findings.md",
       "required": true
     },
     {
       "id": "obj-2",
-      "description": "Report should mention index.js",
+      "description": "Document JavaScript files found - must mention src/index.js and helpers.js",
       "type": "file_contains",
-      "target": "files-report.md",
-      "pattern": "index\\.js",
+      "target": "glob-findings.md",
+      "pattern": "src/index\\.js",
       "required": true
     },
     {
       "id": "obj-3",
-      "description": "Report should mention the config file",
+      "description": "Document test files found - must mention at least one .test. file",
       "type": "file_contains",
-      "target": "files-report.md",
-      "pattern": "config|app\\.config",
+      "target": "glob-findings.md",
+      "pattern": "\\.test\\.",
+      "required": true
+    },
+    {
+      "id": "obj-4",
+      "description": "Document config files found - must mention webpack.config.js or jest.config.js",
+      "type": "file_contains",
+      "target": "glob-findings.md",
+      "pattern": "(webpack|jest)\\.config\\.js",
+      "required": true
+    },
+    {
+      "id": "obj-5",
+      "description": "Document TypeScript files found - must mention .tsx component files",
+      "type": "file_contains",
+      "target": "glob-findings.md",
+      "pattern": "\\.tsx",
+      "required": true
+    },
+    {
+      "id": "obj-6",
+      "description": "Document the glob patterns used (must show pattern syntax like **/*.js or similar)",
+      "type": "file_contains",
+      "target": "glob-findings.md",
+      "pattern": "\\*\\*/\\*\\.",
       "required": true
     }
   ],
@@ -72,10 +216,18 @@
   "bonusObjectives": [
     {
       "id": "bonus-1",
-      "description": "List all 5 JavaScript files in the report",
+      "description": "Document files in src/components/ specifically (scoped search)",
       "type": "file_contains",
-      "target": "files-report.md",
-      "pattern": "helpers\\.js.*format\\.js|format\\.js.*helpers\\.js",
+      "target": "glob-findings.md",
+      "pattern": "Header\\.tsx.*Footer\\.tsx|Footer\\.tsx.*Header\\.tsx|components/",
+      "xpBonus": 25
+    },
+    {
+      "id": "bonus-2",
+      "description": "Include a count of files found per pattern",
+      "type": "file_contains",
+      "target": "glob-findings.md",
+      "pattern": "[0-9]+ files|found [0-9]+|total:?\\s*[0-9]+",
       "xpBonus": 25
     }
   ],
@@ -83,34 +235,37 @@
   "hints": [
     {
       "level": 1,
-      "text": "Ask Claude Code to find all files matching a pattern, like '*.js' for JavaScript files.",
+      "text": "Think about what makes each file category unique by name. JavaScript files end in .js, test files contain .test. in their name, config files contain .config. in their name. What glob pattern would match each?",
       "xpCost": 10
     },
     {
       "level": 2,
-      "text": "Try: 'Find all JavaScript files in this project' - Claude Code will search recursively.",
+      "text": "Use ** to search recursively. For example, **/*.js finds all .js files at any depth. For test files, try **/*.test.* to match any test file regardless of extension. For TypeScript, use **/*.{ts,tsx} to match both.",
       "xpCost": 25
     },
     {
       "level": 3,
-      "text": "Ask: 'Find all .js files and create files-report.md listing them, including the config file'",
+      "text": "Ask Claude Code: 'Use the Glob tool with these patterns and compile results into glob-findings.md: (1) **/*.js for JS files, (2) **/*.test.* for test files, (3) **/*.config.* for config files, (4) **/*.{ts,tsx} for TypeScript files, (5) scope to src/components/ for component files. Include the pattern used and count for each section.'",
       "xpCost": 50
     }
   ],
 
   "solution": {
-    "approach": "Ask Claude Code to search for files by pattern and create a report.",
-    "example": "Find all JavaScript files (*.js) in this project and create files-report.md listing them",
+    "approach": "Use the Glob tool with different patterns to find files by name. For each category, choose the right glob pattern: **/*.js for JavaScript, **/*.test.* for tests, **/*.config.* for configs, **/*.{ts,tsx} for TypeScript. Document each pattern and its results in glob-findings.md.",
+    "example": "Use Glob with pattern **/*.js to find all JavaScript files. Then use **/*.test.* for test files. Then **/*.config.* for config files. Then **/*.{ts,tsx} for TypeScript. Then scope with path: src/components/ to find component files. Create glob-findings.md documenting each pattern and the files it found.",
     "alternativeApproaches": [
-      "What JavaScript files are in this project? List them in a report.",
-      "Search for *.js files and document what you find"
+      "Find all JavaScript files using **/*.js, then find test files with **/*.test.{js,ts}, and so on for each category",
+      "Search for files by extension (.js, .ts, .tsx, .css, .json, .md) and organize findings by type"
     ]
   },
 
   "learningPoints": [
-    "Claude Code can search for files using glob patterns",
-    "Searches are recursive by default",
-    "You can combine search with file creation for reports"
+    "The Glob tool finds files by name/path patterns and returns results sorted by modification time",
+    "** matches across directory levels (recursive), while * matches within one level",
+    "{a,b} syntax lets you match multiple alternatives like {ts,tsx}",
+    "The path parameter scopes a Glob search to a specific directory",
+    "Use Glob when you know something about the filename; use Grep when you know something about the file contents",
+    "Glob is preferred over the find command in Claude Code because it is a built-in optimized tool"
   ],
 
   "nextChallenge": "02-002"

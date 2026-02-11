@@ -1,39 +1,55 @@
 {
   "id": "06-001",
   "module": "subagents",
-  "title": "Use Explore Subagent",
-  "description": "Learn to use the Explore subagent for codebase exploration. Subagents can search and analyze code autonomously.",
+  "title": "Understanding Subagents",
+  "description": "Learn what subagents are, what types exist, and when to use them. Subagents are specialized autonomous workers that Claude Code spawns to handle complex tasks without cluttering the main conversation.",
   "difficulty": "intermediate",
   "xpReward": 225,
-  "estimatedMinutes": 10,
-  "skills": ["subagent-basics", "codebase-exploration"],
+  "estimatedMinutes": 15,
+  "skills": ["subagent-basics", "subagent-types"],
 
   "setup": {
     "workingDir": "~/dojo-workspace/challenge-06-001",
     "initialFiles": [
       {
         "path": "README.md",
-        "content": "# Challenge: Use Explore Subagent\n\nUse Claude Code's exploration capabilities to understand this codebase.\n\n## Objectives\n1. Ask Claude to explore how error handling works in this project\n2. Create exploration-report.md with findings\n3. Include file locations and patterns discovered\n"
+        "content": "# Challenge: Understanding Subagents\n\nLearn what subagents are, the types available, and when to use each one.\n\n## What Are Subagents?\n\nSubagents are specialized autonomous agents that Claude Code can spawn\nusing the Task tool. Each subagent:\n- Runs in its own context (doesn't clutter your main conversation)\n- Has access to specific tools based on its type\n- Can run in foreground (blocking) or background (non-blocking)\n- Returns results back to the main conversation\n\n## Built-in Subagent Types\n\n| Type | Purpose | Key Tools |\n|------|---------|----------|\n| **Explore** | Fast codebase exploration, searching | Glob, Grep, Read (no Edit/Write) |\n| **Bash** | Run shell commands | Bash only |\n| **Plan** | Design implementation plans | Read-only tools (no Edit/Write) |\n| **general-purpose** | Any complex multi-step task | All tools |\n\n## How to Request a Subagent\n\nYou don't call subagents directly - you ask Claude Code and it decides\nwhen to use one. But you can guide it:\n\n- \"Use an explore agent to find all API endpoints\"\n- \"Spawn a bash agent to run the test suite\"\n- \"Use a subagent to research how auth works\"\n- \"Run this in the background: check all files for TODO comments\"\n\n## Objectives\n1. Use an Explore subagent to find all JavaScript functions in this project\n2. Create subagent-notes.md documenting what you learned about types\n3. Include when you would use each subagent type\n"
       },
       {
-        "path": "src/index.js",
-        "content": "const express = require('express');\nconst { errorHandler, notFoundHandler } = require('./middleware/errors');\nconst userRoutes = require('./routes/users');\nconst productRoutes = require('./routes/products');\n\nconst app = express();\n\napp.use('/users', userRoutes);\napp.use('/products', productRoutes);\n\napp.use(notFoundHandler);\napp.use(errorHandler);\n\nmodule.exports = app;\n"
+        "path": "src/app.js",
+        "content": "const express = require('express');\nconst { createServer } = require('./server');\nconst { loadConfig } = require('./config');\nconst { setupRoutes } = require('./routes');\nconst { connectDatabase } = require('./db');\nconst { initLogger } = require('./utils/logger');\n\nasync function startApp() {\n  const config = loadConfig();\n  const logger = initLogger(config.logLevel);\n  const db = await connectDatabase(config.dbUrl);\n  const app = express();\n  setupRoutes(app, db, logger);\n  return createServer(app, config.port);\n}\n\nmodule.exports = { startApp };\n"
       },
       {
-        "path": "src/middleware/errors.js",
-        "content": "const { AppError } = require('../utils/errors');\n\nfunction errorHandler(err, req, res, next) {\n  if (err instanceof AppError) {\n    return res.status(err.statusCode).json({\n      error: err.message,\n      code: err.code\n    });\n  }\n  \n  console.error('Unexpected error:', err);\n  res.status(500).json({ error: 'Internal server error' });\n}\n\nfunction notFoundHandler(req, res) {\n  res.status(404).json({ error: 'Not found' });\n}\n\nmodule.exports = { errorHandler, notFoundHandler };\n"
+        "path": "src/config.js",
+        "content": "function loadConfig() {\n  return {\n    port: process.env.PORT || 3000,\n    dbUrl: process.env.DATABASE_URL || 'postgres://localhost/app',\n    logLevel: process.env.LOG_LEVEL || 'info',\n    jwtSecret: process.env.JWT_SECRET || 'dev-secret'\n  };\n}\n\nfunction validateConfig(config) {\n  const required = ['port', 'dbUrl', 'jwtSecret'];\n  for (const key of required) {\n    if (!config[key]) throw new Error(`Missing config: ${key}`);\n  }\n  return true;\n}\n\nmodule.exports = { loadConfig, validateConfig };\n"
       },
       {
-        "path": "src/utils/errors.js",
-        "content": "class AppError extends Error {\n  constructor(message, statusCode, code) {\n    super(message);\n    this.statusCode = statusCode;\n    this.code = code;\n  }\n}\n\nclass NotFoundError extends AppError {\n  constructor(resource) {\n    super(`${resource} not found`, 404, 'NOT_FOUND');\n  }\n}\n\nclass ValidationError extends AppError {\n  constructor(message) {\n    super(message, 400, 'VALIDATION_ERROR');\n  }\n}\n\nclass AuthenticationError extends AppError {\n  constructor() {\n    super('Authentication required', 401, 'AUTH_REQUIRED');\n  }\n}\n\nmodule.exports = { AppError, NotFoundError, ValidationError, AuthenticationError };\n"
+        "path": "src/server.js",
+        "content": "const http = require('http');\n\nfunction createServer(app, port) {\n  const server = http.createServer(app);\n  server.listen(port);\n  return server;\n}\n\nfunction gracefulShutdown(server, db) {\n  server.close(() => {\n    db.disconnect();\n    process.exit(0);\n  });\n}\n\nmodule.exports = { createServer, gracefulShutdown };\n"
       },
       {
-        "path": "src/routes/users.js",
-        "content": "const router = require('express').Router();\nconst { NotFoundError, ValidationError } = require('../utils/errors');\n\nconst users = [{ id: '1', name: 'John' }];\n\nrouter.get('/:id', (req, res) => {\n  const user = users.find(u => u.id === req.params.id);\n  if (!user) throw new NotFoundError('User');\n  res.json(user);\n});\n\nrouter.post('/', (req, res) => {\n  if (!req.body.name) throw new ValidationError('Name is required');\n  const user = { id: String(users.length + 1), name: req.body.name };\n  users.push(user);\n  res.json(user);\n});\n\nmodule.exports = router;\n"
+        "path": "src/routes.js",
+        "content": "const { getUsers, createUser, deleteUser } = require('./handlers/users');\nconst { getProducts, getProductById } = require('./handlers/products');\nconst { authenticate } = require('./middleware/auth');\n\nfunction setupRoutes(app, db, logger) {\n  app.use(express.json());\n  \n  app.get('/api/users', authenticate, getUsers(db));\n  app.post('/api/users', authenticate, createUser(db));\n  app.delete('/api/users/:id', authenticate, deleteUser(db));\n  \n  app.get('/api/products', getProducts(db));\n  app.get('/api/products/:id', getProductById(db));\n  \n  app.use((err, req, res, next) => {\n    logger.error(err);\n    res.status(500).json({ error: 'Internal error' });\n  });\n}\n\nmodule.exports = { setupRoutes };\n"
       },
       {
-        "path": "src/routes/products.js",
-        "content": "const router = require('express').Router();\nconst { NotFoundError } = require('../utils/errors');\n\nconst products = [{ id: '1', name: 'Widget', price: 10 }];\n\nrouter.get('/', (req, res) => {\n  res.json(products);\n});\n\nrouter.get('/:id', (req, res) => {\n  const product = products.find(p => p.id === req.params.id);\n  if (!product) throw new NotFoundError('Product');\n  res.json(product);\n});\n\nmodule.exports = router;\n"
+        "path": "src/handlers/users.js",
+        "content": "function getUsers(db) {\n  return async (req, res) => {\n    const users = await db.query('SELECT * FROM users');\n    res.json(users);\n  };\n}\n\nfunction createUser(db) {\n  return async (req, res) => {\n    const { name, email } = req.body;\n    const user = await db.query('INSERT INTO users (name, email) VALUES ($1, $2) RETURNING *', [name, email]);\n    res.status(201).json(user);\n  };\n}\n\nfunction deleteUser(db) {\n  return async (req, res) => {\n    await db.query('DELETE FROM users WHERE id = $1', [req.params.id]);\n    res.status(204).end();\n  };\n}\n\nmodule.exports = { getUsers, createUser, deleteUser };\n"
+      },
+      {
+        "path": "src/handlers/products.js",
+        "content": "function getProducts(db) {\n  return async (req, res) => {\n    const products = await db.query('SELECT * FROM products');\n    res.json(products);\n  };\n}\n\nfunction getProductById(db) {\n  return async (req, res) => {\n    const product = await db.query('SELECT * FROM products WHERE id = $1', [req.params.id]);\n    if (!product) return res.status(404).json({ error: 'Not found' });\n    res.json(product);\n  };\n}\n\nmodule.exports = { getProducts, getProductById };\n"
+      },
+      {
+        "path": "src/middleware/auth.js",
+        "content": "const jwt = require('jsonwebtoken');\n\nfunction authenticate(req, res, next) {\n  const token = req.headers.authorization?.split(' ')[1];\n  if (!token) return res.status(401).json({ error: 'No token' });\n  try {\n    req.user = jwt.verify(token, process.env.JWT_SECRET);\n    next();\n  } catch {\n    res.status(401).json({ error: 'Invalid token' });\n  }\n}\n\nfunction requireRole(role) {\n  return (req, res, next) => {\n    if (req.user?.role !== role) return res.status(403).json({ error: 'Forbidden' });\n    next();\n  };\n}\n\nmodule.exports = { authenticate, requireRole };\n"
+      },
+      {
+        "path": "src/db.js",
+        "content": "async function connectDatabase(url) {\n  // Simulated database connection\n  return {\n    query: async (sql, params) => { /* ... */ },\n    disconnect: async () => { /* ... */ }\n  };\n}\n\nmodule.exports = { connectDatabase };\n"
+      },
+      {
+        "path": "src/utils/logger.js",
+        "content": "function initLogger(level) {\n  return {\n    info: (...args) => level !== 'silent' && console.log('[INFO]', ...args),\n    warn: (...args) => level !== 'silent' && console.warn('[WARN]', ...args),\n    error: (...args) => console.error('[ERROR]', ...args),\n    debug: (...args) => level === 'debug' && console.log('[DEBUG]', ...args)\n  };\n}\n\nmodule.exports = { initLogger };\n"
       }
     ],
     "cleanBefore": true
@@ -42,25 +58,33 @@
   "objectives": [
     {
       "id": "obj-1",
-      "description": "Create exploration-report.md",
+      "description": "Create subagent-notes.md",
       "type": "file_exists",
-      "target": "exploration-report.md",
+      "target": "subagent-notes.md",
       "required": true
     },
     {
       "id": "obj-2",
-      "description": "Report mentions the error classes",
+      "description": "Notes document at least 3 subagent types (Explore, Bash, Plan, general-purpose)",
       "type": "file_contains",
-      "target": "exploration-report.md",
-      "pattern": "AppError|NotFoundError|ValidationError|AuthenticationError",
+      "target": "subagent-notes.md",
+      "pattern": "[Ee]xplore|[Bb]ash|[Pp]lan|general.purpose",
       "required": true
     },
     {
       "id": "obj-3",
-      "description": "Report mentions error middleware",
+      "description": "Notes explain when to use different subagent types",
       "type": "file_contains",
-      "target": "exploration-report.md",
-      "pattern": "errorHandler|middleware|errors\\.js",
+      "target": "subagent-notes.md",
+      "pattern": "[Ww]hen to use|[Uu]se case|[Bb]est for|[Gg]ood for|[Uu]se.*when",
+      "required": true
+    },
+    {
+      "id": "obj-4",
+      "description": "Successfully used an Explore subagent to find functions in the project",
+      "type": "file_contains",
+      "target": "subagent-notes.md",
+      "pattern": "startApp|loadConfig|setupRoutes|createServer|authenticate|getUsers|createUser",
       "required": true
     }
   ],
@@ -68,10 +92,18 @@
   "bonusObjectives": [
     {
       "id": "bonus-1",
-      "description": "Explain the error handling flow/architecture",
+      "description": "Document background vs foreground subagents",
       "type": "file_contains",
-      "target": "exploration-report.md",
-      "pattern": "flow|architecture|pattern|hierarchy|extends|catches|throws",
+      "target": "subagent-notes.md",
+      "pattern": "[Bb]ackground|[Ff]oreground|run_in_background|non.blocking|blocking",
+      "xpBonus": 50
+    },
+    {
+      "id": "bonus-2",
+      "description": "Document how to resume a subagent",
+      "type": "file_contains",
+      "target": "subagent-notes.md",
+      "pattern": "[Rr]esume|agent.?[Ii][Dd]|continue.*agent|pick.*up",
       "xpBonus": 50
     }
   ],
@@ -79,34 +111,36 @@
   "hints": [
     {
       "level": 1,
-      "text": "Ask Claude Code to explore the codebase - it will use subagents for thorough analysis.",
+      "text": "Read the README carefully - it explains the 4 built-in subagent types. Then ask Claude to 'use an explore agent to find all functions in this project'.",
       "xpCost": 15
     },
     {
       "level": 2,
-      "text": "Try: 'Explore how error handling works in this project and document it'",
+      "text": "For the notes, document: Explore (read-only searching), Bash (command execution), Plan (architecture design), general-purpose (everything). Mention that subagents can run in background and can be resumed by ID.",
       "xpCost": 45
     },
     {
       "level": 3,
-      "text": "Ask: 'Use your exploration capabilities to understand the error handling architecture in this project. Create exploration-report.md documenting the error classes, middleware, and how errors flow through the app.'",
+      "text": "Create subagent-notes.md with: 1) List of types and their tools, 2) When to use each type, 3) The function list from the explore agent results, 4) Background vs foreground explanation, 5) How resuming works (agents return an ID you can use to continue their work).",
       "xpCost": 85
     }
   ],
 
   "solution": {
-    "approach": "Ask Claude Code to explore a specific aspect of the codebase.",
-    "example": "Explore how error handling works in this codebase and create a report",
+    "approach": "Study the subagent types, use an Explore agent to find functions, then document your understanding.",
+    "example": "Use an explore agent to find all JavaScript functions, then create notes about subagent types and use cases",
     "alternativeApproaches": [
-      "Help me understand the error handling pattern used here",
-      "Research how errors are managed in this project"
+      "Ask Claude to explain subagent types while using one to explore the code",
+      "Request: 'teach me about subagents by using an explore agent on this project'"
     ]
   },
 
   "learningPoints": [
-    "Claude Code uses the Explore subagent for codebase research",
-    "Exploration requests analyze relationships between files",
-    "Asking for specific topics gets focused results"
+    "Subagents are specialized workers spawned via the Task tool",
+    "Four built-in types: Explore (search), Bash (commands), Plan (architecture), general-purpose (everything)",
+    "Subagents protect the main conversation from excessive output",
+    "Background subagents let you continue working while they run",
+    "Subagents can be resumed using their agent ID"
   ],
 
   "nextChallenge": "06-002"

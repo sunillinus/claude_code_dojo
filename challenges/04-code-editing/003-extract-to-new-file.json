@@ -2,22 +2,26 @@
   "id": "04-003",
   "module": "code-editing",
   "title": "Extract to New File",
-  "description": "Learn to extract code into a separate module. Good separation of concerns keeps code maintainable.",
+  "description": "Learn to extract code into separate modules for better organization. When a file grows too large or mixes concerns, splitting it into focused modules improves readability, testability, and reusability.",
   "difficulty": "intermediate",
   "xpReward": 225,
-  "estimatedMinutes": 10,
-  "skills": ["code-extraction", "module-organization"],
+  "estimatedMinutes": 15,
+  "skills": ["code-extraction", "module-organization", "imports-exports", "separation-of-concerns"],
 
   "setup": {
     "workingDir": "~/dojo-workspace/challenge-04-003",
     "initialFiles": [
       {
         "path": "README.md",
-        "content": "# Challenge: Extract to New File\n\nThis file does too much. Extract the validation logic!\n\n## Objectives\n1. Extract validation functions to a new file `validators.js`\n2. Update the original file to import from validators.js\n3. Keep everything working\n"
+        "content": "# Challenge: Extract to New File\n\nLearn to extract code into separate modules for better organization.\n\n## When to Extract Code\n\nA file is a good candidate for extraction when:\n\n1. **It's too long**: 150+ lines often means mixed concerns\n2. **Mixed responsibilities**: validation logic next to formatting next to\n   business logic - each should be its own module\n3. **Reusable pieces**: If multiple files could use the same functions,\n   those functions belong in a shared module\n4. **Test isolation**: Smaller, focused files are much easier to unit test\n5. **Team collaboration**: Separate files reduce merge conflicts\n\n## The Extraction Process\n\nExtracting code to a new file is a 5-step process:\n\n### Step 1: Identify What to Extract\nLook for groups of related functions. In a large file, you might find:\n- Validation functions (all validate some input)\n- Formatting functions (all transform data for display)\n- Calculation functions (all compute numeric results)\n- API functions (all make network requests)\n\nEach group is a candidate for its own module.\n\n### Step 2: Create the New File with the Code\nMove the related functions into a new file. Choose a name that describes\nthe group: `validators.js`, `formatters.js`, `calculations.js`.\n\n### Step 3: Add Exports\nThe new file needs to export its functions so other files can use them:\n```javascript\n// Named exports (CommonJS)\nmodule.exports = { validateEmail, validatePassword };\n\n// Named exports (ES modules)\nexport { validateEmail, validatePassword };\n```\n\n### Step 4: Update the Original File with Imports\nReplace the extracted functions with imports:\n```javascript\n// CommonJS\nconst { validateEmail, validatePassword } = require('./validators');\n\n// ES modules\nimport { validateEmail, validatePassword } from './validators.js';\n```\n\n### Step 5: Update Other Files That Referenced the Extracted Code\nIf any other file imported from the original file and used the\nextracted functions, those imports need updating too.\n\n## Barrel Files (index.js)\n\nA barrel file re-exports from multiple modules for cleaner imports:\n\n```javascript\n// utils/index.js (barrel file)\nmodule.exports = {\n  ...require('./validators'),\n  ...require('./formatters'),\n  ...require('./calculations')\n};\n```\n\nThis lets consumers import from one place:\n```javascript\nconst { validateEmail, formatCurrency } = require('./utils');\n```\n\n## Circular Dependency Warning\n\nBe careful not to create circular imports:\n- File A imports from File B\n- File B imports from File A\n\nThis causes one of them to get an incomplete module. The fix is usually\nto extract the shared code into a third file that both can import.\n\n## Maintaining the Public Interface\n\nIf other files import from the original, you have two options:\n1. **Update all importers** to point to the new file\n2. **Re-export from the original** so existing imports still work\n\nOption 2 is safer for large codebases:\n```javascript\n// Original file - re-export for backward compatibility\nconst { validateEmail, validatePassword } = require('./validators');\nmodule.exports = { validateEmail, validatePassword, ...otherExports };\n```\n\n## The Workspace\n\nYou have `productManager.js` - a 170+ line file that mixes three\nconcerns:\n- **Validation functions**: validateProduct, validatePrice, validateSku,\n  validateInventory\n- **Formatting functions**: formatProductCard, formatPriceDisplay,\n  formatInventoryStatus\n- **Business logic**: addProduct, updateProduct, removeProduct,\n  getProductSummary\n\nYou also have `app.js` which imports from productManager.js.\n\n## Objectives\n\n1. Extract all validation functions into `validators.js`\n2. Extract all formatting functions into `formatters.js`\n3. Update `productManager.js` to import from the new files\n4. Keep the existing exports from productManager.js working\n   (app.js should not break)\n5. The original file should be significantly shorter\n"
       },
       {
-        "path": "userController.js",
-        "content": "// User controller - does too much!\n\n// Validation functions (should be extracted)\nfunction validateEmail(email) {\n  const emailRegex = /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/;\n  return emailRegex.test(email);\n}\n\nfunction validatePassword(password) {\n  if (!password || password.length < 8) return false;\n  if (!/[A-Z]/.test(password)) return false;\n  if (!/[a-z]/.test(password)) return false;\n  if (!/[0-9]/.test(password)) return false;\n  return true;\n}\n\nfunction validateUsername(username) {\n  if (!username || username.length < 3) return false;\n  return /^[a-zA-Z0-9_]+$/.test(username);\n}\n\n// Controller functions\nasync function createUser(req, res) {\n  const { email, password, username } = req.body;\n  \n  if (!validateEmail(email)) {\n    return res.status(400).json({ error: 'Invalid email' });\n  }\n  if (!validatePassword(password)) {\n    return res.status(400).json({ error: 'Invalid password' });\n  }\n  if (!validateUsername(username)) {\n    return res.status(400).json({ error: 'Invalid username' });\n  }\n  \n  // Create user logic...\n  res.json({ success: true });\n}\n\nasync function updateUser(req, res) {\n  const { email } = req.body;\n  if (email && !validateEmail(email)) {\n    return res.status(400).json({ error: 'Invalid email' });\n  }\n  // Update logic...\n  res.json({ success: true });\n}\n\nmodule.exports = { createUser, updateUser };\n"
+        "path": "productManager.js",
+        "content": "// Product Manager - handles validation, formatting, and business logic\n// This file does too much and should be split up!\n\nconst TAX_RATE = 0.08;\nconst SKU_PATTERN = /^[A-Z]{2,4}-\\d{4,6}$/;\n\n// ==========================================\n// VALIDATION FUNCTIONS\n// ==========================================\n\n/**\n * Validate a product object has required fields.\n * @param {Object} product - The product to validate.\n * @returns {{ valid: boolean, errors: string[] }}\n */\nfunction validateProduct(product) {\n  const errors = [];\n  if (!product) {\n    return { valid: false, errors: ['Product is required'] };\n  }\n  if (!product.name || product.name.trim().length === 0) {\n    errors.push('Product name is required');\n  }\n  if (!product.sku) {\n    errors.push('SKU is required');\n  }\n  if (product.price === undefined || product.price === null) {\n    errors.push('Price is required');\n  }\n  return { valid: errors.length === 0, errors };\n}\n\n/**\n * Validate a price value.\n * @param {number} price - The price to validate.\n * @returns {{ valid: boolean, error: string|null }}\n */\nfunction validatePrice(price) {\n  if (typeof price !== 'number' || isNaN(price)) {\n    return { valid: false, error: 'Price must be a number' };\n  }\n  if (price < 0) {\n    return { valid: false, error: 'Price cannot be negative' };\n  }\n  if (price > 999999.99) {\n    return { valid: false, error: 'Price exceeds maximum allowed value' };\n  }\n  return { valid: true, error: null };\n}\n\n/**\n * Validate a SKU format.\n * @param {string} sku - The SKU to validate.\n * @returns {{ valid: boolean, error: string|null }}\n */\nfunction validateSku(sku) {\n  if (!sku || typeof sku !== 'string') {\n    return { valid: false, error: 'SKU must be a non-empty string' };\n  }\n  if (!SKU_PATTERN.test(sku)) {\n    return { valid: false, error: 'SKU must match format: XX-0000 (2-4 letters, dash, 4-6 digits)' };\n  }\n  return { valid: true, error: null };\n}\n\n/**\n * Validate inventory count.\n * @param {number} count - The inventory count.\n * @returns {{ valid: boolean, error: string|null }}\n */\nfunction validateInventory(count) {\n  if (typeof count !== 'number' || !Number.isInteger(count)) {\n    return { valid: false, error: 'Inventory count must be an integer' };\n  }\n  if (count < 0) {\n    return { valid: false, error: 'Inventory count cannot be negative' };\n  }\n  return { valid: true, error: null };\n}\n\n// ==========================================\n// FORMATTING FUNCTIONS\n// ==========================================\n\n/**\n * Format a product as a display card.\n * @param {Object} product - The product to format.\n * @returns {string} Formatted product card string.\n */\nfunction formatProductCard(product) {\n  const price = formatPriceDisplay(product.price);\n  const status = formatInventoryStatus(product.inventory);\n  return [\n    `=== ${product.name} ===`,\n    `SKU: ${product.sku}`,\n    `Price: ${price}`,\n    `Stock: ${status}`,\n    product.description ? `Description: ${product.description}` : '',\n    '='.repeat(product.name.length + 8)\n  ].filter(Boolean).join('\\n');\n}\n\n/**\n * Format a price for display with currency symbol.\n * @param {number} price - The price value.\n * @returns {string} Formatted price string.\n */\nfunction formatPriceDisplay(price) {\n  if (typeof price !== 'number') return '$0.00';\n  return `$${price.toFixed(2)}`;\n}\n\n/**\n * Format inventory status with descriptive label.\n * @param {number} count - The inventory count.\n * @returns {string} Formatted inventory status.\n */\nfunction formatInventoryStatus(count) {\n  if (typeof count !== 'number') return 'Unknown';\n  if (count === 0) return 'Out of Stock';\n  if (count <= 5) return `Low Stock (${count})`;\n  if (count <= 50) return `In Stock (${count})`;\n  return `Well Stocked (${count})`;\n}\n\n// ==========================================\n// BUSINESS LOGIC\n// ==========================================\n\nconst products = new Map();\n\n/**\n * Add a new product to the catalog.\n * @param {Object} product - The product to add.\n * @returns {{ success: boolean, error?: string }}\n */\nfunction addProduct(product) {\n  const validation = validateProduct(product);\n  if (!validation.valid) {\n    return { success: false, error: validation.errors.join(', ') };\n  }\n\n  const priceCheck = validatePrice(product.price);\n  if (!priceCheck.valid) {\n    return { success: false, error: priceCheck.error };\n  }\n\n  const skuCheck = validateSku(product.sku);\n  if (!skuCheck.valid) {\n    return { success: false, error: skuCheck.error };\n  }\n\n  if (products.has(product.sku)) {\n    return { success: false, error: 'Product with this SKU already exists' };\n  }\n\n  products.set(product.sku, { ...product, createdAt: new Date() });\n  return { success: true };\n}\n\n/**\n * Update an existing product.\n * @param {string} sku - The SKU of the product to update.\n * @param {Object} updates - The fields to update.\n * @returns {{ success: boolean, error?: string }}\n */\nfunction updateProduct(sku, updates) {\n  if (!products.has(sku)) {\n    return { success: false, error: 'Product not found' };\n  }\n\n  const existing = products.get(sku);\n  const updated = { ...existing, ...updates, updatedAt: new Date() };\n\n  if (updates.price !== undefined) {\n    const priceCheck = validatePrice(updates.price);\n    if (!priceCheck.valid) {\n      return { success: false, error: priceCheck.error };\n    }\n  }\n\n  products.set(sku, updated);\n  return { success: true };\n}\n\n/**\n * Remove a product from the catalog.\n * @param {string} sku - The SKU of the product to remove.\n * @returns {{ success: boolean, error?: string }}\n */\nfunction removeProduct(sku) {\n  if (!products.has(sku)) {\n    return { success: false, error: 'Product not found' };\n  }\n  products.delete(sku);\n  return { success: true };\n}\n\n/**\n * Get a formatted summary of all products.\n * @returns {string} Summary of all products.\n */\nfunction getProductSummary() {\n  if (products.size === 0) return 'No products in catalog.';\n\n  const cards = [];\n  for (const product of products.values()) {\n    cards.push(formatProductCard(product));\n  }\n  return cards.join('\\n\\n');\n}\n\nmodule.exports = {\n  validateProduct,\n  validatePrice,\n  validateSku,\n  validateInventory,\n  formatProductCard,\n  formatPriceDisplay,\n  formatInventoryStatus,\n  addProduct,\n  updateProduct,\n  removeProduct,\n  getProductSummary\n};\n"
+      },
+      {
+        "path": "app.js",
+        "content": "const {\n  addProduct,\n  updateProduct,\n  removeProduct,\n  getProductSummary,\n  formatPriceDisplay,\n  validateSku\n} = require('./productManager');\n\n// Add some products\naddProduct({\n  name: 'Wireless Mouse',\n  sku: 'WM-1234',\n  price: 29.99,\n  inventory: 45,\n  description: 'Ergonomic wireless mouse with USB receiver'\n});\n\naddProduct({\n  name: 'Mechanical Keyboard',\n  sku: 'MK-5678',\n  price: 89.99,\n  inventory: 12,\n  description: 'Cherry MX Blue switches, full size'\n});\n\naddProduct({\n  name: 'USB-C Hub',\n  sku: 'UCH-9012',\n  price: 49.99,\n  inventory: 3,\n  description: '7-port USB-C hub with HDMI'\n});\n\n// Display catalog\nconsole.log(getProductSummary());\n\n// Validate a SKU\nconst result = validateSku('INVALID');\nconsole.log('\\nSKU validation:', result);\n\n// Format a standalone price\nconsole.log('Formatted price:', formatPriceDisplay(199.5));\n"
       }
     ],
     "cleanBefore": true
@@ -26,25 +30,88 @@
   "objectives": [
     {
       "id": "obj-1",
-      "description": "Create validators.js file",
+      "description": "validators.js file exists",
       "type": "file_exists",
       "target": "validators.js",
       "required": true
     },
     {
       "id": "obj-2",
-      "description": "validators.js contains validateEmail",
+      "description": "validators.js contains all four validation functions",
       "type": "file_contains",
       "target": "validators.js",
-      "pattern": "function validateEmail|validateEmail.*=",
+      "pattern": "validateProduct[\\s\\S]*validatePrice[\\s\\S]*validateSku[\\s\\S]*validateInventory|validateProduct[\\s\\S]*validateSku[\\s\\S]*validatePrice[\\s\\S]*validateInventory",
       "required": true
     },
     {
       "id": "obj-3",
-      "description": "userController.js imports from validators",
+      "description": "validators.js exports its functions",
       "type": "file_contains",
-      "target": "userController.js",
-      "pattern": "require.*validators|from.*validators",
+      "target": "validators.js",
+      "pattern": "module\\.exports.*validateProduct|export.*validateProduct",
+      "required": true
+    },
+    {
+      "id": "obj-4",
+      "description": "formatters.js file exists",
+      "type": "file_exists",
+      "target": "formatters.js",
+      "required": true
+    },
+    {
+      "id": "obj-5",
+      "description": "formatters.js contains all three formatting functions",
+      "type": "file_contains",
+      "target": "formatters.js",
+      "pattern": "formatProductCard[\\s\\S]*formatPriceDisplay[\\s\\S]*formatInventoryStatus",
+      "required": true
+    },
+    {
+      "id": "obj-6",
+      "description": "formatters.js exports its functions",
+      "type": "file_contains",
+      "target": "formatters.js",
+      "pattern": "module\\.exports.*formatProductCard|export.*formatProductCard",
+      "required": true
+    },
+    {
+      "id": "obj-7",
+      "description": "productManager.js imports from validators",
+      "type": "file_contains",
+      "target": "productManager.js",
+      "pattern": "require\\(.*validators|from.*validators",
+      "required": true
+    },
+    {
+      "id": "obj-8",
+      "description": "productManager.js imports from formatters",
+      "type": "file_contains",
+      "target": "productManager.js",
+      "pattern": "require\\(.*formatters|from.*formatters",
+      "required": true
+    },
+    {
+      "id": "obj-9",
+      "description": "productManager.js no longer defines validation functions inline",
+      "type": "file_not_contains",
+      "target": "productManager.js",
+      "pattern": "function validateProduct\\(|function validatePrice\\(|function validateSku\\(|function validateInventory\\(",
+      "required": true
+    },
+    {
+      "id": "obj-10",
+      "description": "productManager.js no longer defines formatting functions inline",
+      "type": "file_not_contains",
+      "target": "productManager.js",
+      "pattern": "function formatProductCard\\(|function formatPriceDisplay\\(|function formatInventoryStatus\\(",
+      "required": true
+    },
+    {
+      "id": "obj-11",
+      "description": "productManager.js still exports all functions (backward compatibility)",
+      "type": "file_contains",
+      "target": "productManager.js",
+      "pattern": "module\\.exports[\\s\\S]*addProduct[\\s\\S]*validateProduct|module\\.exports[\\s\\S]*validateProduct[\\s\\S]*addProduct",
       "required": true
     }
   ],
@@ -52,45 +119,63 @@
   "bonusObjectives": [
     {
       "id": "bonus-1",
-      "description": "All three validators moved to validators.js",
+      "description": "The SKU_PATTERN constant moved to validators.js where it belongs",
       "type": "file_contains",
       "target": "validators.js",
-      "pattern": "validateEmail.*validatePassword.*validateUsername|validatePassword.*validateEmail",
-      "xpBonus": 50
+      "pattern": "SKU_PATTERN",
+      "xpBonus": 25
+    },
+    {
+      "id": "bonus-2",
+      "description": "app.js still works without changes (imports still resolve from productManager)",
+      "type": "file_contains",
+      "target": "app.js",
+      "pattern": "require\\(.*productManager|from.*productManager",
+      "xpBonus": 30
+    },
+    {
+      "id": "bonus-3",
+      "description": "An index.js barrel file exists that re-exports from all modules",
+      "type": "file_exists",
+      "target": "index.js",
+      "xpBonus": 40
     }
   ],
 
   "hints": [
     {
       "level": 1,
-      "text": "Ask Claude Code to extract specific functions to a new file.",
+      "text": "The file has clear section comments separating validation, formatting, and business logic. Each section should become its own file. Remember to maintain the exports from productManager.js so that app.js keeps working.",
       "xpCost": 15
     },
     {
       "level": 2,
-      "text": "Try: 'Extract the validation functions from userController.js into a new validators.js file'",
+      "text": "Ask Claude Code: 'Extract the validation functions (validateProduct, validatePrice, validateSku, validateInventory) into validators.js and the formatting functions (formatProductCard, formatPriceDisplay, formatInventoryStatus) into formatters.js. Update productManager.js to import from both files. Keep all existing exports from productManager.js so app.js still works.'",
       "xpCost": 45
     },
     {
       "level": 3,
-      "text": "Ask: 'Move validateEmail, validatePassword, and validateUsername to a new validators.js file and update userController.js to import them'",
+      "text": "The key details to get right: 1) validators.js needs the SKU_PATTERN constant since validateSku uses it. 2) formatters.js's formatProductCard calls formatPriceDisplay and formatInventoryStatus, so those must all be in the same file. 3) productManager.js must re-export everything it currently exports (spread the imports into module.exports). 4) The TAX_RATE constant stays in productManager.js since only business logic uses it.",
       "xpCost": 85
     }
   ],
 
   "solution": {
-    "approach": "Extract functions to a new module and update imports.",
-    "example": "Extract the validation functions to validators.js and update the imports",
+    "approach": "Ask Claude Code to extract the validation functions into validators.js and formatting functions into formatters.js, while updating productManager.js to import from both and re-export everything for backward compatibility.",
+    "example": "Extract the validation functions to validators.js and formatting functions to formatters.js. Update productManager.js to import from both. Keep all existing exports from productManager.js intact so app.js doesn't break.",
     "alternativeApproaches": [
-      "Move the validate* functions to their own file",
-      "Separate the validation logic from the controller"
+      "Extract one group at a time - validators first, verify it works, then formatters",
+      "Create a barrel index.js that re-exports from all three files for a cleaner public interface"
     ]
   },
 
   "learningPoints": [
-    "Claude Code can extract code to new files",
-    "Imports are automatically updated",
-    "Good separation keeps files focused and testable"
+    "Files with multiple concerns (validation, formatting, business logic) should be split into focused modules",
+    "The extraction process has 5 steps: identify, create, export, import, update references",
+    "When extracting, move related constants (like SKU_PATTERN) with the code that uses them",
+    "Maintain backward compatibility by re-exporting from the original file",
+    "Barrel files (index.js) provide a single import point for a group of related modules",
+    "Watch for internal dependencies between extracted functions - formatProductCard calls the other format functions"
   ],
 
   "nextChallenge": "04-004"

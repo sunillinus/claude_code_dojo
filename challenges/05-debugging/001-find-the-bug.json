@@ -2,22 +2,30 @@
   "id": "05-001",
   "module": "debugging",
   "title": "Find the Bug",
-  "description": "Learn to analyze code and find logic bugs. Claude Code can help identify issues by understanding code behavior.",
+  "description": "Learn systematic debugging methodology: read errors, reproduce, hypothesize, isolate, fix, and verify. Apply this to real bugs including off-by-one errors, wrong operators, scope issues, and missing returns.",
   "difficulty": "intermediate",
   "xpReward": 200,
-  "estimatedMinutes": 8,
-  "skills": ["bug-finding", "code-analysis"],
+  "estimatedMinutes": 15,
+  "skills": ["bug-finding", "code-analysis", "systematic-debugging"],
 
   "setup": {
     "workingDir": "~/dojo-workspace/challenge-05-001",
     "initialFiles": [
       {
         "path": "README.md",
-        "content": "# Challenge: Find the Bug\n\nThe shopping cart total is wrong! Find and fix the bug.\n\n## Objectives\n1. Find the bug in calculateTotal\n2. Fix the calculation\n3. Create bugfix-notes.md explaining what was wrong\n"
+        "content": "# Challenge: Find the Bug\n\nLearn to debug code systematically -- not by guessing, but by following\na repeatable methodology that works on any bug.\n\n## The 6-Step Debugging Method\n\nEvery experienced developer follows some version of this process:\n\n### Step 1: Read the Error Message Carefully\n\nError messages contain critical information:\n\n```\nTypeError: Cannot read properties of undefined (reading 'name')\n    at processItem (utils.js:15:22)\n    at Array.map (utils.js:8:18)\n    at processAll (utils.js:7:16)\n```\n\n- **Error type**: `TypeError` -- tells you the category of problem\n- **Message**: `Cannot read properties of undefined` -- what went wrong\n- **File and line**: `utils.js:15:22` -- exactly where it happened\n- **Stack trace**: Shows the call chain (read bottom-up for the origin)\n\nIf there is no error message (silent bug), the symptoms ARE your clue:\nwrong output, missing data, infinite loop, etc.\n\n### Step 2: Reproduce the Bug\n\nBefore fixing anything, confirm you can trigger the bug reliably:\n- Run the code and observe the failure\n- Note the exact input that causes it\n- Note the actual vs expected output\n\n### Step 3: Form a Hypothesis\n\nBased on the error and the code, ask: \"What could cause this?\"\n- \"The array index might go out of bounds\"\n- \"The comparison might use the wrong operator\"\n- \"A variable might not be in scope where it's used\"\n\n### Step 4: Isolate the Root Cause\n\nThis is the most important step. The symptom is not the cause:\n- A crash on line 15 might be caused by wrong data on line 8\n- A wrong total might be caused by a loop that runs too many times\n- An undefined variable might be caused by a missing return 3 functions away\n\nTrace the data backward from the symptom to find WHERE it first goes wrong.\n\n### Step 5: Fix the Root Cause\n\nFix the actual cause, not just the symptom. Patching the symptom\n(like adding a try/catch to silence an error) hides bugs rather than\nfixing them.\n\n### Step 6: Verify the Fix\n\nAfter fixing:\n- Re-run the failing case -- does it produce the right output now?\n- Test edge cases -- does the fix work for boundary values?\n- Check for regressions -- did you break anything else?\n\n## Common Bug Patterns\n\n| Bug Pattern | Example | How to Spot It |\n|---|---|---|\n| Off-by-one error | `i <= arr.length` instead of `i < arr.length` | Loop runs one too many/few times |\n| Wrong comparison | `x == y` instead of `x === y`, or `<` instead of `<=` | Boundary values fail |\n| Variable scope issue | `var` in loop vs `let`, closure capturing | Wrong value in callbacks |\n| Missing return | Function ends without returning | Caller gets `undefined` |\n| Accidental mutation | Modifying input array/object | Shared data gets corrupted |\n\n### Off-by-One Errors\n\n```javascript\n// BUG: i <= arr.length accesses arr[arr.length] which is undefined\nfor (let i = 0; i <= arr.length; i++) { ... }\n\n// FIX: i < arr.length stays within bounds\nfor (let i = 0; i < arr.length; i++) { ... }\n```\n\nArrays are zero-indexed: an array of length 3 has indices 0, 1, 2.\nAccessing index 3 gives `undefined`.\n\n### Wrong Comparison Operators\n\n```javascript\n// BUG: == does type coercion: '5' == 5 is true\nif (status == 200) { ... }\n\n// FIX: === checks type AND value\nif (status === 200) { ... }\n\n// BUG: < excludes the boundary value\nif (age < 18) { return 'minor'; }  // 18 year olds fall through!\n\n// FIX: <= includes the boundary\nif (age <= 17) { return 'minor'; }\n```\n\n### Variable Scope Issues\n\n```javascript\n// BUG: var is function-scoped, not block-scoped\nfor (var i = 0; i < 3; i++) {\n  setTimeout(() => console.log(i), 100); // prints 3, 3, 3\n}\n\n// FIX: let is block-scoped\nfor (let i = 0; i < 3; i++) {\n  setTimeout(() => console.log(i), 100); // prints 0, 1, 2\n}\n```\n\n### Missing Return Statements\n\n```javascript\n// BUG: missing return -- function returns undefined\nfunction double(x) {\n  x * 2;\n}\n\n// FIX: explicit return\nfunction double(x) {\n  return x * 2;\n}\n```\n\n## How Claude Code Debugs\n\nWhen you ask Claude Code to find a bug, it:\n1. Reads the code and builds a mental model of execution\n2. Traces through with the given inputs\n3. Identifies where expected behavior diverges from actual behavior\n4. Pinpoints the root cause\n\nYou can ask things like:\n- \"This function returns wrong results. Can you trace through it?\"\n- \"Find the bug -- the test expects X but gets Y\"\n- \"Why does this crash with the given input?\"\n\n## Your Task\n\nThe file `utils.js` contains 4 utility functions, each with a subtle\nbut real bug. A test file `utils.test.js` demonstrates that all 4\nfunctions produce wrong results.\n\n1. Run the tests to see the failures\n2. Find and fix ALL 4 bugs in `utils.js`\n3. Create `bug-report.md` documenting each bug:\n   - Which function had the bug\n   - What the bug was (symptom)\n   - What the root cause was\n   - How you fixed it\n4. Verify all tests pass after your fixes\n"
       },
       {
-        "path": "cart.js",
-        "content": "// Shopping cart module\n\nfunction calculateTotal(items) {\n  let total = 0;\n  \n  for (let i = 0; i <= items.length; i++) {\n    const item = items[i];\n    total += item.price * item.quantity;\n  }\n  \n  return total;\n}\n\nfunction applyDiscount(total, discountPercent) {\n  return total - (total * discountPercent / 100);\n}\n\nfunction calculateTax(total, taxRate) {\n  return total * (1 + taxRate);\n}\n\n// Test data\nconst testCart = [\n  { name: 'Apple', price: 1.00, quantity: 3 },\n  { name: 'Banana', price: 0.50, quantity: 6 },\n  { name: 'Orange', price: 0.75, quantity: 4 }\n];\n\n// Should be: 3.00 + 3.00 + 3.00 = 9.00\nconsole.log('Total:', calculateTotal(testCart));\n\nmodule.exports = { calculateTotal, applyDiscount, calculateTax };\n"
+        "path": "package.json",
+        "content": "{\n  \"name\": \"find-the-bug\",\n  \"version\": \"1.0.0\",\n  \"description\": \"Debug utility functions with subtle bugs\",\n  \"scripts\": {\n    \"test\": \"node --test\"\n  }\n}\n"
+      },
+      {
+        "path": "utils.js",
+        "content": "// Utility functions -- each has a subtle bug!\n\n/**\n * Returns the last N elements from an array.\n * Example: lastN([1,2,3,4,5], 3) should return [3, 4, 5]\n */\nfunction lastN(arr, n) {\n  if (n <= 0) return [];\n  if (n >= arr.length) return [...arr];\n  return arr.slice(arr.length - n - 1);\n}\n\n/**\n * Finds the index of the first element that satisfies the predicate.\n * Returns -1 if no element matches.\n * Example: findIndex([1,2,3,4], x => x > 2) should return 2 (index of 3)\n */\nfunction findIndex(arr, predicate) {\n  for (let i = 0; i < arr.length; i++) {\n    if (predicate(arr[i])) {\n      return i;\n    }\n  }\n}\n\n/**\n * Creates a counter that starts at the given value and\n * increments each time count() is called.\n * Example:\n *   const c = makeCounter(0);\n *   c.count() // 1\n *   c.count() // 2\n *   c.value() // 2\n */\nfunction makeCounter(start) {\n  var current = start;\n  return {\n    count: function() {\n      current = current + 1;\n      return current;\n    },\n    value: function() {\n      return start;\n    },\n    reset: function() {\n      current = start;\n    }\n  };\n}\n\n/**\n * Checks if a value falls within a range (inclusive on both ends).\n * Example: inRange(5, 1, 10) should return true\n * Example: inRange(10, 1, 10) should return true (inclusive)\n * Example: inRange(0, 1, 10) should return false\n */\nfunction inRange(value, min, max) {\n  return value > min && value < max;\n}\n\nmodule.exports = { lastN, findIndex, makeCounter, inRange };\n"
+      },
+      {
+        "path": "utils.test.js",
+        "content": "const { test } = require('node:test');\nconst assert = require('node:assert/strict');\nconst { lastN, findIndex, makeCounter, inRange } = require('./utils');\n\n// --- lastN tests ---\ntest('lastN returns last 3 elements', () => {\n  assert.deepStrictEqual(lastN([1, 2, 3, 4, 5], 3), [3, 4, 5]);\n});\n\ntest('lastN returns last 1 element', () => {\n  assert.deepStrictEqual(lastN([10, 20, 30], 1), [30]);\n});\n\ntest('lastN with n=0 returns empty array', () => {\n  assert.deepStrictEqual(lastN([1, 2, 3], 0), []);\n});\n\ntest('lastN with n >= length returns copy of array', () => {\n  assert.deepStrictEqual(lastN([1, 2], 5), [1, 2]);\n});\n\n// --- findIndex tests ---\ntest('findIndex finds matching element', () => {\n  assert.strictEqual(findIndex([1, 2, 3, 4], x => x > 2), 2);\n});\n\ntest('findIndex returns -1 when no match', () => {\n  assert.strictEqual(findIndex([1, 2, 3], x => x > 10), -1);\n});\n\ntest('findIndex returns -1 for empty array', () => {\n  assert.strictEqual(findIndex([], x => true), -1);\n});\n\n// --- makeCounter tests ---\ntest('makeCounter increments from start', () => {\n  const counter = makeCounter(0);\n  assert.strictEqual(counter.count(), 1);\n  assert.strictEqual(counter.count(), 2);\n  assert.strictEqual(counter.count(), 3);\n});\n\ntest('makeCounter value returns current count', () => {\n  const counter = makeCounter(10);\n  counter.count();\n  counter.count();\n  assert.strictEqual(counter.value(), 12);\n});\n\ntest('makeCounter reset works', () => {\n  const counter = makeCounter(0);\n  counter.count();\n  counter.count();\n  counter.reset();\n  assert.strictEqual(counter.value(), 0);\n  assert.strictEqual(counter.count(), 1);\n});\n\n// --- inRange tests ---\ntest('inRange returns true for value inside range', () => {\n  assert.strictEqual(inRange(5, 1, 10), true);\n});\n\ntest('inRange returns true for value at min boundary (inclusive)', () => {\n  assert.strictEqual(inRange(1, 1, 10), true);\n});\n\ntest('inRange returns true for value at max boundary (inclusive)', () => {\n  assert.strictEqual(inRange(10, 1, 10), true);\n});\n\ntest('inRange returns false for value outside range', () => {\n  assert.strictEqual(inRange(0, 1, 10), false);\n  assert.strictEqual(inRange(11, 1, 10), false);\n});\n"
       }
     ],
     "cleanBefore": true
@@ -26,25 +34,57 @@
   "objectives": [
     {
       "id": "obj-1",
-      "description": "Fix the loop condition (use < instead of <=)",
+      "description": "Fix the off-by-one error in lastN (slice should use arr.length - n, not arr.length - n - 1)",
       "type": "file_contains",
-      "target": "cart.js",
-      "pattern": "i\\s*<\\s*items\\.length",
+      "target": "utils.js",
+      "pattern": "arr\\.slice\\(arr\\.length\\s*-\\s*n\\)",
       "required": true
     },
     {
       "id": "obj-2",
-      "description": "Create bugfix-notes.md",
-      "type": "file_exists",
-      "target": "bugfix-notes.md",
+      "description": "Fix findIndex to return -1 when no match is found (add missing return statement)",
+      "type": "file_contains",
+      "target": "utils.js",
+      "pattern": "return\\s+-?1\\s*;?\\s*\\n\\s*\\}\\s*\\n",
       "required": true
     },
     {
       "id": "obj-3",
-      "description": "Explain the off-by-one error",
+      "description": "Fix makeCounter value() to return current instead of start",
       "type": "file_contains",
-      "target": "bugfix-notes.md",
-      "pattern": "off.by.one|<=|out of bounds|undefined|index",
+      "target": "utils.js",
+      "pattern": "value:\\s*function\\s*\\(\\)\\s*\\{[\\s\\S]*?return\\s+current",
+      "required": true
+    },
+    {
+      "id": "obj-4",
+      "description": "Fix inRange to use inclusive comparison (>= and <=)",
+      "type": "file_contains",
+      "target": "utils.js",
+      "pattern": "value\\s*>=\\s*min\\s*&&\\s*value\\s*<=\\s*max",
+      "required": true
+    },
+    {
+      "id": "obj-5",
+      "description": "Create bug-report.md documenting the bugs found",
+      "type": "file_exists",
+      "target": "bug-report.md",
+      "required": true
+    },
+    {
+      "id": "obj-6",
+      "description": "Bug report documents root causes (off-by-one, missing return, scope/variable, comparison operator)",
+      "type": "file_contains",
+      "target": "bug-report.md",
+      "pattern": "off.by.one|slice|missing return|return -1|current.*start|start.*current|>=.*<=|inclusive|boundary",
+      "required": true
+    },
+    {
+      "id": "obj-7",
+      "description": "All tests pass",
+      "type": "command_output_contains",
+      "command": "cd ~/dojo-workspace/challenge-05-001 && npm test 2>&1",
+      "pattern": "tests passed|pass.*\\d|# pass",
       "required": true
     }
   ],
@@ -52,45 +92,56 @@
   "bonusObjectives": [
     {
       "id": "bonus-1",
-      "description": "Mention that accessing items[items.length] is undefined",
+      "description": "Bug report documents all 4 bugs with their function names",
       "type": "file_contains",
-      "target": "bugfix-notes.md",
-      "pattern": "undefined|NaN|crash|error",
+      "target": "bug-report.md",
+      "pattern": "lastN|findIndex|makeCounter|inRange",
       "xpBonus": 50
+    },
+    {
+      "id": "bonus-2",
+      "description": "Bug report categorizes each bug type",
+      "type": "file_contains",
+      "target": "bug-report.md",
+      "pattern": "off.by.one|comparison|scope|return|operator",
+      "xpBonus": 25
     }
   ],
 
   "hints": [
     {
       "level": 1,
-      "text": "Ask Claude Code to analyze the calculateTotal function and find the bug.",
+      "text": "Start by running the tests: `npm test`. Read each failure carefully -- the expected vs actual values tell you exactly what is wrong. Then look at each function and trace through with the test inputs.",
       "xpCost": 15
     },
     {
       "level": 2,
-      "text": "Try: 'The calculateTotal function is broken. Can you find the bug?'",
+      "text": "There are 4 different bug patterns: one function has an off-by-one in its slice calculation, one is missing a return statement for the 'not found' case, one returns a stale variable instead of the current one, and one uses exclusive comparison operators where inclusive ones are needed.",
       "xpCost": 40
     },
     {
       "level": 3,
-      "text": "Ask: 'Find and fix the bug in calculateTotal in cart.js, then create bugfix-notes.md explaining what was wrong'",
+      "text": "Specific fixes: lastN uses `arr.length - n - 1` but should use `arr.length - n`. findIndex has no `return -1` after the loop. makeCounter's value() returns `start` but should return `current`. inRange uses `>` and `<` but should use `>=` and `<=`.",
       "xpCost": 75
     }
   ],
 
   "solution": {
-    "approach": "Analyze the loop logic to find the off-by-one error.",
-    "example": "Find the bug in cart.js calculateTotal function and fix it",
+    "approach": "Run the tests to see failures, trace each function with the test inputs to identify the root cause, fix each bug, then verify all tests pass.",
+    "example": "Run npm test, analyze each failing test, fix the 4 bugs in utils.js, create bug-report.md documenting each one",
     "alternativeApproaches": [
-      "Why is calculateTotal giving wrong results?",
-      "Debug the shopping cart calculation"
+      "Read each function and trace execution mentally to find the bugs",
+      "Use Claude Code: 'Run the tests, find all bugs in utils.js, fix them, and create bug-report.md'"
     ]
   },
 
   "learningPoints": [
-    "Claude Code can analyze code to find logic bugs",
-    "Off-by-one errors are common in loops",
-    "Documenting bugs helps prevent future issues"
+    "Always run tests first to understand what is failing and why",
+    "Off-by-one errors are among the most common bugs in programming -- always verify loop bounds and slice indices",
+    "A missing return statement causes a function to return undefined, which can silently propagate errors",
+    "Variable scope bugs (returning `start` instead of `current`) are subtle because the code looks correct at first glance",
+    "Inclusive vs exclusive comparison operators (< vs <=) matter at boundary values",
+    "Documenting bugs in a bug report reinforces your understanding and helps prevent the same mistakes"
   ],
 
   "nextChallenge": "05-002"

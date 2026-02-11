@@ -2,26 +2,42 @@
   "id": "14-004",
   "module": "web-research",
   "title": "Verify Current Best Practices",
-  "description": "Use web research to verify that code follows current best practices.",
+  "description": "Learn the verification methodology: use web research tools to check whether code follows current best practices, detect outdated patterns, and produce an evidence-based report with citations.",
   "difficulty": "intermediate",
   "xpReward": 200,
-  "estimatedMinutes": 12,
-  "skills": ["best-practices", "code-review"],
+  "estimatedMinutes": 15,
+  "skills": ["best-practices-verification", "version-checking", "migration-research", "code-review"],
 
   "setup": {
     "workingDir": "~/dojo-workspace/challenge-14-004",
     "initialFiles": [
       {
         "path": "README.md",
-        "content": "# Challenge: Verify Current Best Practices\n\nReview the code and update it to follow current best practices.\n\n## Objectives\n1. Review the existing React code\n2. Research current React best practices (React 18+)\n3. Update the code to follow modern patterns\n4. Document what changed and why\n"
+        "content": "# Challenge: Verify Current Best Practices\n\nLearn the discipline of verifying that code follows current best\npractices using web research, rather than relying on potentially\noutdated knowledge.\n\n---\n\n## Why Verification Matters\n\nClaude's training data has a knowledge cutoff. Libraries release new\nversions, APIs change, security vulnerabilities are discovered, and\nbest practices evolve. Code that was correct six months ago might use\ndeprecated APIs or insecure patterns today.\n\nVerification is the practice of checking your assumptions against\ncurrent reality before committing to an implementation.\n\n**Things that change frequently:**\n- Major framework versions (React 18 -> 19, Next.js 14 -> 15)\n- Security best practices (new CVEs, deprecated crypto algorithms)\n- Package manager defaults (npm, pnpm, yarn workspaces)\n- Language features (Node.js LTS version, new ECMAScript proposals)\n- Cloud provider APIs (AWS SDK v2 -> v3)\n\n## What to Verify\n\nBefore starting or updating a project, verify these areas:\n\n| Area | What to Check | How to Search |\n|------|---------------|---------------|\n| **Dependency versions** | Latest stable release | `\"[library] latest version 2026\"` |\n| **Deprecated APIs** | Removed or replaced APIs | `\"[library] deprecated APIs\"` |\n| **Breaking changes** | Incompatible updates | `\"[library] migration guide v[X] to v[Y]\"` |\n| **Security advisories** | Known vulnerabilities | `\"[library] security advisory 2026\"` |\n| **New patterns** | Better ways to do things | `\"[library] best practices 2026\"` |\n| **LTS status** | Is this version still supported? | `\"[library] LTS schedule\"` |\n\n## Verification Workflow\n\nHere is a systematic verification process:\n\n```\n1. Inventory       --> List all dependencies and their versions\n2. Check versions  --> WebSearch for latest stable of each\n3. Read changelogs --> WebFetch release notes for major changes\n4. Find migrations --> WebSearch for migration guides if major version gap\n5. Spot patterns   --> Compare code patterns against current recommendations\n6. Report          --> Document what is current, what is outdated, what to update\n```\n\n### Step 1: Inventory\nList every dependency and its current version from package.json,\nrequirements.txt, or Cargo.toml. Note the project's Node/Python/Rust\nversion too.\n\n### Step 2: Check Versions\nUse WebSearch for each major dependency:\n```\nquery: \"express.js latest version 2026\"\nquery: \"React latest stable release 2026\"\nquery: \"TypeScript latest version\"\n```\n\nCompare with what the project uses. Flag anything more than one major\nversion behind.\n\n### Step 3: Read Changelogs\nUse WebFetch on the changelog or release notes page:\n```\nurl: \"https://github.com/expressjs/express/releases\"\nprompt: \"List breaking changes and deprecated features from v4 to v5\"\n```\n\n### Step 4: Find Migration Guides\nIf there is a major version gap, search for official migration guidance:\n```\nquery: \"Express v4 to v5 migration guide\"\nallowed_domains: [\"expressjs.com\", \"github.com\"]\n```\n\n### Step 5: Spot Outdated Patterns\nCompare the project's code patterns against current recommendations.\nCommon outdated patterns to look for:\n- Callback-based APIs where Promise/async-await versions exist\n- Class components where functional components with hooks are preferred\n- CommonJS require() where ESM import is now standard\n- Manual middleware chains where built-in alternatives exist\n- Deprecated configuration options\n- Security anti-patterns (hardcoded secrets, weak crypto)\n\n### Step 6: Write the Report\nA good best-practices report has this structure:\n```markdown\n# Best Practices Report\n\n## Summary\n[High-level: X areas reviewed, Y items need updating]\n\n## Dependency Versions\n| Package | Current | Latest | Status |\n|---------|---------|--------|--------|\n\n## Outdated Patterns Found\n### [Pattern Name]\n- **What:** Description of the outdated pattern\n- **Where:** File and line reference\n- **Current best practice:** What to use instead\n- **Source:** [URL to documentation]\n\n## Recommendations\n[Prioritized list of changes]\n\n## Sources\n[All URLs used in research]\n```\n\n## When to Verify\n\nVerification is most valuable at these moments:\n- **Before starting a new project** -- choose current tools and patterns\n- **Before upgrading a dependency** -- know what will break\n- **During code review** -- catch outdated patterns before they merge\n- **Quarterly maintenance** -- scheduled check of dependency health\n- **After a security alert** -- verify you are not affected\n\n---\n\n## Your Task\n\nThe project in this workspace is a Node.js Express application written\nwith patterns from 2022. Your job is to research current best practices\nand produce a verification report.\n\n### The Project\nReview the files in this workspace. The application uses:\n- Express.js for HTTP handling\n- body-parser as middleware (potentially unnecessary in modern Express)\n- Callbacks for async operations\n- var declarations\n- CommonJS module system\n- No environment variable validation\n- Hardcoded CORS configuration\n\n### Steps:\n1. Review all the project files to inventory dependencies and patterns\n2. Use WebSearch to check current versions and best practices\n3. Use WebFetch on relevant documentation for detailed guidance\n4. Create `best-practices-report.md` with your findings\n\n### What best-practices-report.md Must Include:\n- Dependency version comparison (current vs latest)\n- At least 3 outdated patterns identified with explanations\n- Current recommended approach for each outdated pattern\n- Prioritized list of recommended updates\n- All sources cited with URLs\n\n## Objectives\n1. Create best-practices-report.md with verification findings\n2. Compare dependency versions (current vs latest)\n3. Identify at least 3 outdated patterns\n4. Recommend current alternatives for each pattern\n5. Cite all sources with URLs\n"
       },
       {
         "path": "package.json",
-        "content": "{\n  \"name\": \"best-practices\",\n  \"dependencies\": {\n    \"react\": \"^18.0.0\"\n  }\n}\n"
+        "content": "{\n  \"name\": \"user-api\",\n  \"version\": \"1.0.0\",\n  \"description\": \"User management API\",\n  \"main\": \"server.js\",\n  \"scripts\": {\n    \"start\": \"node server.js\",\n    \"dev\": \"nodemon server.js\"\n  },\n  \"dependencies\": {\n    \"express\": \"^4.17.1\",\n    \"body-parser\": \"^1.19.0\",\n    \"cors\": \"^2.8.5\",\n    \"mongoose\": \"^6.0.0\",\n    \"jsonwebtoken\": \"^8.5.1\",\n    \"bcrypt\": \"^5.0.1\",\n    \"dotenv\": \"^10.0.0\"\n  },\n  \"devDependencies\": {\n    \"nodemon\": \"^2.0.15\"\n  }\n}\n"
       },
       {
-        "path": "DataFetcher.jsx",
-        "content": "import React from 'react';\n\n// This code uses older patterns - update to modern React 18+ best practices\n\nclass DataFetcher extends React.Component {\n  constructor(props) {\n    super(props);\n    this.state = {\n      data: null,\n      loading: true,\n      error: null\n    };\n  }\n\n  componentDidMount() {\n    fetch(this.props.url)\n      .then(res => res.json())\n      .then(data => this.setState({ data, loading: false }))\n      .catch(error => this.setState({ error, loading: false }));\n  }\n\n  componentDidUpdate(prevProps) {\n    if (prevProps.url !== this.props.url) {\n      this.setState({ loading: true });\n      fetch(this.props.url)\n        .then(res => res.json())\n        .then(data => this.setState({ data, loading: false }))\n        .catch(error => this.setState({ error, loading: false }));\n    }\n  }\n\n  render() {\n    const { data, loading, error } = this.state;\n    \n    if (loading) return <div>Loading...</div>;\n    if (error) return <div>Error: {error.message}</div>;\n    \n    return this.props.render(data);\n  }\n}\n\nexport default DataFetcher;\n"
+        "path": "server.js",
+        "content": "var express = require('express');\nvar bodyParser = require('body-parser');\nvar cors = require('cors');\nvar mongoose = require('mongoose');\nvar dotenv = require('dotenv');\n\ndotenv.config();\n\nvar app = express();\n\n// body-parser middleware (Express 4.16+ has this built-in)\napp.use(bodyParser.json());\napp.use(bodyParser.urlencoded({ extended: true }));\n\n// CORS - hardcoded origins\napp.use(cors({\n  origin: 'http://localhost:3000',\n  credentials: true\n}));\n\n// Database connection with callback pattern\nmongoose.connect(process.env.MONGO_URI || 'mongodb://localhost/userdb', {\n  useNewUrlParser: true,\n  useUnifiedTopology: true,\n  useCreateIndex: true\n}, function(err) {\n  if (err) {\n    console.log('Database connection error:', err);\n  } else {\n    console.log('Connected to MongoDB');\n  }\n});\n\n// Routes\nvar userRoutes = require('./routes/users');\nvar authRoutes = require('./routes/auth');\n\napp.use('/api/users', userRoutes);\napp.use('/api/auth', authRoutes);\n\n// Error handler\napp.use(function(err, req, res, next) {\n  console.log(err.stack);\n  res.status(500).json({ error: 'Something went wrong' });\n});\n\nvar PORT = process.env.PORT || 5000;\napp.listen(PORT, function() {\n  console.log('Server running on port ' + PORT);\n});\n"
+      },
+      {
+        "path": "routes/users.js",
+        "content": "var express = require('express');\nvar router = express.Router();\nvar User = require('../models/User');\nvar auth = require('../middleware/auth');\n\n// Get all users - callback style\nrouter.get('/', auth, function(req, res) {\n  User.find({}, function(err, users) {\n    if (err) {\n      return res.status(500).json({ error: 'Failed to fetch users' });\n    }\n    res.json(users);\n  });\n});\n\n// Get user by ID\nrouter.get('/:id', auth, function(req, res) {\n  User.findById(req.params.id, function(err, user) {\n    if (err) {\n      return res.status(500).json({ error: 'Failed to fetch user' });\n    }\n    if (!user) {\n      return res.status(404).json({ error: 'User not found' });\n    }\n    res.json(user);\n  });\n});\n\n// Create user\nrouter.post('/', function(req, res) {\n  var user = new User(req.body);\n  user.save(function(err, savedUser) {\n    if (err) {\n      return res.status(400).json({ error: 'Failed to create user' });\n    }\n    res.status(201).json(savedUser);\n  });\n});\n\n// Update user\nrouter.put('/:id', auth, function(req, res) {\n  User.findByIdAndUpdate(req.params.id, req.body, { new: true }, function(err, user) {\n    if (err) {\n      return res.status(500).json({ error: 'Failed to update user' });\n    }\n    res.json(user);\n  });\n});\n\n// Delete user\nrouter.delete('/:id', auth, function(req, res) {\n  User.findByIdAndDelete(req.params.id, function(err) {\n    if (err) {\n      return res.status(500).json({ error: 'Failed to delete user' });\n    }\n    res.status(204).end();\n  });\n});\n\nmodule.exports = router;\n"
+      },
+      {
+        "path": "routes/auth.js",
+        "content": "var express = require('express');\nvar router = express.Router();\nvar bcrypt = require('bcrypt');\nvar jwt = require('jsonwebtoken');\nvar User = require('../models/User');\n\n// Login\nrouter.post('/login', function(req, res) {\n  var email = req.body.email;\n  var password = req.body.password;\n\n  User.findOne({ email: email }, function(err, user) {\n    if (err || !user) {\n      return res.status(401).json({ error: 'Invalid credentials' });\n    }\n\n    bcrypt.compare(password, user.password, function(err, isMatch) {\n      if (err || !isMatch) {\n        return res.status(401).json({ error: 'Invalid credentials' });\n      }\n\n      // JWT secret hardcoded as fallback - security concern\n      var token = jwt.sign(\n        { userId: user._id, email: user.email },\n        process.env.JWT_SECRET || 'my-super-secret-key-123',\n        { expiresIn: '24h' }\n      );\n\n      res.json({ token: token, userId: user._id });\n    });\n  });\n});\n\n// Register\nrouter.post('/register', function(req, res) {\n  var email = req.body.email;\n  var password = req.body.password;\n  var name = req.body.name;\n\n  bcrypt.hash(password, 10, function(err, hash) {\n    if (err) {\n      return res.status(500).json({ error: 'Registration failed' });\n    }\n\n    var user = new User({\n      email: email,\n      password: hash,\n      name: name\n    });\n\n    user.save(function(err, savedUser) {\n      if (err) {\n        return res.status(400).json({ error: 'Registration failed' });\n      }\n      res.status(201).json({ message: 'User created', userId: savedUser._id });\n    });\n  });\n});\n\nmodule.exports = router;\n"
+      },
+      {
+        "path": "models/User.js",
+        "content": "var mongoose = require('mongoose');\n\nvar userSchema = new mongoose.Schema({\n  name: { type: String, required: true },\n  email: { type: String, required: true, unique: true },\n  password: { type: String, required: true },\n  createdAt: { type: Date, default: Date.now }\n});\n\nmodule.exports = mongoose.model('User', userSchema);\n"
+      },
+      {
+        "path": "middleware/auth.js",
+        "content": "var jwt = require('jsonwebtoken');\n\nmodule.exports = function(req, res, next) {\n  var token = req.header('Authorization');\n  \n  if (!token) {\n    return res.status(401).json({ error: 'No token provided' });\n  }\n\n  // Should strip 'Bearer ' prefix\n  try {\n    var decoded = jwt.verify(token, process.env.JWT_SECRET || 'my-super-secret-key-123');\n    req.user = decoded;\n    next();\n  } catch (err) {\n    res.status(401).json({ error: 'Invalid token' });\n  }\n};\n"
       }
     ],
     "cleanBefore": true
@@ -30,33 +46,41 @@
   "objectives": [
     {
       "id": "obj-1",
-      "description": "Convert to functional component",
-      "type": "file_contains",
-      "target": "DataFetcher.jsx",
-      "pattern": "function DataFetcher|const DataFetcher|=>.*\\{",
+      "description": "Create best-practices-report.md with verification findings",
+      "type": "file_exists",
+      "target": "best-practices-report.md",
       "required": true
     },
     {
       "id": "obj-2",
-      "description": "Use React hooks",
+      "description": "Compare dependency versions (current in package.json vs latest available)",
       "type": "file_contains",
-      "target": "DataFetcher.jsx",
-      "pattern": "useState|useEffect",
+      "target": "best-practices-report.md",
+      "pattern": "[Vv]ersion|[Ll]atest|[Cc]urrent|[Oo]utdated|[Uu]pdate|[Uu]pgrade|package\\.json",
       "required": true
     },
     {
       "id": "obj-3",
-      "description": "Document the changes",
-      "type": "file_exists",
-      "target": "changes.md",
+      "description": "Identify at least 3 outdated patterns (body-parser, var, callbacks, CommonJS, hardcoded secrets, etc.)",
+      "type": "file_contains",
+      "target": "best-practices-report.md",
+      "pattern": "body-parser|bodyParser|\\bvar\\b|[Cc]allback|CommonJS|require\\(|[Hh]ardcoded|[Ss]ecret|useNewUrlParser|useUnifiedTopology",
       "required": true
     },
     {
       "id": "obj-4",
-      "description": "Explain why the changes are better",
+      "description": "Recommend current alternatives (express.json, const/let, async/await, ESM import, env validation)",
       "type": "file_contains",
-      "target": "changes.md",
-      "pattern": "[Ff]unctional|[Hh]ook|[Mm]odern|[Bb]est [Pp]ractice|[Ss]impler|[Rr]eadable",
+      "target": "best-practices-report.md",
+      "pattern": "express\\.json|const|let|async|await|import|[Ee]nvironment|[Rr]ecommend|[Rr]eplace|[Ii]nstead|[Mm]igrat",
+      "required": true
+    },
+    {
+      "id": "obj-5",
+      "description": "Cite sources with URLs for verification claims",
+      "type": "file_contains",
+      "target": "best-practices-report.md",
+      "pattern": "https?://|\\[.*\\]\\(.*\\)|[Ss]ource|[Rr]eference",
       "required": true
     }
   ],
@@ -64,18 +88,18 @@
   "bonusObjectives": [
     {
       "id": "bonus-1",
-      "description": "Add cleanup for effect",
+      "description": "Identify the security concern with hardcoded JWT secret fallback",
       "type": "file_contains",
-      "target": "DataFetcher.jsx",
-      "pattern": "return.*=>|cleanup|AbortController|cancel",
+      "target": "best-practices-report.md",
+      "pattern": "JWT|[Ss]ecret|[Hh]ardcoded.*key|[Ss]ecurity|[Ff]allback.*secret|my-super-secret",
       "xpBonus": 40
     },
     {
       "id": "bonus-2",
-      "description": "Create a custom useFetch hook",
+      "description": "Note that Mongoose 6+ removed useNewUrlParser/useUnifiedTopology options",
       "type": "file_contains",
-      "target": "DataFetcher.jsx",
-      "pattern": "function useFetch|const useFetch|export.*useFetch",
+      "target": "best-practices-report.md",
+      "pattern": "[Mm]ongoose|useNewUrlParser|useUnifiedTopology|[Dd]eprecated.*option|[Rr]emoved.*option|[Nn]o longer needed",
       "xpBonus": 50
     }
   ],
@@ -83,34 +107,38 @@
   "hints": [
     {
       "level": 1,
-      "text": "Research React 18 best practices. Class components have been replaced by functional components with hooks.",
+      "text": "Start by reviewing package.json and all the source files. Make a list of every pattern you see: var declarations, require() imports, callback-style Mongoose queries, body-parser usage, hardcoded secrets. Then use WebSearch to check if these patterns are still recommended.",
       "xpCost": 15
     },
     {
       "level": 2,
-      "text": "Try: 'Look up React 18 best practices and convert DataFetcher from class to functional component with hooks'",
+      "text": "Key things to search for: 'Express.js body-parser still needed 2026' (built-in since 4.16), 'Mongoose 8 callback support' (removed in v7+), 'Node.js CommonJS vs ESM 2026', 'Express 5 release'. Each search will reveal an outdated pattern in the project code.",
       "xpCost": 40
     },
     {
       "level": 3,
-      "text": "Ask: 'Research current React 18 best practices. Convert DataFetcher.jsx from class component to functional component using useState and useEffect. Add cleanup to handle component unmounting. Create changes.md explaining why this is better.'",
+      "text": "Ask Claude: 'Review all files in this project. Use WebSearch to check current best practices for: Express.js (is body-parser still needed?), Mongoose (callback vs async/await), Node.js (CommonJS vs ESM, var vs const/let), JWT security (hardcoded secrets). Create best-practices-report.md with: dependency version table, each outdated pattern found with file locations, the current recommended approach, prioritized recommendations, and cite all sources.'",
       "xpCost": 80
     }
   ],
 
   "solution": {
-    "approach": "Research current best practices and update the code accordingly.",
-    "example": "Modernize the React component to follow current best practices",
+    "approach": "Review all project files to inventory patterns, use WebSearch to check each pattern against current best practices, use WebFetch on relevant documentation for detailed guidance, and create a comprehensive best-practices report with evidence-based recommendations and citations.",
+    "example": "Inventory: var, require(), body-parser, callbacks, hardcoded secrets. WebSearch each pattern. Create best-practices-report.md with version table, 5+ outdated patterns with file references, current alternatives, and cited sources.",
     "alternativeApproaches": [
-      "Search for 'React class to functional component migration'",
-      "Look up specific React 18 patterns"
+      "Search for 'Node.js Express best practices 2026' broadly first, then check each pattern individually",
+      "Focus on the security issues first (hardcoded secrets, no input validation) then move to code quality patterns",
+      "Check each dependency's GitHub releases page for the latest version and breaking changes"
     ]
   },
 
   "learningPoints": [
-    "Best practices evolve - research current standards",
-    "Document why changes are improvements",
-    "Modern React prefers functional components with hooks"
+    "Claude's training data has a knowledge cutoff -- always verify best practices against current documentation before major decisions",
+    "The verification workflow (inventory -> check versions -> read changelogs -> find migrations -> spot patterns -> report) is systematic and thorough",
+    "Common signs of outdated code: callback-style APIs, var declarations, unnecessary polyfill packages (body-parser), deprecated options",
+    "Security patterns demand extra verification: hardcoded secrets, outdated crypto, deprecated auth libraries",
+    "A good best-practices report is evidence-based: every claim links to a source URL",
+    "Verification is most valuable before starting projects, before upgrades, and during code reviews"
   ],
 
   "nextChallenge": "06-001"

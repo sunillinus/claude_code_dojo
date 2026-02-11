@@ -2,30 +2,42 @@
   "id": "16-002",
   "module": "agentic-loops",
   "title": "Start Your First Loop",
-  "description": "Start your first Ralph Loop and watch it work autonomously on an iterative task.",
+  "description": "Learn to write effective Ralph Loop prompts with clear task definitions, explicit scope, and measurable completion criteria.",
   "difficulty": "intermediate",
   "xpReward": 225,
   "estimatedMinutes": 15,
-  "skills": ["loop-initiation", "task-definition"],
+  "skills": ["loop-initiation", "task-definition", "prompt-structure"],
 
   "setup": {
     "workingDir": "~/dojo-workspace/challenge-16-002",
     "initialFiles": [
       {
         "path": "README.md",
-        "content": "# Challenge: Start Your First Loop\n\nStart a Ralph Loop to clean up this legacy codebase.\n\n## Objectives\n1. Start a Ralph Loop with /ralph-loop\n2. Define a clear task: \"Clean up all files in src/\"\n3. Let it work autonomously\n4. Document what it accomplished\n"
+        "content": "# Challenge: Start Your First Loop\n\nLearn to write effective Ralph Loop prompts that give Claude clear\ninstructions for autonomous work.\n\n---\n\n## Writing Effective Ralph Loop Prompts\n\nThe quality of a Ralph Loop's output depends entirely on the quality of\nyour prompt. A vague prompt produces unfocused work. A precise prompt\nproduces exactly what you need.\n\nEvery effective Ralph Loop prompt has three components:\n\n### 1. TASK: What To Do\n\nThe task describes the action Claude should take. It should be specific\nand actionable.\n\n- Good: \"Add JSDoc comments to all exported functions\"\n- Bad: \"Document the code\"\n- Good: \"Convert all callback-based async code to async/await\"\n- Bad: \"Modernize the code\"\n\nNotice the difference: good tasks name a *specific action* that Claude\ncan perform mechanically. Bad tasks require Claude to interpret what\nyou mean, which leads to unpredictable results.\n\n### 2. SCOPE: Where To Work\n\nThe scope constrains where Claude should make changes. Without scope,\nClaude might modify files you didn't intend to change.\n\n- Good: \"Only modify files in src/services/\"\n- Bad: (no scope specified -- Claude touches everything)\n- Good: \"Only change .js files, don't modify tests or config\"\n- Bad: \"Fix the project\" (entire project is too broad)\n\nScope prevents Claude from going off-track and keeps the loop focused.\n\n### 3. COMPLETION CRITERIA: What \"Done\" Means\n\nCompletion criteria are measurable conditions that Claude checks to know\nwhen to stop. This is the most important part of the prompt.\n\n- Good: \"Every exported function has a JSDoc comment with @param and @returns\"\n- Bad: \"The code is well-documented\"\n- Good: \"Every async function has try/catch with meaningful error messages\"\n- Bad: \"Add some error handling\"\n\n## Good vs Bad Prompts: A Comparison\n\n| Quality | Prompt | Why |\n|---------|--------|-----|\n| Bad | \"Make the code better\" | Unmeasurable -- what is \"better\"? |\n| Bad | \"Add some tests\" | Vague scope, no criteria for \"enough\" |\n| Bad | \"Clean up the project\" | No specific action, no scope |\n| Good | \"Add JSDoc to all functions in src/services/ with @param and @returns tags\" | Specific action + scope + criteria |\n| Good | \"Every API endpoint in src/routes.js returns proper HTTP status codes: 400 for bad input, 404 for not found, 500 for server errors\" | Exact action + file scope + measurable criteria |\n| Good | \"All 5 files in src/services/ use async/await instead of .then() chains, and no Promise.then() calls remain\" | Countable scope + verifiable criteria |\n\n## The Prompt Template\n\nHere is a template for writing Ralph Loop prompts:\n\n```\nTASK: [specific action to perform]\nSCOPE: [which files/directories to modify]\nCOMPLETION CRITERIA:\n- [measurable condition 1]\n- [measurable condition 2]\n- [measurable condition 3]\n```\n\nExample:\n\n```\nTASK: Add JSDoc documentation to all service files\nSCOPE: Only modify files in src/services/\nCOMPLETION CRITERIA:\n- Every exported function has a JSDoc comment\n- Every @param tag includes type and description\n- Every function with a return value has @returns\n- No function is missing documentation\n```\n\n## Monitoring and Stopping\n\nWhile a Ralph Loop runs, you can:\n\n- **Watch progress**: Claude shows what it's doing at each step\n- **Intervene**: If Claude goes off-track, you can redirect it\n- **Stop early**: Use Ctrl+C or `/cancel` to halt the loop\n\nYou don't need to wait for the loop to finish. If you see it heading\nin the wrong direction, stop it, refine your prompt, and restart.\n\n## Common Prompt Mistakes\n\n1. **No completion criteria**: Claude doesn't know when to stop\n2. **Unmeasurable criteria**: \"Make it good\" -- good by what standard?\n3. **Too-broad scope**: \"Fix the whole project\" -- Claude loses focus\n4. **Conflicting criteria**: \"Be thorough but also be fast\"\n5. **Missing context**: Assuming Claude knows your conventions\n\n---\n\n## Your Task\n\nThis workspace contains a project with 5 service files, all of which are\nmissing JSDoc documentation. Examine the files to understand their structure.\n\nThen create a file called `loop-prompts.md` containing 3 different Ralph\nLoop prompts for 3 different tasks on this codebase:\n\n1. A prompt for adding JSDoc documentation to the service files\n2. A prompt for adding error handling to the service files\n3. A prompt for adding input validation to the service files\n\nEach prompt must include all three components: TASK, SCOPE, and\nCOMPLETION CRITERIA. The criteria must be measurable and specific.\n\nDo NOT actually run the prompts -- this challenge is about writing them well.\n"
       },
       {
-        "path": "src/utils.js",
-        "content": "// TODO: clean up this file\nvar x = function(a, b) {\n  var result = a + b;\n  return result;\n}\n\nvar y = function(s) {\n  var upper = s.toUpperCase();\n  return upper;\n}\n\nvar z = function(arr) {\n  var filtered = [];\n  for (var i = 0; i < arr.length; i++) {\n    if (arr[i] > 0) {\n      filtered.push(arr[i]);\n    }\n  }\n  return filtered;\n}\n\nmodule.exports = { x, y, z };\n"
+        "path": "src/services/userService.js",
+        "content": "const db = require('../db');\n\nasync function createUser(name, email, role) {\n  const user = await db.query(\n    'INSERT INTO users (name, email, role) VALUES ($1, $2, $3) RETURNING *',\n    [name, email, role]\n  );\n  return user;\n}\n\nasync function getUserById(id) {\n  const user = await db.query('SELECT * FROM users WHERE id = $1', [id]);\n  return user;\n}\n\nasync function updateUser(id, updates) {\n  const fields = Object.keys(updates).map((k, i) => `${k} = $${i + 2}`);\n  const values = [id, ...Object.values(updates)];\n  const user = await db.query(\n    `UPDATE users SET ${fields.join(', ')} WHERE id = $1 RETURNING *`,\n    values\n  );\n  return user;\n}\n\nasync function deleteUser(id) {\n  await db.query('DELETE FROM users WHERE id = $1', [id]);\n}\n\nasync function listUsers(limit, offset) {\n  const users = await db.query(\n    'SELECT * FROM users ORDER BY created_at DESC LIMIT $1 OFFSET $2',\n    [limit, offset]\n  );\n  return users;\n}\n\nmodule.exports = { createUser, getUserById, updateUser, deleteUser, listUsers };\n"
       },
       {
-        "path": "src/api.js",
-        "content": "// TODO: modernize this code\nvar fetch = require('node-fetch');\n\nvar getData = function(url) {\n  return fetch(url)\n    .then(function(response) {\n      return response.json();\n    })\n    .then(function(data) {\n      return data;\n    });\n}\n\nvar postData = function(url, body) {\n  return fetch(url, {\n    method: 'POST',\n    body: JSON.stringify(body)\n  }).then(function(response) {\n    return response.json();\n  });\n}\n\nmodule.exports = { getData, postData };\n"
+        "path": "src/services/productService.js",
+        "content": "const db = require('../db');\n\nasync function createProduct(name, price, category) {\n  const product = await db.query(\n    'INSERT INTO products (name, price, category) VALUES ($1, $2, $3) RETURNING *',\n    [name, price, category]\n  );\n  return product;\n}\n\nasync function getProductById(id) {\n  const product = await db.query('SELECT * FROM products WHERE id = $1', [id]);\n  return product;\n}\n\nasync function updateProduct(id, updates) {\n  const fields = Object.keys(updates).map((k, i) => `${k} = $${i + 2}`);\n  const values = [id, ...Object.values(updates)];\n  const product = await db.query(\n    `UPDATE products SET ${fields.join(', ')} WHERE id = $1 RETURNING *`,\n    values\n  );\n  return product;\n}\n\nasync function deleteProduct(id) {\n  await db.query('DELETE FROM products WHERE id = $1', [id]);\n}\n\nasync function listProducts(category, limit) {\n  let query = 'SELECT * FROM products';\n  const params = [];\n  if (category) {\n    query += ' WHERE category = $1';\n    params.push(category);\n  }\n  query += ` LIMIT $${params.length + 1}`;\n  params.push(limit);\n  const products = await db.query(query, params);\n  return products;\n}\n\nmodule.exports = { createProduct, getProductById, updateProduct, deleteProduct, listProducts };\n"
       },
       {
-        "path": "src/constants.js",
-        "content": "// TODO: use const and better names\nvar URL = 'https://api.example.com';\nvar TIMEOUT = 5000;\nvar MAX = 100;\nvar MIN = 0;\n\nmodule.exports = { URL, TIMEOUT, MAX, MIN };\n"
+        "path": "src/services/orderService.js",
+        "content": "const db = require('../db');\n\nasync function createOrder(userId, items, total) {\n  const order = await db.query(\n    'INSERT INTO orders (user_id, items, total, status) VALUES ($1, $2, $3, $4) RETURNING *',\n    [userId, JSON.stringify(items), total, 'pending']\n  );\n  return order;\n}\n\nasync function getOrderById(id) {\n  const order = await db.query('SELECT * FROM orders WHERE id = $1', [id]);\n  return order;\n}\n\nasync function updateOrderStatus(id, status) {\n  const order = await db.query(\n    'UPDATE orders SET status = $1 WHERE id = $2 RETURNING *',\n    [status, id]\n  );\n  return order;\n}\n\nasync function getOrdersByUser(userId) {\n  const orders = await db.query(\n    'SELECT * FROM orders WHERE user_id = $1 ORDER BY created_at DESC',\n    [userId]\n  );\n  return orders;\n}\n\nasync function cancelOrder(id) {\n  const order = await db.query(\n    'UPDATE orders SET status = $1 WHERE id = $2 AND status = $3 RETURNING *',\n    ['cancelled', id, 'pending']\n  );\n  return order;\n}\n\nmodule.exports = { createOrder, getOrderById, updateOrderStatus, getOrdersByUser, cancelOrder };\n"
+      },
+      {
+        "path": "src/services/authService.js",
+        "content": "const db = require('../db');\nconst bcrypt = require('bcrypt');\nconst jwt = require('jsonwebtoken');\n\nasync function register(email, password, name) {\n  const hashed = await bcrypt.hash(password, 10);\n  const user = await db.query(\n    'INSERT INTO users (email, password, name) VALUES ($1, $2, $3) RETURNING id, email, name',\n    [email, hashed, name]\n  );\n  return user;\n}\n\nasync function login(email, password) {\n  const user = await db.query('SELECT * FROM users WHERE email = $1', [email]);\n  if (!user) return null;\n  const valid = await bcrypt.compare(password, user.password);\n  if (!valid) return null;\n  const token = jwt.sign({ id: user.id, email: user.email }, process.env.JWT_SECRET, { expiresIn: '24h' });\n  return { user: { id: user.id, email: user.email, name: user.name }, token };\n}\n\nasync function refreshToken(token) {\n  const decoded = jwt.verify(token, process.env.JWT_SECRET);\n  const newToken = jwt.sign({ id: decoded.id, email: decoded.email }, process.env.JWT_SECRET, { expiresIn: '24h' });\n  return newToken;\n}\n\nasync function changePassword(userId, oldPassword, newPassword) {\n  const user = await db.query('SELECT * FROM users WHERE id = $1', [userId]);\n  const valid = await bcrypt.compare(oldPassword, user.password);\n  if (!valid) throw new Error('Invalid current password');\n  const hashed = await bcrypt.hash(newPassword, 10);\n  await db.query('UPDATE users SET password = $1 WHERE id = $2', [hashed, userId]);\n}\n\nmodule.exports = { register, login, refreshToken, changePassword };\n"
+      },
+      {
+        "path": "src/services/notificationService.js",
+        "content": "const db = require('../db');\n\nasync function sendNotification(userId, type, message) {\n  const notification = await db.query(\n    'INSERT INTO notifications (user_id, type, message, read) VALUES ($1, $2, $3, $4) RETURNING *',\n    [userId, type, message, false]\n  );\n  return notification;\n}\n\nasync function getNotifications(userId, unreadOnly) {\n  let query = 'SELECT * FROM notifications WHERE user_id = $1';\n  const params = [userId];\n  if (unreadOnly) {\n    query += ' AND read = false';\n  }\n  query += ' ORDER BY created_at DESC';\n  const notifications = await db.query(query, params);\n  return notifications;\n}\n\nasync function markAsRead(notificationId) {\n  const notification = await db.query(\n    'UPDATE notifications SET read = true WHERE id = $1 RETURNING *',\n    [notificationId]\n  );\n  return notification;\n}\n\nasync function markAllAsRead(userId) {\n  await db.query(\n    'UPDATE notifications SET read = true WHERE user_id = $1 AND read = false',\n    [userId]\n  );\n}\n\nasync function deleteOldNotifications(userId, daysOld) {\n  await db.query(\n    'DELETE FROM notifications WHERE user_id = $1 AND created_at < NOW() - INTERVAL $2',\n    [userId, `${daysOld} days`]\n  );\n}\n\nmodule.exports = { sendNotification, getNotifications, markAsRead, markAllAsRead, deleteOldNotifications };\n"
+      },
+      {
+        "path": "src/db.js",
+        "content": "async function connectDB(url) {\n  return {\n    query: async (sql, params) => {\n      // simulated database\n      return [];\n    }\n  };\n}\n\nconst db = { query: async () => [] };\n\nmodule.exports = db;\n"
       }
     ],
     "cleanBefore": true
@@ -34,33 +46,49 @@
   "objectives": [
     {
       "id": "obj-1",
-      "description": "Modernize utils.js",
-      "type": "file_contains",
-      "target": "src/utils.js",
-      "pattern": "const|let|=>|filter|map",
+      "description": "Create loop-prompts.md with Ralph Loop prompts",
+      "type": "file_exists",
+      "target": "loop-prompts.md",
       "required": true
     },
     {
       "id": "obj-2",
-      "description": "Modernize api.js",
+      "description": "First prompt: JSDoc documentation task with clear scope and completion criteria",
       "type": "file_contains",
-      "target": "src/api.js",
-      "pattern": "async|await|const",
+      "target": "loop-prompts.md",
+      "pattern": "[Jj][Ss][Dd]oc|[Dd]ocument|@param|@returns",
       "required": true
     },
     {
       "id": "obj-3",
-      "description": "Improve constants.js",
+      "description": "Second prompt: Error handling task with measurable criteria",
       "type": "file_contains",
-      "target": "src/constants.js",
-      "pattern": "const|API_URL|BASE_URL|REQUEST_TIMEOUT",
+      "target": "loop-prompts.md",
+      "pattern": "[Ee]rror [Hh]andling|try.catch|[Ee]rror.*message|[Tt]hrow",
       "required": true
     },
     {
       "id": "obj-4",
-      "description": "Document what changed",
-      "type": "file_exists",
-      "target": "cleanup-summary.md",
+      "description": "Third prompt: Input validation task with specific criteria",
+      "type": "file_contains",
+      "target": "loop-prompts.md",
+      "pattern": "[Vv]alidat|[Ii]nput|[Cc]heck|[Pp]arameter|[Aa]rgument",
+      "required": true
+    },
+    {
+      "id": "obj-5",
+      "description": "All prompts include explicit scope (which files or directories)",
+      "type": "file_contains",
+      "target": "loop-prompts.md",
+      "pattern": "src/services|[Ss]cope|[Oo]nly.*modif|[Oo]nly.*change|[Ff]iles in",
+      "required": true
+    },
+    {
+      "id": "obj-6",
+      "description": "All prompts include measurable completion criteria",
+      "type": "file_contains",
+      "target": "loop-prompts.md",
+      "pattern": "[Cc]ompletion|[Cc]riteri|[Dd]one when|[Cc]omplete when|[Ff]inish when|COMPLET",
       "required": true
     }
   ],
@@ -68,45 +96,64 @@
   "bonusObjectives": [
     {
       "id": "bonus-1",
-      "description": "Use descriptive function names",
+      "description": "Prompts reference specific function names from the service files",
       "type": "file_contains",
-      "target": "src/utils.js",
-      "pattern": "add|sum|uppercase|toUpperCase|filterPositive|positiveNumbers",
-      "xpBonus": 50
+      "target": "loop-prompts.md",
+      "pattern": "createUser|getOrderById|login|sendNotification|listProducts",
+      "xpBonus": 30
+    },
+    {
+      "id": "bonus-2",
+      "description": "Includes analysis of why each prompt's criteria are measurable",
+      "type": "file_contains",
+      "target": "loop-prompts.md",
+      "pattern": "[Mm]easurable|[Vv]erif|[Cc]heck.*by|[Cc]laude can|[Cc]an be.*confirm|[Hh]ow.*know",
+      "xpBonus": 30
+    },
+    {
+      "id": "bonus-3",
+      "description": "Mentions how to monitor or stop the loop",
+      "type": "file_contains",
+      "target": "loop-prompts.md",
+      "pattern": "[Mm]onitor|[Ss]top|[Cc]ancel|Ctrl|/cancel|[Ii]ntervene",
+      "xpBonus": 20
     }
   ],
 
   "hints": [
     {
       "level": 1,
-      "text": "Use /ralph-loop to start an agentic loop. Give it a clear task like 'modernize all code in src/'.",
+      "text": "Read the README to understand the three components of a Ralph Loop prompt: TASK (what to do), SCOPE (where to work), and COMPLETION CRITERIA (what 'done' means). Then examine the 5 service files to understand what improvements each prompt should target.",
       "xpCost": 15
     },
     {
       "level": 2,
-      "text": "Try: '/ralph-loop Modernize all JavaScript files in src/: convert var to const/let, use arrow functions, use async/await, improve variable names'",
+      "text": "For each prompt, follow the template: TASK + SCOPE + COMPLETION CRITERIA. For JSDoc, criteria might be 'every exported function has @param and @returns'. For error handling, criteria might be 'every async function has try/catch'. For validation, criteria might be 'every function that takes an id checks that id is a positive integer'. Make each criterion something Claude could verify by reading the code.",
       "xpCost": 45
     },
     {
       "level": 3,
-      "text": "Start with: '/ralph-loop Clean up the entire src/ folder: 1) Convert all var to const/let, 2) Convert functions to arrow functions, 3) Use async/await instead of .then(), 4) Rename single-letter variables to descriptive names, 5) Create cleanup-summary.md documenting changes'",
+      "text": "Create loop-prompts.md with three sections. Prompt 1 -- TASK: Add JSDoc to all service functions. SCOPE: Only src/services/*.js files. CRITERIA: Every exported function has JSDoc with @param (type + description) and @returns. Prompt 2 -- TASK: Add error handling. SCOPE: src/services/. CRITERIA: Every async function wraps db calls in try/catch, errors include function name in message. Prompt 3 -- TASK: Add input validation. SCOPE: src/services/. CRITERIA: Functions validate parameters (ids are positive integers, strings are non-empty, required fields are present).",
       "xpCost": 90
     }
   ],
 
   "solution": {
-    "approach": "Start a Ralph Loop with a clear, comprehensive task definition.",
-    "example": "Use /ralph-loop to modernize the legacy codebase",
+    "approach": "Examine the 5 service files, identify what improvements they need, then write 3 structured Ralph Loop prompts -- each with a specific TASK, bounded SCOPE, and measurable COMPLETION CRITERIA.",
+    "example": "Create loop-prompts.md with 3 well-structured prompts: one for JSDoc, one for error handling, one for input validation, each following the TASK/SCOPE/CRITERIA template.",
     "alternativeApproaches": [
-      "Define the task file by file",
-      "Give general guidelines and let Ralph decide specifics"
+      "Write prompts as natural language paragraphs rather than structured templates",
+      "Include example before/after code snippets alongside each prompt"
     ]
   },
 
   "learningPoints": [
-    "Clear task definitions help Ralph Loop succeed",
-    "Ralph Loop works through files iteratively",
-    "Document results to track what changed"
+    "Every Ralph Loop prompt needs three components: TASK, SCOPE, and COMPLETION CRITERIA",
+    "Specific, actionable tasks produce better results than vague directives",
+    "Scope prevents Claude from modifying files outside your intended area",
+    "Completion criteria must be measurable -- something Claude can verify by reading code or running commands",
+    "You can monitor progress and stop a loop early with Ctrl+C or /cancel",
+    "Bad prompts lead to unfocused loops; investing time in prompt quality pays off"
   ],
 
   "nextChallenge": "16-003"

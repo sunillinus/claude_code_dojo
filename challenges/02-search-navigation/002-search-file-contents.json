@@ -2,30 +2,90 @@
   "id": "02-002",
   "module": "search-navigation",
   "title": "Search File Contents",
-  "description": "Learn to search inside files for specific text or patterns. Find where functions are defined, where variables are used, and more.",
+  "description": "Master the Grep tool for searching inside files. Learn output modes, context lines, file filtering, regex patterns, and pagination to find exactly what you need in any codebase.",
   "difficulty": "beginner",
   "xpReward": 125,
-  "estimatedMinutes": 7,
-  "skills": ["content-search", "grep"],
+  "estimatedMinutes": 12,
+  "skills": ["grep-tool", "content-search", "regex-basics", "output-modes"],
 
   "setup": {
     "workingDir": "~/dojo-workspace/challenge-02-002",
     "initialFiles": [
       {
         "path": "README.md",
-        "content": "# Challenge: Search File Contents\n\nFind the TODO comments hidden in this codebase.\n\n## Objectives\n1. Find all TODO comments\n2. Create a todo-list.md with what you found\n"
+        "content": "# Challenge 02-002: Search File Contents\n\n## What You Will Learn\n\nIn the previous challenge you learned to find files by name with **Glob**.\nNow you will learn to search **inside** files with the **Grep tool**.\n\nGrep answers the question: \"Which files contain this text or pattern?\"\n\n## How the Grep Tool Works\n\nThe Grep tool is built on **ripgrep** (rg), a fast content search engine.\nIt searches file contents using regular expressions and returns results in\ndifferent formats depending on what you need.\n\nKey parameters:\n- `pattern` (required): The regex pattern to search for\n- `path` (optional): File or directory to search in\n- `output_mode`: Controls what you get back\n- `glob`: Filter which files to search (by name pattern)\n- `type`: Filter by language type (js, py, rust, etc.)\n\n## Output Modes - The Three Ways to See Results\n\nThis is the most important concept. The `output_mode` parameter controls\nwhat Grep returns:\n\n### 1. `files_with_matches` (DEFAULT)\nReturns just the file paths that contain a match. Use this when you\nneed to know WHICH files contain something.\n\n```\nGrep pattern=\"TODO\" output_mode=\"files_with_matches\"\n-> src/app.js\n-> src/database.js\n-> src/routes/users.js\n```\n\n### 2. `content`\nReturns the actual matching lines with line numbers. Use this when you\nneed to see WHAT the matches look like.\n\n```\nGrep pattern=\"TODO\" output_mode=\"content\"\n-> src/app.js:15:  // TODO: Add error handling\n-> src/database.js:8:  // TODO: Implement connection pool\n```\n\n### 3. `count`\nReturns the number of matches per file. Use this when you need to\nknow HOW MANY matches exist.\n\n```\nGrep pattern=\"TODO\" output_mode=\"count\"\n-> src/app.js:2\n-> src/database.js:3\n```\n\n## Context Lines (only with `content` mode)\n\nWhen using `content` mode, you can see surrounding lines for context:\n\n- `-A` (after): Show N lines AFTER each match\n- `-B` (before): Show N lines BEFORE each match  \n- `-C` (context): Show N lines BOTH before and after\n\nExample: `Grep pattern=\"throw new Error\" output_mode=\"content\" -C=3`\nThis shows 3 lines before and after every `throw new Error` line.\n\n## Filtering Which Files to Search\n\nYou do not always want to search every file. Two ways to filter:\n\n### `glob` parameter - filter by file name pattern\n```\nGrep pattern=\"import\" glob=\"*.ts\"      -> only search .ts files\nGrep pattern=\"import\" glob=\"*.{ts,tsx}\" -> search .ts and .tsx files\n```\n\n### `type` parameter - filter by language\n```\nGrep pattern=\"import\" type=\"js\"    -> search JavaScript files\nGrep pattern=\"import\" type=\"py\"    -> search Python files\n```\n\nThe `type` parameter is more convenient for standard languages because\nit knows all the file extensions associated with each language.\n\n## Pagination with `head_limit` and `offset`\n\nFor searches with many results:\n- `head_limit`: Only return the first N results\n- `offset`: Skip the first N results\n\nCombined: `offset=10, head_limit=10` returns results 11-20.\n\n## Case Sensitivity\n\nBy default, Grep is case-sensitive. Use `-i: true` for case-insensitive:\n\n```\nGrep pattern=\"error\" -i=true  -> matches Error, ERROR, error, etc.\n```\n\n## Multiline Patterns\n\nBy default, patterns match within a single line. To match patterns that\nspan multiple lines, use `multiline: true`:\n\n```\nGrep pattern=\"function.*\\{[\\\\s\\\\S]*?return\" multiline=true\n```\n\n## Regex Syntax Notes\n\nGrep uses ripgrep's regex syntax (similar to Rust regex):\n- `.` matches any character\n- `\\s` matches whitespace, `\\d` matches digits\n- `(a|b)` matches a or b\n- `[abc]` character class\n- `\\{` and `\\}` for literal braces (they need escaping!)\n- `^` start of line, `$` end of line\n\n## Your Task\n\nThis workspace contains an Express.js application with various patterns\nhidden throughout the code. Your job is to search the codebase and answer\nspecific questions by creating a `search-results.md` file.\n\nAnswer these questions using the Grep tool:\n\n1. **TODO count**: How many TODO comments exist in total? List each one with its file and line.\n2. **Error messages**: What error messages does the app use? (Search for strings passed to `Error(`)\n3. **Imports of express**: Which files import or require 'express'?\n4. **Console.log usage**: How many files use console.log? List them.\n5. **Environment variables**: Which files reference `process.env`? What variables do they use?\n6. **Route definitions**: What HTTP routes (GET, POST, PUT, DELETE) are defined?\n\nFor each answer, note which Grep output_mode you used and why.\n"
+      },
+      {
+        "path": "package.json",
+        "content": "{\n  \"name\": \"task-api\",\n  \"version\": \"1.0.0\",\n  \"main\": \"src/server.js\",\n  \"scripts\": {\n    \"start\": \"node src/server.js\",\n    \"dev\": \"nodemon src/server.js\",\n    \"test\": \"jest\"\n  }\n}\n"
+      },
+      {
+        "path": "src/server.js",
+        "content": "const express = require('express');\nconst app = require('./app');\nconst config = require('./config');\n\nconst PORT = config.port;\n\napp.listen(PORT, () => {\n  console.log(`Task API running on port ${PORT}`);\n  console.log(`Environment: ${config.env}`);\n});\n"
       },
       {
         "path": "src/app.js",
-        "content": "// Main application\nfunction init() {\n  // TODO: Add initialization logic\n  console.log('Starting app');\n}\n\nfunction cleanup() {\n  console.log('Cleaning up');\n}\n\nmodule.exports = { init, cleanup };\n"
+        "content": "const express = require('express');\nconst cors = require('cors');\nconst taskRoutes = require('./routes/tasks');\nconst userRoutes = require('./routes/users');\nconst authRoutes = require('./routes/auth');\nconst errorHandler = require('./middleware/errorHandler');\nconst requestLogger = require('./middleware/requestLogger');\n\nconst app = express();\n\napp.use(cors());\napp.use(express.json());\napp.use(requestLogger);\n\n// TODO: Add rate limiting middleware\n\napp.use('/api/tasks', taskRoutes);\napp.use('/api/users', userRoutes);\napp.use('/api/auth', authRoutes);\n\napp.use(errorHandler);\n\nmodule.exports = app;\n"
       },
       {
-        "path": "src/database.js",
-        "content": "// Database module\nconst db = {\n  connect: () => {\n    // TODO: Implement database connection\n    return Promise.resolve();\n  },\n  query: (sql) => {\n    // TODO: Add query sanitization\n    return Promise.resolve([]);\n  }\n};\n\nmodule.exports = db;\n"
+        "path": "src/config.js",
+        "content": "module.exports = {\n  port: process.env.PORT || 3000,\n  env: process.env.NODE_ENV || 'development',\n  db: {\n    host: process.env.DB_HOST || 'localhost',\n    port: process.env.DB_PORT || 5432,\n    name: process.env.DB_NAME || 'taskdb',\n    user: process.env.DB_USER || 'admin',\n    password: process.env.DB_PASSWORD || 'secret'\n  },\n  jwt: {\n    secret: process.env.JWT_SECRET || 'dev-jwt-secret',\n    expiresIn: '7d'\n  }\n};\n"
       },
       {
-        "path": "src/utils.js",
-        "content": "// Utility functions\nfunction formatDate(date) {\n  return date.toISOString();\n}\n\n// TODO: Add more utility functions\n\nmodule.exports = { formatDate };\n"
+        "path": "src/routes/tasks.js",
+        "content": "const express = require('express');\nconst router = express.Router();\nconst TaskController = require('../controllers/TaskController');\nconst auth = require('../middleware/auth');\n\n// TODO: Add input validation middleware\n\nrouter.get('/', auth, TaskController.getAll);\nrouter.get('/:id', auth, TaskController.getById);\nrouter.post('/', auth, TaskController.create);\nrouter.put('/:id', auth, TaskController.update);\nrouter.delete('/:id', auth, TaskController.remove);\n\nmodule.exports = router;\n"
+      },
+      {
+        "path": "src/routes/users.js",
+        "content": "const express = require('express');\nconst router = express.Router();\nconst UserController = require('../controllers/UserController');\nconst auth = require('../middleware/auth');\n\nrouter.get('/', auth, UserController.getAll);\nrouter.get('/:id', auth, UserController.getById);\nrouter.put('/:id', auth, UserController.update);\nrouter.delete('/:id', auth, UserController.remove);\n\nmodule.exports = router;\n"
+      },
+      {
+        "path": "src/routes/auth.js",
+        "content": "const express = require('express');\nconst router = express.Router();\nconst AuthController = require('../controllers/AuthController');\n\n// TODO: Add request throttling for login attempts\n\nrouter.post('/register', AuthController.register);\nrouter.post('/login', AuthController.login);\nrouter.post('/refresh', AuthController.refreshToken);\n\nmodule.exports = router;\n"
+      },
+      {
+        "path": "src/controllers/TaskController.js",
+        "content": "const TaskService = require('../services/TaskService');\n\nclass TaskController {\n  static async getAll(req, res, next) {\n    try {\n      const tasks = await TaskService.findAll(req.user.id);\n      res.json({ data: tasks });\n    } catch (err) {\n      next(err);\n    }\n  }\n\n  static async getById(req, res, next) {\n    try {\n      const task = await TaskService.findById(req.params.id);\n      if (!task) {\n        throw new Error('Task not found');\n      }\n      res.json({ data: task });\n    } catch (err) {\n      next(err);\n    }\n  }\n\n  static async create(req, res, next) {\n    try {\n      // TODO: Validate request body\n      const task = await TaskService.create({\n        ...req.body,\n        userId: req.user.id\n      });\n      res.status(201).json({ data: task });\n    } catch (err) {\n      next(err);\n    }\n  }\n\n  static async update(req, res, next) {\n    try {\n      const task = await TaskService.update(req.params.id, req.body);\n      if (!task) {\n        throw new Error('Task not found');\n      }\n      res.json({ data: task });\n    } catch (err) {\n      next(err);\n    }\n  }\n\n  static async remove(req, res, next) {\n    try {\n      await TaskService.remove(req.params.id);\n      res.status(204).send();\n    } catch (err) {\n      next(err);\n    }\n  }\n}\n\nmodule.exports = TaskController;\n"
+      },
+      {
+        "path": "src/controllers/UserController.js",
+        "content": "const UserService = require('../services/UserService');\n\nclass UserController {\n  static async getAll(req, res, next) {\n    try {\n      const users = await UserService.findAll();\n      res.json({ data: users });\n    } catch (err) {\n      next(err);\n    }\n  }\n\n  static async getById(req, res, next) {\n    try {\n      const user = await UserService.findById(req.params.id);\n      if (!user) {\n        throw new Error('User not found');\n      }\n      res.json({ data: user });\n    } catch (err) {\n      next(err);\n    }\n  }\n\n  static async update(req, res, next) {\n    try {\n      const user = await UserService.update(req.params.id, req.body);\n      if (!user) {\n        throw new Error('User not found');\n      }\n      res.json({ data: user });\n    } catch (err) {\n      next(err);\n    }\n  }\n\n  static async remove(req, res, next) {\n    try {\n      await UserService.remove(req.params.id);\n      res.status(204).send();\n    } catch (err) {\n      next(err);\n    }\n  }\n}\n\nmodule.exports = UserController;\n"
+      },
+      {
+        "path": "src/controllers/AuthController.js",
+        "content": "const UserService = require('../services/UserService');\nconst jwt = require('jsonwebtoken');\nconst config = require('../config');\n\nclass AuthController {\n  static async register(req, res, next) {\n    try {\n      const { email, password, name } = req.body;\n      if (!email || !password) {\n        throw new Error('Email and password are required');\n      }\n      const existingUser = await UserService.findByEmail(email);\n      if (existingUser) {\n        throw new Error('User already exists');\n      }\n      const user = await UserService.create({ email, password, name });\n      const token = jwt.sign({ id: user.id }, config.jwt.secret);\n      res.status(201).json({ data: { user, token } });\n    } catch (err) {\n      next(err);\n    }\n  }\n\n  static async login(req, res, next) {\n    try {\n      const { email, password } = req.body;\n      const user = await UserService.authenticate(email, password);\n      if (!user) {\n        throw new Error('Invalid credentials');\n      }\n      const token = jwt.sign({ id: user.id }, config.jwt.secret);\n      res.json({ data: { user, token } });\n    } catch (err) {\n      next(err);\n    }\n  }\n\n  static async refreshToken(req, res, next) {\n    try {\n      // TODO: Implement token refresh logic\n      throw new Error('Not implemented');\n    } catch (err) {\n      next(err);\n    }\n  }\n}\n\nmodule.exports = AuthController;\n"
+      },
+      {
+        "path": "src/services/TaskService.js",
+        "content": "// TODO: Replace in-memory storage with database\nlet tasks = [];\nlet nextId = 1;\n\nclass TaskService {\n  static async findAll(userId) {\n    return tasks.filter(t => t.userId === userId);\n  }\n\n  static async findById(id) {\n    return tasks.find(t => t.id === id) || null;\n  }\n\n  static async create(data) {\n    const task = { id: String(nextId++), ...data, createdAt: new Date() };\n    tasks.push(task);\n    console.log(`Task created: ${task.id}`);\n    return task;\n  }\n\n  static async update(id, data) {\n    const index = tasks.findIndex(t => t.id === id);\n    if (index === -1) return null;\n    tasks[index] = { ...tasks[index], ...data, updatedAt: new Date() };\n    console.log(`Task updated: ${id}`);\n    return tasks[index];\n  }\n\n  static async remove(id) {\n    tasks = tasks.filter(t => t.id !== id);\n    console.log(`Task removed: ${id}`);\n  }\n}\n\nmodule.exports = TaskService;\n"
+      },
+      {
+        "path": "src/services/UserService.js",
+        "content": "// TODO: Replace in-memory storage with database\nlet users = [];\nlet nextId = 1;\n\nclass UserService {\n  static async findAll() {\n    return users.map(u => ({ ...u, password: undefined }));\n  }\n\n  static async findById(id) {\n    return users.find(u => u.id === id) || null;\n  }\n\n  static async findByEmail(email) {\n    return users.find(u => u.email === email) || null;\n  }\n\n  static async create(data) {\n    const user = { id: String(nextId++), ...data, createdAt: new Date() };\n    users.push(user);\n    console.log(`User created: ${user.id}`);\n    return { ...user, password: undefined };\n  }\n\n  static async authenticate(email, password) {\n    const user = users.find(u => u.email === email && u.password === password);\n    return user || null;\n  }\n\n  static async update(id, data) {\n    const index = users.findIndex(u => u.id === id);\n    if (index === -1) return null;\n    users[index] = { ...users[index], ...data };\n    return { ...users[index], password: undefined };\n  }\n\n  static async remove(id) {\n    users = users.filter(u => u.id !== id);\n  }\n}\n\nmodule.exports = UserService;\n"
+      },
+      {
+        "path": "src/middleware/auth.js",
+        "content": "const jwt = require('jsonwebtoken');\nconst config = require('../config');\n\nfunction auth(req, res, next) {\n  const header = req.headers.authorization;\n  if (!header) {\n    return res.status(401).json({ error: 'No authorization header' });\n  }\n\n  const token = header.replace('Bearer ', '');\n  try {\n    const decoded = jwt.verify(token, config.jwt.secret);\n    req.user = decoded;\n    next();\n  } catch (err) {\n    res.status(401).json({ error: 'Invalid token' });\n  }\n}\n\nmodule.exports = auth;\n"
+      },
+      {
+        "path": "src/middleware/errorHandler.js",
+        "content": "function errorHandler(err, req, res, next) {\n  console.log(`Error: ${err.message}`);\n\n  const statusCode = err.statusCode || 500;\n  const message = err.message || 'Internal server error';\n\n  res.status(statusCode).json({\n    error: message,\n    ...(process.env.NODE_ENV === 'development' && { stack: err.stack })\n  });\n}\n\nmodule.exports = errorHandler;\n"
+      },
+      {
+        "path": "src/middleware/requestLogger.js",
+        "content": "function requestLogger(req, res, next) {\n  const start = Date.now();\n  res.on('finish', () => {\n    const duration = Date.now() - start;\n    console.log(`${req.method} ${req.url} ${res.statusCode} ${duration}ms`);\n  });\n  next();\n}\n\nmodule.exports = requestLogger;\n"
+      },
+      {
+        "path": "src/utils/validators.js",
+        "content": "function isValidEmail(email) {\n  return /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email);\n}\n\nfunction isNotEmpty(value) {\n  return value !== null && value !== undefined && String(value).trim().length > 0;\n}\n\nfunction isValidId(id) {\n  return /^[0-9]+$/.test(id);\n}\n\n// TODO: Add password strength validator\n\nmodule.exports = { isValidEmail, isNotEmpty, isValidId };\n"
+      },
+      {
+        "path": "tests/tasks.test.js",
+        "content": "const TaskService = require('../src/services/TaskService');\n\ndescribe('TaskService', () => {\n  test('create returns task with id', async () => {\n    const task = await TaskService.create({ title: 'Test', userId: '1' });\n    expect(task.id).toBeDefined();\n  });\n\n  // TODO: Add more test cases\n});\n"
+      },
+      {
+        "path": "tests/auth.test.js",
+        "content": "const AuthController = require('../src/controllers/AuthController');\n\ndescribe('AuthController', () => {\n  test('register requires email and password', async () => {\n    // test implementation\n  });\n\n  // TODO: Add login tests\n});\n"
       }
     ],
     "cleanBefore": true
@@ -34,25 +94,49 @@
   "objectives": [
     {
       "id": "obj-1",
-      "description": "Create todo-list.md",
+      "description": "Create search-results.md with your search findings",
       "type": "file_exists",
-      "target": "todo-list.md",
+      "target": "search-results.md",
       "required": true
     },
     {
       "id": "obj-2",
-      "description": "List should mention initialization",
+      "description": "Document the total count of TODO comments (there are 10)",
       "type": "file_contains",
-      "target": "todo-list.md",
-      "pattern": "[Ii]nitiali[sz]|app\\.js",
+      "target": "search-results.md",
+      "pattern": "10|ten",
       "required": true
     },
     {
       "id": "obj-3",
-      "description": "List should mention database",
+      "description": "Document error messages - must mention 'Task not found' and 'Invalid credentials'",
       "type": "file_contains",
-      "target": "todo-list.md",
-      "pattern": "[Dd]atabase|connection|query",
+      "target": "search-results.md",
+      "pattern": "Task not found",
+      "required": true
+    },
+    {
+      "id": "obj-4",
+      "description": "Document which files import express (server.js, app.js, and route files)",
+      "type": "file_contains",
+      "target": "search-results.md",
+      "pattern": "server\\.js|app\\.js",
+      "required": true
+    },
+    {
+      "id": "obj-5",
+      "description": "Document files using process.env - must mention config.js and errorHandler.js",
+      "type": "file_contains",
+      "target": "search-results.md",
+      "pattern": "config\\.js",
+      "required": true
+    },
+    {
+      "id": "obj-6",
+      "description": "Document route definitions - must mention GET, POST, PUT, DELETE methods",
+      "type": "file_contains",
+      "target": "search-results.md",
+      "pattern": "(GET|get).*(POST|post).*(PUT|put).*(DELETE|delete)|(delete|DELETE).*(put|PUT).*(post|POST).*(get|GET)|router\\.(get|post|put|delete)",
       "required": true
     }
   ],
@@ -60,10 +144,18 @@
   "bonusObjectives": [
     {
       "id": "bonus-1",
-      "description": "Find all 4 TODO comments",
+      "description": "Document which Grep output_mode was used for each question",
       "type": "file_contains",
-      "target": "todo-list.md",
-      "pattern": "4|four|utility",
+      "target": "search-results.md",
+      "pattern": "files_with_matches|output_mode|content|count",
+      "xpBonus": 25
+    },
+    {
+      "id": "bonus-2",
+      "description": "List all environment variables referenced in the codebase (PORT, NODE_ENV, DB_HOST, etc.)",
+      "type": "file_contains",
+      "target": "search-results.md",
+      "pattern": "DB_HOST.*DB_PORT|DB_NAME.*JWT_SECRET|NODE_ENV.*PORT",
       "xpBonus": 25
     }
   ],
@@ -71,34 +163,39 @@
   "hints": [
     {
       "level": 1,
-      "text": "Ask Claude Code to search for 'TODO' in all files.",
+      "text": "Each question requires a different approach. For counting TODOs, the 'count' output_mode gives totals. For seeing the actual TODO text, use 'content' mode. For finding which files import express, 'files_with_matches' mode is sufficient. Think about which mode gives you the information each question asks for.",
       "xpCost": 10
     },
     {
       "level": 2,
-      "text": "Try: 'Search for TODO comments in this project and list them'",
+      "text": "For TODOs: Grep pattern 'TODO' with output_mode 'content' to see them all, then 'count' to get totals. For error messages: Grep pattern 'new Error\\(' with 'content' mode. For express imports: Grep pattern 'require.*express' with 'files_with_matches'. For environment variables: Grep pattern 'process\\.env' with 'content' mode.",
       "xpCost": 25
     },
     {
       "level": 3,
-      "text": "Ask: 'Find all TODO comments in the codebase and create todo-list.md documenting each one with its file location'",
+      "text": "Ask Claude Code: 'Search this codebase to answer these questions and create search-results.md: (1) Use Grep with pattern TODO in count mode to count all TODOs, then content mode to list them. (2) Search for new Error( to find error messages. (3) Search for require.*express to find express imports. (4) Search for console.log to find logging. (5) Search for process.env to find environment variables. (6) Search for router.get, router.post, router.put, router.delete to find routes. Note which output_mode you used for each.'",
       "xpCost": 50
     }
   ],
 
   "solution": {
-    "approach": "Use content search to find patterns across files.",
-    "example": "Search for 'TODO' in all files and create todo-list.md with the findings",
+    "approach": "Use the Grep tool with different patterns and output modes for each question. Count mode for totals, content mode for seeing details, files_with_matches mode for file lists. Combine results into a comprehensive search-results.md.",
+    "example": "Search for TODO with count mode to get total (10). Search for 'new Error(' with content mode to see error messages. Search for 'require.*express' with files_with_matches mode. Search for console.log with files_with_matches. Search for process.env with content mode. Search for 'router\\.(get|post|put|delete)' with content mode for routes.",
     "alternativeApproaches": [
-      "Find all TODO comments and document them",
-      "Grep for TODO across the codebase"
+      "Search for each pattern one by one and compile results manually",
+      "Use content mode for everything and count results yourself",
+      "Combine multiple patterns with regex alternation: TODO|FIXME|HACK"
     ]
   },
 
   "learningPoints": [
-    "Claude Code can search file contents, not just names",
-    "Pattern matching works across multiple files",
-    "Combining search with documentation is powerful"
+    "The Grep tool has three output modes: files_with_matches (default), content (matching lines), and count (match totals)",
+    "Use count mode when you need to know how many matches exist",
+    "Use content mode when you need to see the actual matching lines and surrounding context",
+    "Use files_with_matches mode when you just need to know which files contain a pattern",
+    "The -i flag makes searches case-insensitive",
+    "The glob parameter filters which files to search by name pattern",
+    "Context lines (-A, -B, -C) only work with content output mode"
   ],
 
   "nextChallenge": "02-003"

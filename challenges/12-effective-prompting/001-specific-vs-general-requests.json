@@ -2,26 +2,34 @@
   "id": "12-001",
   "module": "effective-prompting",
   "title": "Specific vs General Requests",
-  "description": "Learn how specific, detailed requests get better results than vague, general ones.",
+  "description": "Learn how the specificity of your prompts directly controls the quality, predictability, and efficiency of Claude Code's output. Master the five dimensions of specificity to write prompts that get exactly what you need.",
   "difficulty": "beginner",
   "xpReward": 125,
-  "estimatedMinutes": 8,
-  "skills": ["prompt-specificity", "clear-communication"],
+  "estimatedMinutes": 12,
+  "skills": ["prompt-specificity", "clear-communication", "prompt-dimensions"],
 
   "setup": {
     "workingDir": "~/dojo-workspace/challenge-12-001",
     "initialFiles": [
       {
         "path": "README.md",
-        "content": "# Challenge: Specific vs General Requests\n\nLearn the difference between vague and specific prompts.\n\n## Objectives\n1. Complete Task A with a VAGUE prompt (see what happens)\n2. Complete Task B with a SPECIFIC prompt (better results!)\n3. Document what you learned in notes.md\n"
+        "content": "# Challenge: Specific vs General Requests\n\nLearn to control Claude Code's output by mastering the specificity spectrum.\n\n## The Specificity Spectrum\n\nEvery prompt falls somewhere on a spectrum from vague to precise:\n\n| Level | Example | What You Get |\n|-------|---------|-------------|\n| **Vague** | \"Fix this code\" | Claude guesses what's wrong and applies random improvements |\n| **Directional** | \"Fix the error handling in this code\" | Claude focuses on the right area but chooses its own approach |\n| **Specific** | \"Add try-catch blocks to all async functions, logging errors with our logger\" | Claude knows what to do and mostly how |\n| **Precise** | \"Wrap the fetchUser call on line 15 in a try-catch that catches NetworkError, logs it with logger.error, and returns a default user object\" | Claude produces exactly what you envision |\n\nMore specific is not always better. The right level depends on your task.\n\n## The 5 Dimensions of Specificity\n\nEvery prompt can be specific along five dimensions. Think of them as knobs\nyou can turn up or down:\n\n### 1. WHAT (Action)\nWhat do you want Claude to do?\n- Vague: \"Fix this\"\n- Specific: \"Refactor this function to use async/await instead of callbacks\"\n\n### 2. WHERE (Scope/Files)\nWhich files, functions, or lines should Claude touch?\n- Vague: \"Update the project\" (Claude might change anything)\n- Specific: \"Only modify src/api/users.js, lines 20-45\"\n\n### 3. HOW (Approach/Style)\nWhat approach, pattern, or coding style should Claude follow?\n- Vague: \"Make it better\"\n- Specific: \"Use the repository pattern matching src/api/products.js\"\n\n### 4. CONSTRAINTS (Limits/Rules)\nWhat should Claude NOT do, or what limits apply?\n- Vague: (no constraints, Claude does whatever seems best)\n- Specific: \"Do not add new dependencies. Keep the public API unchanged.\"\n\n### 5. OUTPUT (Format/Structure)\nWhat should the result look like?\n- Vague: \"Give me some tests\"\n- Specific: \"Create a test file using Jest with describe/it blocks, one test per public method\"\n\n## When Vagueness Is Acceptable\n\nDon't over-specify when:\n- **Exploring**: \"What does this codebase do?\" - let Claude roam\n- **Brainstorming**: \"How could we improve performance here?\" - you want ideas\n- **Learning**: \"Explain how this auth middleware works\" - you want Claude's judgment\n\n## When Specificity Is Critical\n\nAlways be specific when:\n- **Production code changes**: You need predictable, reviewable output\n- **Refactoring**: Vague refactoring prompts can break things\n- **Bug fixes**: \"Fix the bug\" wastes time; \"Fix the null reference on line 42 in parseUser\" saves time\n- **Following patterns**: \"Use the same pattern as X\" prevents style drift\n\n## The Claude Code Tax\n\nVague prompts cost you:\n- **More back-and-forth**: \"That's not what I meant\" followed by corrections\n- **Wasted context window**: Each correction consumes tokens\n- **Inconsistent results**: The same vague prompt may give different results\n- **More review time**: You must carefully check if Claude guessed your intent\n\nA 30-second investment in writing a specific prompt saves minutes of correction.\n\n## Side-by-Side Comparison\n\nHere's the same task at different specificity levels:\n\n**Task**: Improve the data processing function below.\n\n| Prompt | Expected Result |\n|--------|-----------------|\n| \"Make this better\" | Unpredictable mix of renaming, restructuring, maybe adding docs |\n| \"Improve readability\" | Better names and maybe some comments, but approach varies |\n| \"Refactor to use descriptive names, const declarations, and arrow functions\" | Consistent output: specific naming, const, arrows |\n| \"Rename 'process' to 'filterAndDoublePositives', change var to const, convert the for-loop to .filter(n => n > 0).map(n => n * 2), add JSDoc with @param and @returns\" | Nearly identical output every time |\n\n## Your Exercise\n\nThis project has 3 tasks at different scales. For each task, you will write\nprompts at multiple specificity levels and document how specificity affects\nthe outcome. Create prompt-guide.md with your analysis.\n\n### Task 1 (Small): Improve data-processor.js\nA simple function that needs cleanup.\n\n### Task 2 (Medium): Add error handling to api-client.js\nAn API client module missing error handling.\n\n### Task 3 (Large): Restructure the utils/ directory\nA messy utils folder that needs organization.\n\nFor EACH task, write prompts at 3 specificity levels (vague, specific,\nprecise) and document what you'd expect Claude to produce at each level.\nThen pick one task and actually run your vague AND precise prompts to\ncompare results.\n"
       },
       {
-        "path": "task-a.js",
-        "content": "// Task A: This function needs improvement\n// Try asking Claude with a VAGUE request like:\n// \"make this better\" or \"improve this code\"\n\nfunction process(d) {\n  var r = [];\n  for (var i = 0; i < d.length; i++) {\n    if (d[i] > 0) {\n      r.push(d[i] * 2);\n    }\n  }\n  return r;\n}\n\nmodule.exports = { process };\n"
+        "path": "data-processor.js",
+        "content": "// Task 1: A function that needs improvement\n// Write prompts at 3 specificity levels to improve this\n\nfunction process(d) {\n  var r = [];\n  for (var i = 0; i < d.length; i++) {\n    if (d[i].status == 'active' && d[i].age > 18) {\n      r.push({\n        n: d[i].firstName + ' ' + d[i].lastName,\n        e: d[i].email,\n        a: d[i].age\n      });\n    }\n  }\n  return r;\n}\n\nmodule.exports = { process };\n"
       },
       {
-        "path": "task-b.js",
-        "content": "// Task B: This function also needs improvement\n// Try asking Claude with a SPECIFIC request like:\n// \"Rename this function to 'doublePositiveNumbers', use descriptive\n// variable names, convert to arrow function with filter/map\"\n\nfunction proc(arr) {\n  var out = [];\n  for (var j = 0; j < arr.length; j++) {\n    if (arr[j] > 0) {\n      out.push(arr[j] * 2);\n    }\n  }\n  return out;\n}\n\nmodule.exports = { proc };\n"
+        "path": "api-client.js",
+        "content": "// Task 2: An API client with no error handling\n// Write prompts at 3 specificity levels to add error handling\n\nconst BASE_URL = 'https://api.example.com';\n\nasync function getUsers() {\n  const response = await fetch(`${BASE_URL}/users`);\n  const data = await response.json();\n  return data;\n}\n\nasync function getUserById(id) {\n  const response = await fetch(`${BASE_URL}/users/${id}`);\n  const data = await response.json();\n  return data;\n}\n\nasync function createUser(userData) {\n  const response = await fetch(`${BASE_URL}/users`, {\n    method: 'POST',\n    headers: { 'Content-Type': 'application/json' },\n    body: JSON.stringify(userData)\n  });\n  const data = await response.json();\n  return data;\n}\n\nasync function deleteUser(id) {\n  const response = await fetch(`${BASE_URL}/users/${id}`, {\n    method: 'DELETE'\n  });\n  return response.ok;\n}\n\nmodule.exports = { getUsers, getUserById, createUser, deleteUser };\n"
+      },
+      {
+        "path": "utils/helpers.js",
+        "content": "// Task 3: A messy utils directory that needs restructuring\n// This file has too many unrelated functions mixed together\n\nfunction formatDate(date) {\n  return date.toISOString().split('T')[0];\n}\n\nfunction formatCurrency(amount) {\n  return `$${amount.toFixed(2)}`;\n}\n\nfunction validateEmail(email) {\n  return /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email);\n}\n\nfunction validatePhone(phone) {\n  return /^\\d{10}$/.test(phone);\n}\n\nfunction slugify(text) {\n  return text.toLowerCase().replace(/\\s+/g, '-').replace(/[^a-z0-9-]/g, '');\n}\n\nfunction capitalize(text) {\n  return text.charAt(0).toUpperCase() + text.slice(1);\n}\n\nfunction sortByDate(items) {\n  return [...items].sort((a, b) => new Date(a.date) - new Date(b.date));\n}\n\nfunction filterActive(items) {\n  return items.filter(item => item.status === 'active');\n}\n\nmodule.exports = {\n  formatDate, formatCurrency, validateEmail, validatePhone,\n  slugify, capitalize, sortByDate, filterActive\n};\n"
+      },
+      {
+        "path": "utils/constants.js",
+        "content": "const API_TIMEOUT = 5000;\nconst MAX_RETRIES = 3;\nconst DATE_FORMAT = 'YYYY-MM-DD';\nconst ITEMS_PER_PAGE = 20;\n\nmodule.exports = { API_TIMEOUT, MAX_RETRIES, DATE_FORMAT, ITEMS_PER_PAGE };\n"
       }
     ],
     "cleanBefore": true
@@ -30,33 +38,65 @@
   "objectives": [
     {
       "id": "obj-1",
-      "description": "Improve task-a.js (any improvement counts)",
-      "type": "file_contains",
-      "target": "task-a.js",
-      "pattern": "const|let|=>|filter|map|forEach",
+      "description": "Create prompt-guide.md",
+      "type": "file_exists",
+      "target": "prompt-guide.md",
       "required": true
     },
     {
       "id": "obj-2",
-      "description": "Improve task-b.js with specific naming",
+      "description": "Guide covers the WHAT dimension (action/task description)",
       "type": "file_contains",
-      "target": "task-b.js",
-      "pattern": "doublePositive|numbers|items|values",
+      "target": "prompt-guide.md",
+      "pattern": "[Ww]hat|[Aa]ction|[Tt]ask.*descri",
       "required": true
     },
     {
       "id": "obj-3",
-      "description": "Create notes.md documenting what you learned",
-      "type": "file_exists",
-      "target": "notes.md",
+      "description": "Guide covers the WHERE dimension (scope/files)",
+      "type": "file_contains",
+      "target": "prompt-guide.md",
+      "pattern": "[Ww]here|[Ss]cope|[Ff]ile|[Ll]ine",
       "required": true
     },
     {
       "id": "obj-4",
-      "description": "Notes discuss specific vs general prompts",
+      "description": "Guide covers the HOW dimension (approach/style)",
       "type": "file_contains",
-      "target": "notes.md",
-      "pattern": "[Ss]pecific|[Vv]ague|[Gg]eneral|[Dd]etail|[Bb]etter",
+      "target": "prompt-guide.md",
+      "pattern": "[Hh]ow|[Aa]pproach|[Ss]tyle|[Pp]attern",
+      "required": true
+    },
+    {
+      "id": "obj-5",
+      "description": "Guide covers CONSTRAINTS (limits/rules)",
+      "type": "file_contains",
+      "target": "prompt-guide.md",
+      "pattern": "[Cc]onstraint|[Ll]imit|[Rr]ule|[Dd]o not|[Dd]on't|[Aa]void",
+      "required": true
+    },
+    {
+      "id": "obj-6",
+      "description": "Guide covers OUTPUT dimension (format/structure)",
+      "type": "file_contains",
+      "target": "prompt-guide.md",
+      "pattern": "[Oo]utput|[Ff]ormat|[Ss]tructure|[Rr]esult",
+      "required": true
+    },
+    {
+      "id": "obj-7",
+      "description": "Guide includes prompts at multiple specificity levels (vague and specific/precise)",
+      "type": "file_contains",
+      "target": "prompt-guide.md",
+      "pattern": "[Vv]ague|[Ss]pecific|[Pp]recise|[Gg]eneral|[Dd]irectional",
+      "required": true
+    },
+    {
+      "id": "obj-8",
+      "description": "Guide addresses all 3 tasks (data-processor, api-client, utils)",
+      "type": "file_contains",
+      "target": "prompt-guide.md",
+      "pattern": "data.processor|api.client|utils",
       "required": true
     }
   ],
@@ -64,10 +104,18 @@
   "bonusObjectives": [
     {
       "id": "bonus-1",
-      "description": "task-b.js uses modern array methods",
+      "description": "Guide discusses when vagueness is acceptable (exploration, brainstorming)",
       "type": "file_contains",
-      "target": "task-b.js",
-      "pattern": "\\.filter\\(.*\\)\\.map\\(",
+      "target": "prompt-guide.md",
+      "pattern": "[Ee]xplor|[Bb]rainstorm|vague.*ok|vague.*acceptable|vague.*fine|[Ww]hen.*vague",
+      "xpBonus": 25
+    },
+    {
+      "id": "bonus-2",
+      "description": "Guide includes actual comparison results from running prompts",
+      "type": "file_contains",
+      "target": "prompt-guide.md",
+      "pattern": "[Rr]esult|[Oo]utcome|[Cc]ompar|[Pp]roduced|[Gg]enerated|[Cc]laude.*gave|[Cc]laude.*returned",
       "xpBonus": 25
     }
   ],
@@ -75,34 +123,36 @@
   "hints": [
     {
       "level": 1,
-      "text": "Try both approaches and compare the results. Which gives you more control?",
+      "text": "Think about the 5 dimensions: WHAT (action), WHERE (scope), HOW (approach), CONSTRAINTS (limits), OUTPUT (format). For each task, consider which dimensions matter most. A small function cleanup needs different specificity than a directory restructure.",
       "xpCost": 10
     },
     {
       "level": 2,
-      "text": "For task-a, try 'improve this'. For task-b, try 'rename to doublePositiveNumbers, use const, convert to filter().map()'",
+      "text": "For Task 1 (data-processor.js), try: Vague = 'improve this function', Specific = 'rename to filterActiveAdults, use const, convert to filter/map', Precise = add JSDoc, specific variable names, template literals. For Task 2, think about what error handling approach to specify. For Task 3, think about how to describe the target directory structure.",
       "xpCost": 25
     },
     {
       "level": 3,
-      "text": "Complete both tasks, then create notes.md explaining how specific prompts give you more predictable, controlled results.",
+      "text": "Structure your prompt-guide.md with: (1) A section explaining the 5 dimensions of specificity, (2) For each of the 3 tasks: a vague prompt, a specific prompt, and a precise prompt with expected outcomes, (3) A section on when vagueness is OK vs when specificity matters. Actually run at least one vague and one precise prompt on data-processor.js to see the real difference.",
       "xpCost": 50
     }
   ],
 
   "solution": {
-    "approach": "Compare vague vs specific prompts, then document the difference.",
-    "example": "Refactor both files and document your learnings about prompt specificity",
+    "approach": "Create prompt-guide.md covering the 5 specificity dimensions, with 3 prompts at different levels for each task, and real comparison results from at least one task.",
+    "example": "For each task, write vague/specific/precise prompts. Run at least two on data-processor.js and document how outputs differed.",
     "alternativeApproaches": [
-      "Try multiple vague prompts to see variation in results",
-      "Be very specific about naming, style, and patterns"
+      "Run all 3 specificity levels for all 3 tasks and create a comprehensive comparison matrix",
+      "Focus depth on one task, showing 4+ specificity levels and the exact outputs"
     ]
   },
 
   "learningPoints": [
-    "Specific prompts give predictable, controlled results",
-    "Vague prompts may give good results but are less controllable",
-    "Include details: names, patterns, style preferences"
+    "Prompt specificity has 5 dimensions: WHAT, WHERE, HOW, CONSTRAINTS, and OUTPUT",
+    "Vague prompts are fine for exploration but waste time for production code changes",
+    "Specific prompts produce predictable, reviewable results with less back-and-forth",
+    "The 'Claude Code tax' of vague prompts is wasted context, extra iterations, and inconsistent results",
+    "Match your specificity level to the task: explore loosely, build precisely"
   ],
 
   "nextChallenge": "12-002"

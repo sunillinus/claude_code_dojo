@@ -2,82 +2,126 @@
   "id": "02-003",
   "module": "search-navigation",
   "title": "Navigate Large Codebase",
-  "description": "Learn to efficiently navigate and understand a larger codebase structure. Claude Code can help you map out project architecture quickly.",
+  "description": "Learn the three-tool navigation strategy: Glob to map structure, Grep to find specific code, Read to understand details. Practice building a mental model of an unfamiliar layered application.",
   "difficulty": "intermediate",
   "xpReward": 200,
-  "estimatedMinutes": 10,
-  "skills": ["codebase-exploration", "architecture-understanding"],
+  "estimatedMinutes": 15,
+  "skills": ["codebase-navigation", "architecture-understanding", "tool-strategy", "import-tracing"],
 
   "setup": {
     "workingDir": "~/dojo-workspace/challenge-02-003",
     "initialFiles": [
       {
         "path": "README.md",
-        "content": "# Challenge: Navigate Large Codebase\n\nThis is an e-commerce backend project. Your task is to understand its structure.\n\n## Objectives\n1. Find all the API route files\n2. Identify the database models\n3. Create architecture.md documenting the project structure\n"
+        "content": "# Challenge 02-003: Navigate a Large Codebase\n\n## What You Will Learn\n\nYou now know how to find files (Glob) and search contents (Grep) individually.\nThis challenge teaches you to **combine all three tools strategically** to\nunderstand an unfamiliar codebase quickly.\n\n## The Three-Tool Navigation Strategy\n\nWhen you encounter a new codebase, follow this systematic approach:\n\n### Step 1: Map the Structure (Glob)\nUse Glob to understand the project layout:\n```\nGlob **/*.js          -> See all source files\nGlob **/index.*       -> Find entry points\nGlob **/*.test.*      -> Find test files\nGlob **/*.config.*    -> Find configuration\n```\nThis gives you a bird's-eye view of the project organization.\n\n### Step 2: Find Specific Code (Grep)\nUse Grep to locate important patterns:\n```\nGrep \"require\\(\" or \"import\"  -> Find dependencies between files\nGrep \"module.exports\"         -> Find what each module provides\nGrep \"app.use|router\"         -> Find route registrations\nGrep \"class\\s+\\w+\"            -> Find class definitions\n```\nThis reveals how code is connected.\n\n### Step 3: Understand Details (Read)\nUse Read to examine key files identified in steps 1 and 2:\n- Read the entry point first (index.js, server.js, main.js)\n- Read the configuration files\n- Read the route/controller definitions\n- Read the models/database layer\n\n## Tracing Imports to Understand Module Boundaries\n\nA critical skill is following import/require chains:\n\n```\nserver.js -> requires -> app.js\napp.js    -> requires -> routes/index.js\nroutes/   -> requires -> controllers/\ncontrollers/ -> requires -> services/\nservices/ -> requires -> models/\nmodels/   -> requires -> database/\n```\n\nEach arrow represents a **dependency**. The direction tells you the\n**layer hierarchy**: higher layers depend on lower layers.\n\n## Building a Mental Model\n\nAs you explore, identify these architectural elements:\n\n1. **Entry point**: Where does the app start? (usually server.js or index.js)\n2. **Layer structure**: What are the distinct layers? (routes, controllers,\n   services, models, middleware, utilities)\n3. **Data flow**: How does a request travel through the layers?\n   (HTTP request -> route -> controller -> service -> model -> database)\n4. **Shared dependencies**: What do multiple layers depend on?\n   (config, utilities, middleware)\n5. **External boundaries**: Where does the app talk to the outside world?\n   (HTTP endpoints, database connections, external APIs)\n\n## When to Use Each Tool - Decision Guide\n\n| I want to... | Use | Example |\n|---|---|---|\n| See all files of a type | Glob | `**/*.js` |\n| Find the entry point | Glob | `**/index.js` or `**/server.js` |\n| See what imports a module | Grep | `require.*moduleName` |\n| See what a module exports | Grep | `module.exports` in that file |\n| Understand a specific file | Read | Read the file path |\n| Find where errors are handled | Grep | `catch|errorHandler` |\n| Understand request flow | Read | Read route -> controller -> service |\n\n## Your Task\n\nThis workspace contains a **library management system** - an Express.js backend\nwith multiple layers. You have NEVER seen this code before.\n\nYour mission: Explore and document the architecture by creating `architecture.md`\nwith these sections:\n\n1. **Entry Point** - What file starts the application? What does it do?\n2. **Layer Map** - What are the distinct layers (directories) and their roles?\n3. **Request Flow** - Trace a complete request: What happens when someone calls\n   `GET /api/books`? List every file involved, in order.\n4. **API Routes** - What API endpoints does the app expose?\n5. **Data Models** - What data entities does the app manage?\n6. **Middleware** - What middleware is applied and what does each do?\n7. **Configuration** - What can be configured and where?\n\nUse all three tools (Glob, Grep, Read) to build your understanding.\n"
       },
       {
         "path": "package.json",
-        "content": "{\n  \"name\": \"ecommerce-api\",\n  \"version\": \"1.0.0\",\n  \"main\": \"src/index.js\"\n}\n"
+        "content": "{\n  \"name\": \"library-api\",\n  \"version\": \"1.0.0\",\n  \"main\": \"src/server.js\",\n  \"scripts\": {\n    \"start\": \"node src/server.js\",\n    \"dev\": \"nodemon src/server.js\",\n    \"test\": \"jest --coverage\"\n  }\n}\n"
       },
       {
-        "path": "src/index.js",
-        "content": "const express = require('express');\nconst routes = require('./routes');\nconst db = require('./db');\n\nconst app = express();\napp.use('/api', routes);\n\nmodule.exports = app;\n"
+        "path": "src/server.js",
+        "content": "const app = require('./app');\nconst config = require('./config');\nconst db = require('./database/connection');\n\nasync function start() {\n  await db.connect();\n  console.log('Database connected');\n\n  app.listen(config.port, () => {\n    console.log(`Library API running on port ${config.port}`);\n  });\n}\n\nstart().catch(err => {\n  console.error('Failed to start:', err);\n  process.exit(1);\n});\n"
       },
       {
-        "path": "src/routes/index.js",
-        "content": "const router = require('express').Router();\nconst products = require('./products');\nconst users = require('./users');\nconst orders = require('./orders');\n\nrouter.use('/products', products);\nrouter.use('/users', users);\nrouter.use('/orders', orders);\n\nmodule.exports = router;\n"
+        "path": "src/app.js",
+        "content": "const express = require('express');\nconst cors = require('cors');\nconst bookRoutes = require('./routes/books');\nconst memberRoutes = require('./routes/members');\nconst loanRoutes = require('./routes/loans');\nconst authRoutes = require('./routes/auth');\nconst errorHandler = require('./middleware/errorHandler');\nconst requestLogger = require('./middleware/requestLogger');\nconst rateLimiter = require('./middleware/rateLimiter');\n\nconst app = express();\n\napp.use(cors());\napp.use(express.json());\napp.use(requestLogger);\napp.use(rateLimiter);\n\napp.use('/api/books', bookRoutes);\napp.use('/api/members', memberRoutes);\napp.use('/api/loans', loanRoutes);\napp.use('/api/auth', authRoutes);\n\napp.get('/health', (req, res) => res.json({ status: 'ok' }));\n\napp.use(errorHandler);\n\nmodule.exports = app;\n"
       },
       {
-        "path": "src/routes/products.js",
-        "content": "const router = require('express').Router();\nconst ProductController = require('../controllers/ProductController');\n\nrouter.get('/', ProductController.list);\nrouter.get('/:id', ProductController.get);\nrouter.post('/', ProductController.create);\n\nmodule.exports = router;\n"
+        "path": "src/config/index.js",
+        "content": "module.exports = {\n  port: process.env.PORT || 3000,\n  env: process.env.NODE_ENV || 'development',\n  database: {\n    url: process.env.DATABASE_URL || 'postgresql://localhost:5432/library',\n    pool: { min: 2, max: 10 }\n  },\n  jwt: {\n    secret: process.env.JWT_SECRET || 'library-dev-secret',\n    expiresIn: '24h'\n  },\n  rateLimit: {\n    windowMs: 15 * 60 * 1000,\n    max: 100\n  }\n};\n"
       },
       {
-        "path": "src/routes/users.js",
-        "content": "const router = require('express').Router();\nconst UserController = require('../controllers/UserController');\n\nrouter.get('/', UserController.list);\nrouter.post('/register', UserController.register);\nrouter.post('/login', UserController.login);\n\nmodule.exports = router;\n"
+        "path": "src/routes/books.js",
+        "content": "const router = require('express').Router();\nconst BookController = require('../controllers/BookController');\nconst auth = require('../middleware/auth');\nconst { validateBook } = require('../middleware/validators');\n\nrouter.get('/', BookController.getAll);\nrouter.get('/search', BookController.search);\nrouter.get('/:id', BookController.getById);\nrouter.post('/', auth, validateBook, BookController.create);\nrouter.put('/:id', auth, validateBook, BookController.update);\nrouter.delete('/:id', auth, BookController.remove);\n\nmodule.exports = router;\n"
       },
       {
-        "path": "src/routes/orders.js",
-        "content": "const router = require('express').Router();\nconst OrderController = require('../controllers/OrderController');\n\nrouter.get('/', OrderController.list);\nrouter.post('/', OrderController.create);\nrouter.get('/:id', OrderController.get);\n\nmodule.exports = router;\n"
+        "path": "src/routes/members.js",
+        "content": "const router = require('express').Router();\nconst MemberController = require('../controllers/MemberController');\nconst auth = require('../middleware/auth');\nconst { validateMember } = require('../middleware/validators');\n\nrouter.get('/', auth, MemberController.getAll);\nrouter.get('/:id', auth, MemberController.getById);\nrouter.get('/:id/loans', auth, MemberController.getLoans);\nrouter.post('/', auth, validateMember, MemberController.create);\nrouter.put('/:id', auth, validateMember, MemberController.update);\n\nmodule.exports = router;\n"
       },
       {
-        "path": "src/controllers/ProductController.js",
-        "content": "const Product = require('../models/Product');\n\nclass ProductController {\n  static async list(req, res) {\n    const products = await Product.findAll();\n    res.json(products);\n  }\n  static async get(req, res) {\n    const product = await Product.findById(req.params.id);\n    res.json(product);\n  }\n  static async create(req, res) {\n    const product = await Product.create(req.body);\n    res.json(product);\n  }\n}\n\nmodule.exports = ProductController;\n"
+        "path": "src/routes/loans.js",
+        "content": "const router = require('express').Router();\nconst LoanController = require('../controllers/LoanController');\nconst auth = require('../middleware/auth');\n\nrouter.get('/', auth, LoanController.getAll);\nrouter.get('/overdue', auth, LoanController.getOverdue);\nrouter.post('/checkout', auth, LoanController.checkout);\nrouter.post('/return', auth, LoanController.returnBook);\n\nmodule.exports = router;\n"
       },
       {
-        "path": "src/controllers/UserController.js",
-        "content": "const User = require('../models/User');\n\nclass UserController {\n  static async list(req, res) {\n    const users = await User.findAll();\n    res.json(users);\n  }\n  static async register(req, res) {\n    const user = await User.create(req.body);\n    res.json(user);\n  }\n  static async login(req, res) {\n    const user = await User.authenticate(req.body);\n    res.json({ token: user.generateToken() });\n  }\n}\n\nmodule.exports = UserController;\n"
+        "path": "src/routes/auth.js",
+        "content": "const router = require('express').Router();\nconst AuthController = require('../controllers/AuthController');\n\nrouter.post('/login', AuthController.login);\nrouter.post('/register', AuthController.register);\n\nmodule.exports = router;\n"
       },
       {
-        "path": "src/controllers/OrderController.js",
-        "content": "const Order = require('../models/Order');\n\nclass OrderController {\n  static async list(req, res) {\n    const orders = await Order.findAll();\n    res.json(orders);\n  }\n  static async create(req, res) {\n    const order = await Order.create(req.body);\n    res.json(order);\n  }\n  static async get(req, res) {\n    const order = await Order.findById(req.params.id);\n    res.json(order);\n  }\n}\n\nmodule.exports = OrderController;\n"
+        "path": "src/controllers/BookController.js",
+        "content": "const BookService = require('../services/BookService');\n\nclass BookController {\n  static async getAll(req, res, next) {\n    try {\n      const { page = 1, limit = 20 } = req.query;\n      const books = await BookService.findAll({ page, limit });\n      res.json({ data: books });\n    } catch (err) {\n      next(err);\n    }\n  }\n\n  static async search(req, res, next) {\n    try {\n      const { q, author, genre } = req.query;\n      const books = await BookService.search({ q, author, genre });\n      res.json({ data: books });\n    } catch (err) {\n      next(err);\n    }\n  }\n\n  static async getById(req, res, next) {\n    try {\n      const book = await BookService.findById(req.params.id);\n      if (!book) return res.status(404).json({ error: 'Book not found' });\n      res.json({ data: book });\n    } catch (err) {\n      next(err);\n    }\n  }\n\n  static async create(req, res, next) {\n    try {\n      const book = await BookService.create(req.body);\n      res.status(201).json({ data: book });\n    } catch (err) {\n      next(err);\n    }\n  }\n\n  static async update(req, res, next) {\n    try {\n      const book = await BookService.update(req.params.id, req.body);\n      if (!book) return res.status(404).json({ error: 'Book not found' });\n      res.json({ data: book });\n    } catch (err) {\n      next(err);\n    }\n  }\n\n  static async remove(req, res, next) {\n    try {\n      await BookService.remove(req.params.id);\n      res.status(204).send();\n    } catch (err) {\n      next(err);\n    }\n  }\n}\n\nmodule.exports = BookController;\n"
       },
       {
-        "path": "src/models/Product.js",
-        "content": "class Product {\n  static async findAll() { return []; }\n  static async findById(id) { return {}; }\n  static async create(data) { return data; }\n}\n\nmodule.exports = Product;\n"
+        "path": "src/controllers/MemberController.js",
+        "content": "const MemberService = require('../services/MemberService');\nconst LoanService = require('../services/LoanService');\n\nclass MemberController {\n  static async getAll(req, res, next) {\n    try {\n      const members = await MemberService.findAll();\n      res.json({ data: members });\n    } catch (err) {\n      next(err);\n    }\n  }\n\n  static async getById(req, res, next) {\n    try {\n      const member = await MemberService.findById(req.params.id);\n      if (!member) return res.status(404).json({ error: 'Member not found' });\n      res.json({ data: member });\n    } catch (err) {\n      next(err);\n    }\n  }\n\n  static async getLoans(req, res, next) {\n    try {\n      const loans = await LoanService.findByMember(req.params.id);\n      res.json({ data: loans });\n    } catch (err) {\n      next(err);\n    }\n  }\n\n  static async create(req, res, next) {\n    try {\n      const member = await MemberService.create(req.body);\n      res.status(201).json({ data: member });\n    } catch (err) {\n      next(err);\n    }\n  }\n\n  static async update(req, res, next) {\n    try {\n      const member = await MemberService.update(req.params.id, req.body);\n      if (!member) return res.status(404).json({ error: 'Member not found' });\n      res.json({ data: member });\n    } catch (err) {\n      next(err);\n    }\n  }\n}\n\nmodule.exports = MemberController;\n"
       },
       {
-        "path": "src/models/User.js",
-        "content": "class User {\n  static async findAll() { return []; }\n  static async create(data) { return data; }\n  static async authenticate(credentials) { return {}; }\n  generateToken() { return 'token'; }\n}\n\nmodule.exports = User;\n"
+        "path": "src/controllers/LoanController.js",
+        "content": "const LoanService = require('../services/LoanService');\nconst BookService = require('../services/BookService');\nconst MemberService = require('../services/MemberService');\n\nclass LoanController {\n  static async getAll(req, res, next) {\n    try {\n      const loans = await LoanService.findAll();\n      res.json({ data: loans });\n    } catch (err) {\n      next(err);\n    }\n  }\n\n  static async getOverdue(req, res, next) {\n    try {\n      const loans = await LoanService.findOverdue();\n      res.json({ data: loans });\n    } catch (err) {\n      next(err);\n    }\n  }\n\n  static async checkout(req, res, next) {\n    try {\n      const { bookId, memberId } = req.body;\n      const book = await BookService.findById(bookId);\n      if (!book) return res.status(404).json({ error: 'Book not found' });\n      const member = await MemberService.findById(memberId);\n      if (!member) return res.status(404).json({ error: 'Member not found' });\n      const loan = await LoanService.create({ bookId, memberId });\n      res.status(201).json({ data: loan });\n    } catch (err) {\n      next(err);\n    }\n  }\n\n  static async returnBook(req, res, next) {\n    try {\n      const { loanId } = req.body;\n      const loan = await LoanService.returnBook(loanId);\n      if (!loan) return res.status(404).json({ error: 'Loan not found' });\n      res.json({ data: loan });\n    } catch (err) {\n      next(err);\n    }\n  }\n}\n\nmodule.exports = LoanController;\n"
       },
       {
-        "path": "src/models/Order.js",
-        "content": "class Order {\n  static async findAll() { return []; }\n  static async findById(id) { return {}; }\n  static async create(data) { return data; }\n}\n\nmodule.exports = Order;\n"
+        "path": "src/controllers/AuthController.js",
+        "content": "const MemberService = require('../services/MemberService');\nconst jwt = require('jsonwebtoken');\nconst config = require('../config');\n\nclass AuthController {\n  static async login(req, res, next) {\n    try {\n      const { email, password } = req.body;\n      const member = await MemberService.authenticate(email, password);\n      if (!member) {\n        return res.status(401).json({ error: 'Invalid credentials' });\n      }\n      const token = jwt.sign({ id: member.id, role: member.role }, config.jwt.secret, {\n        expiresIn: config.jwt.expiresIn\n      });\n      res.json({ data: { member, token } });\n    } catch (err) {\n      next(err);\n    }\n  }\n\n  static async register(req, res, next) {\n    try {\n      const member = await MemberService.create(req.body);\n      const token = jwt.sign({ id: member.id, role: member.role }, config.jwt.secret, {\n        expiresIn: config.jwt.expiresIn\n      });\n      res.status(201).json({ data: { member, token } });\n    } catch (err) {\n      next(err);\n    }\n  }\n}\n\nmodule.exports = AuthController;\n"
       },
       {
-        "path": "src/db/index.js",
-        "content": "// Database connection\nconst config = require('./config');\n\nmodule.exports = {\n  connect: () => console.log('Connected to', config.database)\n};\n"
+        "path": "src/services/BookService.js",
+        "content": "const Book = require('../models/Book');\n\nclass BookService {\n  static async findAll({ page, limit }) {\n    const offset = (page - 1) * limit;\n    return Book.findAll({ offset, limit });\n  }\n\n  static async search({ q, author, genre }) {\n    const filters = {};\n    if (q) filters.title = q;\n    if (author) filters.author = author;\n    if (genre) filters.genre = genre;\n    return Book.search(filters);\n  }\n\n  static async findById(id) {\n    return Book.findById(id);\n  }\n\n  static async create(data) {\n    return Book.create(data);\n  }\n\n  static async update(id, data) {\n    return Book.update(id, data);\n  }\n\n  static async remove(id) {\n    return Book.remove(id);\n  }\n}\n\nmodule.exports = BookService;\n"
       },
       {
-        "path": "src/db/config.js",
-        "content": "module.exports = {\n  host: 'localhost',\n  port: 5432,\n  database: 'ecommerce'\n};\n"
+        "path": "src/services/MemberService.js",
+        "content": "const Member = require('../models/Member');\nconst { hashPassword, comparePassword } = require('../utils/crypto');\n\nclass MemberService {\n  static async findAll() {\n    return Member.findAll();\n  }\n\n  static async findById(id) {\n    return Member.findById(id);\n  }\n\n  static async create(data) {\n    const hashedPassword = await hashPassword(data.password);\n    return Member.create({ ...data, password: hashedPassword });\n  }\n\n  static async update(id, data) {\n    if (data.password) {\n      data.password = await hashPassword(data.password);\n    }\n    return Member.update(id, data);\n  }\n\n  static async authenticate(email, password) {\n    const member = await Member.findByEmail(email);\n    if (!member) return null;\n    const valid = await comparePassword(password, member.password);\n    return valid ? member : null;\n  }\n}\n\nmodule.exports = MemberService;\n"
+      },
+      {
+        "path": "src/services/LoanService.js",
+        "content": "const Loan = require('../models/Loan');\nconst { addDays } = require('../utils/dates');\n\nconst LOAN_PERIOD_DAYS = 14;\n\nclass LoanService {\n  static async findAll() {\n    return Loan.findAll();\n  }\n\n  static async findByMember(memberId) {\n    return Loan.findByMember(memberId);\n  }\n\n  static async findOverdue() {\n    return Loan.findOverdue();\n  }\n\n  static async create({ bookId, memberId }) {\n    const dueDate = addDays(new Date(), LOAN_PERIOD_DAYS);\n    return Loan.create({ bookId, memberId, dueDate, returnedAt: null });\n  }\n\n  static async returnBook(loanId) {\n    return Loan.update(loanId, { returnedAt: new Date() });\n  }\n}\n\nmodule.exports = LoanService;\n"
+      },
+      {
+        "path": "src/models/Book.js",
+        "content": "const db = require('../database/connection');\n\nclass Book {\n  static async findAll({ offset = 0, limit = 20 } = {}) {\n    return db.query('SELECT * FROM books LIMIT $1 OFFSET $2', [limit, offset]);\n  }\n\n  static async search(filters) {\n    const conditions = [];\n    const values = [];\n    if (filters.title) {\n      conditions.push(`title ILIKE $${values.length + 1}`);\n      values.push(`%${filters.title}%`);\n    }\n    if (filters.author) {\n      conditions.push(`author ILIKE $${values.length + 1}`);\n      values.push(`%${filters.author}%`);\n    }\n    if (filters.genre) {\n      conditions.push(`genre = $${values.length + 1}`);\n      values.push(filters.genre);\n    }\n    const where = conditions.length ? `WHERE ${conditions.join(' AND ')}` : '';\n    return db.query(`SELECT * FROM books ${where}`, values);\n  }\n\n  static async findById(id) {\n    const rows = await db.query('SELECT * FROM books WHERE id = $1', [id]);\n    return rows[0] || null;\n  }\n\n  static async create(data) {\n    const { title, author, isbn, genre, publishedYear } = data;\n    const rows = await db.query(\n      'INSERT INTO books (title, author, isbn, genre, published_year) VALUES ($1,$2,$3,$4,$5) RETURNING *',\n      [title, author, isbn, genre, publishedYear]\n    );\n    return rows[0];\n  }\n\n  static async update(id, data) {\n    const { title, author, isbn, genre } = data;\n    const rows = await db.query(\n      'UPDATE books SET title=$1, author=$2, isbn=$3, genre=$4 WHERE id=$5 RETURNING *',\n      [title, author, isbn, genre, id]\n    );\n    return rows[0] || null;\n  }\n\n  static async remove(id) {\n    await db.query('DELETE FROM books WHERE id = $1', [id]);\n  }\n}\n\nmodule.exports = Book;\n"
+      },
+      {
+        "path": "src/models/Member.js",
+        "content": "const db = require('../database/connection');\n\nclass Member {\n  static async findAll() {\n    return db.query('SELECT id, name, email, role, created_at FROM members');\n  }\n\n  static async findById(id) {\n    const rows = await db.query('SELECT * FROM members WHERE id = $1', [id]);\n    return rows[0] || null;\n  }\n\n  static async findByEmail(email) {\n    const rows = await db.query('SELECT * FROM members WHERE email = $1', [email]);\n    return rows[0] || null;\n  }\n\n  static async create(data) {\n    const { name, email, password, role = 'member' } = data;\n    const rows = await db.query(\n      'INSERT INTO members (name, email, password, role) VALUES ($1,$2,$3,$4) RETURNING id, name, email, role',\n      [name, email, password, role]\n    );\n    return rows[0];\n  }\n\n  static async update(id, data) {\n    const { name, email } = data;\n    const rows = await db.query(\n      'UPDATE members SET name=$1, email=$2 WHERE id=$3 RETURNING id, name, email, role',\n      [name, email, id]\n    );\n    return rows[0] || null;\n  }\n}\n\nmodule.exports = Member;\n"
+      },
+      {
+        "path": "src/models/Loan.js",
+        "content": "const db = require('../database/connection');\n\nclass Loan {\n  static async findAll() {\n    return db.query(\n      'SELECT l.*, b.title as book_title, m.name as member_name ' +\n      'FROM loans l JOIN books b ON l.book_id = b.id JOIN members m ON l.member_id = m.id'\n    );\n  }\n\n  static async findByMember(memberId) {\n    return db.query(\n      'SELECT l.*, b.title as book_title FROM loans l JOIN books b ON l.book_id = b.id WHERE l.member_id = $1',\n      [memberId]\n    );\n  }\n\n  static async findOverdue() {\n    return db.query(\n      'SELECT l.*, b.title as book_title, m.name as member_name ' +\n      'FROM loans l JOIN books b ON l.book_id = b.id JOIN members m ON l.member_id = m.id ' +\n      'WHERE l.due_date < NOW() AND l.returned_at IS NULL'\n    );\n  }\n\n  static async create(data) {\n    const { bookId, memberId, dueDate } = data;\n    const rows = await db.query(\n      'INSERT INTO loans (book_id, member_id, due_date) VALUES ($1,$2,$3) RETURNING *',\n      [bookId, memberId, dueDate]\n    );\n    return rows[0];\n  }\n\n  static async update(id, data) {\n    const { returnedAt } = data;\n    const rows = await db.query(\n      'UPDATE loans SET returned_at=$1 WHERE id=$2 RETURNING *',\n      [returnedAt, id]\n    );\n    return rows[0] || null;\n  }\n}\n\nmodule.exports = Loan;\n"
+      },
+      {
+        "path": "src/database/connection.js",
+        "content": "const config = require('../config');\n\nlet pool = null;\n\nmodule.exports = {\n  connect: async () => {\n    console.log(`Connecting to database: ${config.database.url}`);\n    pool = { connected: true };\n    return pool;\n  },\n  query: async (sql, params = []) => {\n    if (!pool) throw new Error('Database not connected');\n    console.log('Query:', sql);\n    return [];\n  },\n  disconnect: async () => {\n    pool = null;\n  }\n};\n"
+      },
+      {
+        "path": "src/database/migrations/001-create-tables.sql",
+        "content": "CREATE TABLE books (\n  id SERIAL PRIMARY KEY,\n  title VARCHAR(255) NOT NULL,\n  author VARCHAR(255) NOT NULL,\n  isbn VARCHAR(13) UNIQUE,\n  genre VARCHAR(100),\n  published_year INTEGER,\n  created_at TIMESTAMP DEFAULT NOW()\n);\n\nCREATE TABLE members (\n  id SERIAL PRIMARY KEY,\n  name VARCHAR(255) NOT NULL,\n  email VARCHAR(255) UNIQUE NOT NULL,\n  password VARCHAR(255) NOT NULL,\n  role VARCHAR(50) DEFAULT 'member',\n  created_at TIMESTAMP DEFAULT NOW()\n);\n\nCREATE TABLE loans (\n  id SERIAL PRIMARY KEY,\n  book_id INTEGER REFERENCES books(id),\n  member_id INTEGER REFERENCES members(id),\n  due_date TIMESTAMP NOT NULL,\n  returned_at TIMESTAMP,\n  created_at TIMESTAMP DEFAULT NOW()\n);\n"
       },
       {
         "path": "src/middleware/auth.js",
-        "content": "function authenticate(req, res, next) {\n  const token = req.headers.authorization;\n  if (!token) return res.status(401).json({ error: 'Unauthorized' });\n  next();\n}\n\nmodule.exports = authenticate;\n"
+        "content": "const jwt = require('jsonwebtoken');\nconst config = require('../config');\n\nfunction auth(req, res, next) {\n  const header = req.headers.authorization;\n  if (!header || !header.startsWith('Bearer ')) {\n    return res.status(401).json({ error: 'Authentication required' });\n  }\n  try {\n    const token = header.slice(7);\n    req.user = jwt.verify(token, config.jwt.secret);\n    next();\n  } catch (err) {\n    res.status(401).json({ error: 'Invalid or expired token' });\n  }\n}\n\nmodule.exports = auth;\n"
       },
       {
-        "path": "src/utils/validation.js",
-        "content": "function validateEmail(email) {\n  return /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email);\n}\n\nmodule.exports = { validateEmail };\n"
+        "path": "src/middleware/errorHandler.js",
+        "content": "function errorHandler(err, req, res, next) {\n  console.error('Error:', err.message);\n  const status = err.statusCode || 500;\n  res.status(status).json({\n    error: err.message || 'Internal server error'\n  });\n}\n\nmodule.exports = errorHandler;\n"
+      },
+      {
+        "path": "src/middleware/requestLogger.js",
+        "content": "function requestLogger(req, res, next) {\n  const start = Date.now();\n  res.on('finish', () => {\n    const ms = Date.now() - start;\n    console.log(`${req.method} ${req.originalUrl} ${res.statusCode} ${ms}ms`);\n  });\n  next();\n}\n\nmodule.exports = requestLogger;\n"
+      },
+      {
+        "path": "src/middleware/rateLimiter.js",
+        "content": "const config = require('../config');\n\nconst requests = new Map();\n\nfunction rateLimiter(req, res, next) {\n  const ip = req.ip;\n  const now = Date.now();\n  const windowStart = now - config.rateLimit.windowMs;\n\n  if (!requests.has(ip)) requests.set(ip, []);\n  const timestamps = requests.get(ip).filter(t => t > windowStart);\n  timestamps.push(now);\n  requests.set(ip, timestamps);\n\n  if (timestamps.length > config.rateLimit.max) {\n    return res.status(429).json({ error: 'Too many requests' });\n  }\n  next();\n}\n\nmodule.exports = rateLimiter;\n"
+      },
+      {
+        "path": "src/middleware/validators.js",
+        "content": "function validateBook(req, res, next) {\n  const { title, author } = req.body;\n  if (!title || !author) {\n    return res.status(400).json({ error: 'Title and author are required' });\n  }\n  next();\n}\n\nfunction validateMember(req, res, next) {\n  const { name, email } = req.body;\n  if (!name || !email) {\n    return res.status(400).json({ error: 'Name and email are required' });\n  }\n  next();\n}\n\nmodule.exports = { validateBook, validateMember };\n"
+      },
+      {
+        "path": "src/utils/crypto.js",
+        "content": "async function hashPassword(password) {\n  return `hashed_${password}`;\n}\n\nasync function comparePassword(plain, hashed) {\n  return hashed === `hashed_${plain}`;\n}\n\nmodule.exports = { hashPassword, comparePassword };\n"
+      },
+      {
+        "path": "src/utils/dates.js",
+        "content": "function addDays(date, days) {\n  const result = new Date(date);\n  result.setDate(result.getDate() + days);\n  return result;\n}\n\nfunction formatDate(date) {\n  return date.toISOString().split('T')[0];\n}\n\nmodule.exports = { addDays, formatDate };\n"
       }
     ],
     "cleanBefore": true
@@ -86,25 +130,49 @@
   "objectives": [
     {
       "id": "obj-1",
-      "description": "Create architecture.md",
+      "description": "Create architecture.md documenting the codebase architecture",
       "type": "file_exists",
       "target": "architecture.md",
       "required": true
     },
     {
       "id": "obj-2",
-      "description": "Document the routes (products, users, orders)",
+      "description": "Identify the entry point - must mention server.js",
       "type": "file_contains",
       "target": "architecture.md",
-      "pattern": "[Pp]roducts.*[Uu]sers.*[Oo]rders|[Rr]outes",
+      "pattern": "server\\.js",
       "required": true
     },
     {
       "id": "obj-3",
-      "description": "Document the models",
+      "description": "Document the layer structure - must mention routes, controllers, services, and models",
       "type": "file_contains",
       "target": "architecture.md",
-      "pattern": "[Mm]odels|Product.*User.*Order",
+      "pattern": "[Rr]outes.*[Cc]ontrollers.*[Ss]ervices.*[Mm]odels|[Rr]oute.*[Cc]ontroller.*[Ss]ervice.*[Mm]odel",
+      "required": true
+    },
+    {
+      "id": "obj-4",
+      "description": "Document the request flow for GET /api/books - must trace through BookController and BookService",
+      "type": "file_contains",
+      "target": "architecture.md",
+      "pattern": "BookController.*BookService|books\\.js.*BookController.*BookService",
+      "required": true
+    },
+    {
+      "id": "obj-5",
+      "description": "Document the three data models - must mention Book, Member, and Loan",
+      "type": "file_contains",
+      "target": "architecture.md",
+      "pattern": "[Bb]ook.*[Mm]ember.*[Ll]oan|[Bb]ooks.*[Mm]embers.*[Ll]oans",
+      "required": true
+    },
+    {
+      "id": "obj-6",
+      "description": "Document middleware - must mention auth and rateLimiter",
+      "type": "file_contains",
+      "target": "architecture.md",
+      "pattern": "auth.*rate[Ll]imit|rate[Ll]imit.*auth|[Aa]uthentication.*[Rr]ate",
       "required": true
     }
   ],
@@ -112,10 +180,18 @@
   "bonusObjectives": [
     {
       "id": "bonus-1",
-      "description": "Include the MVC pattern explanation",
+      "description": "Document the database schema (tables: books, members, loans)",
       "type": "file_contains",
       "target": "architecture.md",
-      "pattern": "MVC|[Cc]ontroller.*[Mm]odel.*[Vv]iew|[Mm]odel.*[Vv]iew.*[Cc]ontroller",
+      "pattern": "books.*members.*loans|CREATE TABLE|schema|database.*table",
+      "xpBonus": 50
+    },
+    {
+      "id": "bonus-2",
+      "description": "Document API endpoints comprehensively (at least 10 routes)",
+      "type": "file_contains",
+      "target": "architecture.md",
+      "pattern": "GET /api/books.*POST /api|/api/members.*/api/loans|checkout.*return",
       "xpBonus": 50
     }
   ],
@@ -123,34 +199,38 @@
   "hints": [
     {
       "level": 1,
-      "text": "Ask Claude Code to explore the project structure and explain how it's organized.",
+      "text": "Start with the big picture. Use Glob with **/*.js to see all files, then identify what directories exist (routes/, controllers/, services/, models/, middleware/, etc.). The directory names often tell you the layers of the architecture.",
       "xpCost": 15
     },
     {
       "level": 2,
-      "text": "Try: 'What is the structure of this project? List all the main components.'",
+      "text": "Follow the import chain from the top. Read server.js first - it shows the entry point. Then read app.js - it shows what routes and middleware are registered. Then read one route file to see it points to a controller. Then read the controller to see it uses a service. Then the service uses a model. This chain IS the architecture.",
       "xpCost": 35
     },
     {
       "level": 3,
-      "text": "Ask: 'Analyze this codebase structure and create architecture.md documenting the routes, models, and how they connect'",
+      "text": "Ask Claude Code: 'Explore this codebase systematically. First, Glob **/*.js to see all files. Then Read src/server.js, then src/app.js. Then Grep for require to see the dependency chain. Trace how a GET /api/books request flows: routes/books.js -> BookController -> BookService -> Book model -> database. Create architecture.md documenting: entry point, layers (routes/controllers/services/models/middleware), request flow, all API endpoints, data models (Book/Member/Loan), and middleware (auth/rateLimiter/errorHandler/requestLogger/validators).'",
       "xpCost": 75
     }
   ],
 
   "solution": {
-    "approach": "Use Claude Code's exploration capabilities to understand project structure.",
-    "example": "Explore this codebase and create architecture.md documenting the project structure, routes, and models",
+    "approach": "Use the three-tool strategy: (1) Glob **/*.js to map all files and see the directory structure. (2) Read server.js and app.js to understand the entry point and route registration. (3) Grep for require/import patterns to see dependencies. (4) Read key files in each layer to understand their roles. (5) Trace one complete request flow from route to database. Document everything in architecture.md.",
+    "example": "Start by running Glob **/*.js to see all files. Read src/server.js (entry point - connects DB and starts server). Read src/app.js (registers middleware and routes). Read routes/books.js (defines GET/POST/PUT/DELETE endpoints pointing to BookController). Read controllers/BookController.js (delegates to BookService). Read services/BookService.js (calls Book model). Read models/Book.js (executes SQL queries). This reveals a 5-layer architecture: Routes -> Controllers -> Services -> Models -> Database.",
     "alternativeApproaches": [
-      "What's the architecture of this project? Document it in architecture.md",
-      "Map out this codebase structure and save to architecture.md"
+      "Start with Grep for 'module.exports' to see what each file provides, then trace backwards",
+      "Start with package.json main field to find the entry point, then follow the require chain",
+      "Use Grep for 'require(' to build a complete dependency map first"
     ]
   },
 
   "learningPoints": [
-    "Claude Code can quickly map out unfamiliar codebases",
-    "Asking for architecture overviews helps understand project organization",
-    "Claude Code follows import/require chains to understand relationships"
+    "The three-tool strategy (Glob -> Grep -> Read) is the most efficient way to understand unfamiliar code",
+    "Start with the entry point and follow imports/requires to discover the layer hierarchy",
+    "Directory names in well-structured projects reveal the architectural layers",
+    "Tracing one complete request through all layers reveals the full architecture pattern",
+    "Routes define API endpoints, controllers handle HTTP logic, services contain business logic, models handle data access",
+    "Middleware in Express processes requests before they reach route handlers"
   ],
 
   "nextChallenge": "02-004"

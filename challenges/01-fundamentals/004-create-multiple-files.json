@@ -2,18 +2,18 @@
   "id": "01-004",
   "module": "fundamentals",
   "title": "Create Multiple Files",
-  "description": "Learn to create multiple related files at once. Claude Code can scaffold entire project structures from a single description.",
+  "description": "Learn how Claude Code creates multiple related files in sequence to scaffold project structures. Understand file organization conventions, how to describe project structures clearly, and how to ensure files reference each other correctly through imports and exports.",
   "difficulty": "beginner",
-  "xpReward": 125,
-  "estimatedMinutes": 7,
-  "skills": ["file-creation", "project-scaffolding"],
+  "xpReward": 150,
+  "estimatedMinutes": 12,
+  "skills": ["file-creation", "project-scaffolding", "module-structure"],
 
   "setup": {
     "workingDir": "~/dojo-workspace/challenge-01-004",
     "initialFiles": [
       {
         "path": "README.md",
-        "content": "# Challenge: Create Multiple Files\n\nYour task: Create a basic Express.js project structure\n\n## Objectives\n1. Create `package.json` with project metadata\n2. Create `index.js` with a basic Express server\n3. Create `routes/health.js` with a health check route\n"
+        "content": "# Challenge: Create Multiple Files\n\nLearn how Claude Code scaffolds multi-file projects, then build a\ncomplete utility library with proper structure and cross-file references.\n\n---\n\n## How Claude Code Creates Multiple Files\n\nWhen you ask Claude Code to create a project structure, it uses\nthe Write tool **multiple times in sequence**. There is no special\n\"create project\" tool -- Claude Code simply plans the file list,\nthen writes each one.\n\n### The Process\n\n1. You describe the project structure you want\n2. Claude Code plans which files to create and what goes in each\n3. It calls the Write tool once per file, in a logical order\n4. Each file is written with the correct content, including imports\n   that reference other files in the project\n\n### File Organization Conventions\n\nMost JavaScript/Node.js projects follow standard directory patterns:\n\n```\nmy-library/\n  package.json        # Project metadata and dependencies\n  index.js            # Main entry point (re-exports public API)\n  src/                # Source code\n    stringUtils.js    # Individual module files\n    arrayUtils.js\n    mathUtils.js\n  tests/              # Test files\n    stringUtils.test.js\n    arrayUtils.test.js\n```\n\nKey conventions:\n- **index.js** at the root serves as the public API -- it imports\n  from src/ files and re-exports them\n- **src/** contains the implementation files\n- **tests/** mirrors the src/ structure with .test.js suffixes\n- **package.json** defines the project and points `main` to index.js\n\n### Cross-File References Matter\n\nThe most important aspect of multi-file projects is that **files\nmust reference each other correctly**. If index.js imports from\n`./src/stringUtils`, then that file must actually export the\nfunctions index.js expects.\n\nCommon pattern:\n```javascript\n// src/mathUtils.js -- exports individual functions\nfunction add(a, b) { return a + b; }\nfunction multiply(a, b) { return a * b; }\nmodule.exports = { add, multiply };\n\n// index.js -- re-exports everything\nconst mathUtils = require('./src/mathUtils');\nmodule.exports = { ...mathUtils };\n```\n\nIf you name a file `mathUtils.js` but index.js tries to import\n`./src/math-utils`, the project is broken. Consistency between\nimport paths and actual filenames is essential.\n\n### Describing Structures to Claude Code\n\nThe clearer your description, the better the result:\n\n**Vague (likely to miss something):**\n> \"Create a utility library\"\n\n**Better (specifies structure):**\n> \"Create a utility library with src/stringUtils.js,\n> src/arrayUtils.js, an index.js that re-exports them, a\n> package.json, and test files for each module.\"\n\n**Best (specifies content too):**\n> \"Create a utility library:\n> - src/stringUtils.js with capitalize and truncate functions\n> - src/arrayUtils.js with unique and flatten functions\n> - index.js that imports and re-exports all functions\n> - package.json named 'my-utils' with main pointing to index.js\n> - tests/stringUtils.test.js with tests for both functions\"\n\n### Project Scaffolding Patterns\n\nClaude Code recognizes common project types:\n- **Express API**: app.js, routes/, handlers/, middleware/\n- **React app**: src/components/, src/hooks/, src/utils/\n- **CLI tool**: bin/, lib/, package.json with bin field\n- **Utility library**: src/, index.js, tests/\n\nNaming the pattern helps Claude Code infer the right structure.\n\n---\n\n## Your Task\n\nCreate a complete utility library called `array-toolkit`. The\nlibrary must have the following structure:\n\n### Required Files\n\n1. **package.json** -- name: `array-toolkit`, version: `1.0.0`,\n   main: `index.js`, with a `test` script\n\n2. **index.js** -- The main entry point that imports from the src/\n   files and re-exports all functions\n\n3. **src/filtering.js** -- Export these functions:\n   - `unique(arr)` -- returns array with duplicates removed\n   - `compact(arr)` -- removes falsy values (null, undefined,\n     false, 0, '', NaN)\n\n4. **src/transformation.js** -- Export these functions:\n   - `flatten(arr)` -- flattens nested arrays one level deep\n   - `chunk(arr, size)` -- splits array into chunks of given size\n\n5. **tests/filtering.test.js** -- At least one test for the\n   `unique` function\n\n### Cross-File Requirements\n- index.js must import from `./src/filtering` and `./src/transformation`\n- index.js must export all 4 functions (unique, compact, flatten, chunk)\n- The test file must import from the source or index\n\n## Objectives\n1. Create all 5 required files\n2. Ensure index.js correctly imports and re-exports\n3. Ensure the test file references the library code\n"
       }
     ],
     "cleanBefore": true
@@ -22,32 +22,97 @@
   "objectives": [
     {
       "id": "obj-1",
-      "description": "Create package.json with name and dependencies",
-      "type": "file_exists",
+      "description": "Create `package.json` with name `array-toolkit`",
+      "type": "file_contains",
       "target": "package.json",
+      "pattern": "\"name\"\\s*:\\s*\"array-toolkit\"",
       "required": true
     },
     {
       "id": "obj-2",
-      "description": "package.json should have express as a dependency",
+      "description": "package.json has main set to `index.js`",
       "type": "file_contains",
       "target": "package.json",
-      "pattern": "\"express\"",
+      "pattern": "\"main\"\\s*:\\s*\"index\\.js\"",
       "required": true
     },
     {
       "id": "obj-3",
-      "description": "Create index.js with Express app",
+      "description": "Create `index.js` that imports from src/filtering",
       "type": "file_contains",
       "target": "index.js",
-      "pattern": "require\\(['\"]express['\"]\\)|from ['\"]express['\"]",
+      "pattern": "require\\(['\"]\\./src/filtering['\"]\\)|from ['\"]\\./src/filtering['\"]",
       "required": true
     },
     {
       "id": "obj-4",
-      "description": "Create routes/health.js",
+      "description": "index.js imports from src/transformation",
+      "type": "file_contains",
+      "target": "index.js",
+      "pattern": "require\\(['\"]\\./src/transformation['\"]\\)|from ['\"]\\./src/transformation['\"]",
+      "required": true
+    },
+    {
+      "id": "obj-5",
+      "description": "index.js exports the `unique` function",
+      "type": "file_contains",
+      "target": "index.js",
+      "pattern": "unique",
+      "required": true
+    },
+    {
+      "id": "obj-6",
+      "description": "index.js exports the `flatten` function",
+      "type": "file_contains",
+      "target": "index.js",
+      "pattern": "flatten",
+      "required": true
+    },
+    {
+      "id": "obj-7",
+      "description": "Create `src/filtering.js` with a `unique` function",
+      "type": "file_contains",
+      "target": "src/filtering.js",
+      "pattern": "function unique|const unique|unique\\s*=",
+      "required": true
+    },
+    {
+      "id": "obj-8",
+      "description": "src/filtering.js exports a `compact` function",
+      "type": "file_contains",
+      "target": "src/filtering.js",
+      "pattern": "compact",
+      "required": true
+    },
+    {
+      "id": "obj-9",
+      "description": "Create `src/transformation.js` with a `flatten` function",
+      "type": "file_contains",
+      "target": "src/transformation.js",
+      "pattern": "function flatten|const flatten|flatten\\s*=",
+      "required": true
+    },
+    {
+      "id": "obj-10",
+      "description": "src/transformation.js exports a `chunk` function",
+      "type": "file_contains",
+      "target": "src/transformation.js",
+      "pattern": "chunk",
+      "required": true
+    },
+    {
+      "id": "obj-11",
+      "description": "Create a test file for filtering functions",
       "type": "file_exists",
-      "target": "routes/health.js",
+      "target": "tests/filtering.test.js",
+      "required": true
+    },
+    {
+      "id": "obj-12",
+      "description": "Test file references the `unique` function",
+      "type": "file_contains",
+      "target": "tests/filtering.test.js",
+      "pattern": "unique",
       "required": true
     }
   ],
@@ -55,45 +120,63 @@
   "bonusObjectives": [
     {
       "id": "bonus-1",
-      "description": "Add a start script to package.json",
+      "description": "Add a test file for transformation functions",
+      "type": "file_exists",
+      "target": "tests/transformation.test.js",
+      "xpBonus": 25
+    },
+    {
+      "id": "bonus-2",
+      "description": "package.json includes a `test` script",
       "type": "file_contains",
       "target": "package.json",
-      "pattern": "\"start\"\\s*:",
-      "xpBonus": 25
+      "pattern": "\"test\"\\s*:",
+      "xpBonus": 15
+    },
+    {
+      "id": "bonus-3",
+      "description": "index.js exports all 4 functions (unique, compact, flatten, chunk)",
+      "type": "file_contains",
+      "target": "index.js",
+      "pattern": "chunk",
+      "xpBonus": 10
     }
   ],
 
   "hints": [
     {
       "level": 1,
-      "text": "You can ask Claude Code to create multiple files in one request. Describe the project structure you need.",
+      "text": "Start by planning the 5 files and what each one needs to contain. The key challenge is making sure the imports and exports line up across files. Think about what index.js needs to import and re-export before you create the src/ files.",
       "xpCost": 10
     },
     {
       "level": 2,
-      "text": "Try: 'Create a basic Express.js project with package.json, index.js, and a routes folder with health.js'",
-      "xpCost": 25
+      "text": "Describe the full structure at once: 'Create an array utility library called array-toolkit with: package.json (name array-toolkit, main index.js), index.js (imports and re-exports from src/), src/filtering.js (unique + compact functions), src/transformation.js (flatten + chunk functions), and tests/filtering.test.js.' Make sure to mention the specific function names so Claude Code creates matching exports.",
+      "xpCost": 30
     },
     {
       "level": 3,
-      "text": "Ask Claude Code to scaffold an Express project with: package.json (with express dependency), index.js (basic server), and routes/health.js (health endpoint returning OK)",
+      "text": "Ask Claude Code: 'Create the array-toolkit library: (1) package.json with name array-toolkit, version 1.0.0, main index.js, test script. (2) src/filtering.js exporting unique(arr) that removes duplicates using Set, and compact(arr) that removes falsy values. (3) src/transformation.js exporting flatten(arr) that flattens one level, and chunk(arr, size) that splits into chunks. (4) index.js that requires both src files and re-exports all 4 functions. (5) tests/filtering.test.js that imports unique and tests it with [1,2,2,3].'",
       "xpCost": 50
     }
   ],
 
   "solution": {
-    "approach": "Describe the entire project structure and Claude Code will create all files.",
-    "example": "Create a basic Express.js project with package.json, index.js entry point, and routes/health.js for health checks",
+    "approach": "Describe the complete project structure with specific function names, filenames, and how they connect. Claude Code will create each file in sequence, ensuring imports and exports match across files.",
+    "example": "Create an array utility library called array-toolkit with package.json, index.js, src/filtering.js (unique + compact), src/transformation.js (flatten + chunk), and tests/filtering.test.js. The index.js should import from both src files and re-export all functions.",
     "alternativeApproaches": [
-      "Scaffold an Express API with a health endpoint",
-      "Set up a Node.js project with Express and create the basic file structure"
+      "Create files one at a time, starting with the leaf modules (src/ files), then index.js to tie them together, then package.json and tests.",
+      "Ask Claude Code to scaffold the structure first: 'Create the folder structure for array-toolkit with src/, tests/, index.js, and package.json.' Then fill in the function implementations separately."
     ]
   },
 
   "learningPoints": [
-    "Claude Code can create multiple files from a single description",
-    "Describing the overall structure helps Claude Code understand relationships",
-    "You can scaffold entire project structures quickly"
+    "Claude Code creates multiple files by calling the Write tool once per file in sequence",
+    "Cross-file references (imports/exports) must be consistent -- filenames in import paths must match actual files",
+    "Describing the complete structure upfront helps Claude Code plan consistent cross-references",
+    "Standard conventions (src/, tests/, index.js) help Claude Code understand your intent",
+    "The index.js re-export pattern provides a clean public API for libraries",
+    "Test files should import from the same paths that consumers would use"
   ],
 
   "nextChallenge": "01-005"

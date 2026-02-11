@@ -2,56 +2,92 @@
   "id": "03-004",
   "module": "git-basics",
   "title": "View History and Diff",
-  "description": "Learn to explore git history and see what changed between commits. Understanding history is key to debugging.",
+  "description": "Learn to explore git history like a detective -- using git log, diff, show, and blame to understand what changed, when, why, and by whom. These skills are essential for debugging and code review.",
   "difficulty": "intermediate",
   "xpReward": 175,
-  "estimatedMinutes": 8,
-  "skills": ["git-log", "git-diff", "history-exploration"],
+  "estimatedMinutes": 12,
+  "skills": ["git-log", "git-diff", "git-show", "git-blame", "history-exploration"],
 
   "setup": {
     "workingDir": "~/dojo-workspace/challenge-03-004",
     "initialFiles": [
       {
         "path": "README.md",
-        "content": "# Challenge: View History and Diff\n\nExplore the git history of this project.\n\n## Objectives\n1. Find out how many commits exist\n2. Find what changed in the most recent commit\n3. Create history-report.md documenting your findings\n"
+        "content": "# Challenge: View History and Diff\n\nLearn to explore git history -- the essential skill for understanding\nwhat happened in a codebase, debugging issues, and reviewing changes.\n\n## Why Git History Matters\n\nGit history is not just a record -- it's a story. A well-maintained\ngit history tells you:\n- **What** changed (the code diff)\n- **When** it changed (timestamps)\n- **Who** changed it (author)\n- **Why** it changed (commit message)\n\nThis is invaluable for debugging (\"when did this break?\"), code review\n(\"what does this PR actually change?\"), and onboarding (\"why is this\ncode structured this way?\").\n\n## Viewing Commit History: git log\n\nThe `git log` command shows the commit history, newest first.\n\n### Basic formats:\n```\ngit log                    # Full details (hash, author, date, message)\ngit log --oneline          # Compact: short hash + message\ngit log --oneline --graph  # Visual branch structure with ASCII art\ngit log -5                 # Show only the last 5 commits\n```\n\n### Filtering history:\n```\ngit log --author=\"Alice\"           # Only Alice's commits\ngit log --since=\"2024-01-01\"       # Commits after a date\ngit log --since=\"3 days ago\"       # Relative dates work too\ngit log --grep=\"fix\"               # Commits with \"fix\" in message\ngit log -- path/to/file.js         # Commits that touched a specific file\n```\n\n### Useful combinations:\n```\ngit log --oneline --author=\"Alice\" --since=\"1 week ago\"\ngit log --oneline --all --graph    # All branches, visual\n```\n\n## Comparing Changes: git diff\n\n`git diff` is your microscope for examining changes.\n\n### Comparing different things:\n```\ngit diff                           # Unstaged changes vs last commit\ngit diff --staged                  # Staged changes vs last commit\ngit diff HEAD                      # All changes vs last commit\ngit diff commit1 commit2           # Between two specific commits\ngit diff branch1..branch2          # Between two branches\ngit diff HEAD~3..HEAD              # Last 3 commits worth of changes\n```\n\n### Reading diff output:\n```\ndiff --git a/server.js b/server.js\nindex abc1234..def5678 100644\n--- a/server.js              <-- old version\n+++ b/server.js              <-- new version\n@@ -5,7 +5,9 @@            <-- location: line 5, 7 lines -> 9 lines\n   unchanged line\n   unchanged line\n-  old line (removed)        <-- lines starting with - were REMOVED\n+  new line (added)          <-- lines starting with + were ADDED\n+  another new line\n   unchanged line\n```\n\nKey symbols:\n- `-` (red): Line was **removed**\n- `+` (green): Line was **added**\n- ` ` (no prefix): Line is unchanged (context)\n- `@@`: Location marker (\"hunk header\")\n\n## Inspecting a Specific Commit: git show\n\n```\ngit show abc1234          # Show commit details + its diff\ngit show HEAD             # Show the latest commit\ngit show HEAD~1           # Show the commit before latest\ngit show abc1234:file.js  # Show a file as it was at that commit\n```\n\n## Who Changed Each Line: git blame\n\n```\ngit blame server.js       # Show who last modified each line\n```\n\nOutput format:\n```\nabc1234 (Alice  2024-03-15 14:30)  const PORT = 3000;\ndef5678 (Bob    2024-03-20 09:15)  const HOST = '0.0.0.0';\n```\n\nThis shows the commit hash, author, date, and the line content.\nUseful for: \"Who wrote this line? When? What commit was it part of?\"\n\n## Commit References\n\nGit has shortcuts for referring to commits:\n\n| Reference | Meaning |\n|-----------|--------|\n| `HEAD` | Current commit |\n| `HEAD~1` or `HEAD~` | One commit before HEAD |\n| `HEAD~3` | Three commits before HEAD |\n| `abc1234` | Specific commit by hash (first 7 chars enough) |\n| `main` | Latest commit on main branch |\n| `feature..main` | Commits in main but not in feature |\n\n## Your Task\n\nThis project has a setup script that creates a git repository with a\nrich history: multiple commits across two branches, with different\nauthors. Your job is to investigate this history and document your\nfindings.\n\nFirst, run the setup script to create the git history:\n```\nbash setup-history.sh\n```\n\nThen investigate and create **investigation-report.md** answering:\n\n1. **How many total commits** are in the repository?\n2. **List all commit messages** with their short hashes\n3. **What changed in the most recent commit on main?** (describe the diff)\n4. **What did the \"Add health endpoint\" commit change?** (use git show)\n5. **How many branches exist** and what are they called?\n6. **What is the difference between main and the feature branch?**\n   (use git diff branch1..branch2)\n\nInclude actual commit hashes and specific details in your report.\n\n## Tips\n- Start with `git log --oneline --all --graph` for an overview\n- Use `git show <hash>` to dig into specific commits\n- Use `git diff main..feature-branch` to compare branches\n- Use `git log --all` to see commits on all branches\n"
+      },
+      {
+        "path": "setup-history.sh",
+        "content": "#!/bin/bash\n# Creates a git repository with rich history for investigation.\n# Run this script first: bash setup-history.sh\n\ncd ~/dojo-workspace/challenge-03-004\n\n# Initialize\ngit init\n\n# --- Commit 1: Initial server setup (by Alice) ---\ncat > server.js << 'EOF'\nconst http = require('http');\n\nconst server = http.createServer((req, res) => {\n  res.writeHead(200);\n  res.end('Hello World');\n});\n\nserver.listen(3000);\nconsole.log('Server running on port 3000');\nEOF\n\ncat > package.json << 'EOF'\n{\n  \"name\": \"api-server\",\n  \"version\": \"1.0.0\",\n  \"main\": \"server.js\"\n}\nEOF\n\ngit add server.js package.json README.md\nGIT_AUTHOR_NAME=\"Alice Chen\" GIT_AUTHOR_EMAIL=\"alice@example.com\" \\\nGIT_COMMITTER_NAME=\"Alice Chen\" GIT_COMMITTER_EMAIL=\"alice@example.com\" \\\ngit commit -m \"Initial server setup with basic HTTP handler\"\n\n# --- Commit 2: Add express and JSON response (by Alice) ---\ncat > server.js << 'EOF'\nconst express = require('express');\nconst app = express();\nconst PORT = 3000;\n\napp.get('/', (req, res) => {\n  res.json({ message: 'Hello World', version: '1.0.0' });\n});\n\napp.listen(PORT, () => {\n  console.log(`Server running on port ${PORT}`);\n});\nEOF\n\ngit add server.js\nGIT_AUTHOR_NAME=\"Alice Chen\" GIT_AUTHOR_EMAIL=\"alice@example.com\" \\\nGIT_COMMITTER_NAME=\"Alice Chen\" GIT_COMMITTER_EMAIL=\"alice@example.com\" \\\ngit commit -m \"Switch to Express and return JSON responses\"\n\n# --- Commit 3: Add health endpoint (by Bob) ---\ncat > server.js << 'EOF'\nconst express = require('express');\nconst app = express();\nconst PORT = process.env.PORT || 3000;\n\napp.get('/', (req, res) => {\n  res.json({ message: 'Hello World', version: '1.1.0' });\n});\n\napp.get('/health', (req, res) => {\n  res.json({ status: 'healthy', uptime: process.uptime() });\n});\n\napp.listen(PORT, () => {\n  console.log(`Server running on port ${PORT}`);\n});\nEOF\n\ngit add server.js\nGIT_AUTHOR_NAME=\"Bob Martinez\" GIT_AUTHOR_EMAIL=\"bob@example.com\" \\\nGIT_COMMITTER_NAME=\"Bob Martinez\" GIT_COMMITTER_EMAIL=\"bob@example.com\" \\\ngit commit -m \"Add health endpoint and use PORT env variable\"\n\n# --- Create feature branch (by Bob) ---\ngit checkout -b feature/add-logging\n\n# --- Commit 4: Add logging middleware (by Bob) ---\ncat > logger.js << 'EOF'\nfunction requestLogger(req, res, next) {\n  const start = Date.now();\n  res.on('finish', () => {\n    const duration = Date.now() - start;\n    console.log(`${req.method} ${req.path} ${res.statusCode} ${duration}ms`);\n  });\n  next();\n}\n\nmodule.exports = { requestLogger };\nEOF\n\ncat > server.js << 'EOF'\nconst express = require('express');\nconst { requestLogger } = require('./logger');\nconst app = express();\nconst PORT = process.env.PORT || 3000;\n\napp.use(requestLogger);\n\napp.get('/', (req, res) => {\n  res.json({ message: 'Hello World', version: '1.1.0' });\n});\n\napp.get('/health', (req, res) => {\n  res.json({ status: 'healthy', uptime: process.uptime() });\n});\n\napp.listen(PORT, () => {\n  console.log(`Server running on port ${PORT}`);\n});\nEOF\n\ngit add server.js logger.js\nGIT_AUTHOR_NAME=\"Bob Martinez\" GIT_AUTHOR_EMAIL=\"bob@example.com\" \\\nGIT_COMMITTER_NAME=\"Bob Martinez\" GIT_COMMITTER_EMAIL=\"bob@example.com\" \\\ngit commit -m \"Add request logging middleware\"\n\n# --- Switch back to main ---\ngit checkout main\n\n# --- Commit 5: Add error handling on main (by Alice) ---\ncat > server.js << 'EOF'\nconst express = require('express');\nconst app = express();\nconst PORT = process.env.PORT || 3000;\n\napp.get('/', (req, res) => {\n  res.json({ message: 'Hello World', version: '1.2.0' });\n});\n\napp.get('/health', (req, res) => {\n  res.json({ status: 'healthy', uptime: process.uptime() });\n});\n\napp.use((err, req, res, next) => {\n  console.error('Error:', err.message);\n  res.status(500).json({ error: 'Internal Server Error' });\n});\n\napp.listen(PORT, () => {\n  console.log(`Server running on port ${PORT}`);\n});\nEOF\n\ncat > package.json << 'EOF'\n{\n  \"name\": \"api-server\",\n  \"version\": \"1.2.0\",\n  \"main\": \"server.js\",\n  \"scripts\": {\n    \"start\": \"node server.js\"\n  }\n}\nEOF\n\ngit add server.js package.json\nGIT_AUTHOR_NAME=\"Alice Chen\" GIT_AUTHOR_EMAIL=\"alice@example.com\" \\\nGIT_COMMITTER_NAME=\"Alice Chen\" GIT_COMMITTER_EMAIL=\"alice@example.com\" \\\ngit commit -m \"Add error handling middleware and bump to v1.2.0\"\n\necho \"\"\necho \"=== Setup Complete ===\"\necho \"Repository created with 5 commits across 2 branches.\"\necho \"Run 'git log --oneline --all --graph' to see the structure.\"\necho \"\"\n"
       },
       {
         "path": "server.js",
-        "content": "const express = require('express');\nconst app = express();\nconst PORT = process.env.PORT || 3000;\n\napp.get('/', (req, res) => {\n  res.json({ message: 'Hello World', version: '1.2.0' });\n});\n\napp.get('/health', (req, res) => {\n  res.json({ status: 'healthy' });\n});\n\napp.listen(PORT, () => console.log(`Server on port ${PORT}`));\n"
+        "content": "// This file will be overwritten by setup-history.sh\n// Run: bash setup-history.sh\n"
+      },
+      {
+        "path": "package.json",
+        "content": "{\n  \"name\": \"api-server\",\n  \"version\": \"1.0.0\",\n  \"main\": \"server.js\"\n}\n"
       }
     ],
     "cleanBefore": true,
     "postSetup": [
-      "cd ~/dojo-workspace/challenge-03-004 && git init",
-      "cd ~/dojo-workspace/challenge-03-004 && echo \"const app = require('express')(); app.listen(3000);\" > server.js && git add . && git commit -m 'Initial server setup'",
-      "cd ~/dojo-workspace/challenge-03-004 && echo \"const express = require('express'); const app = express(); app.get('/', (req, res) => res.send('Hello')); app.listen(3000);\" > server.js && git add . && git commit -m 'Add root endpoint'",
-      "cd ~/dojo-workspace/challenge-03-004 && echo \"const express = require('express'); const app = express(); app.get('/', (req, res) => res.json({ message: 'Hello World' })); app.listen(3000);\" > server.js && git add . && git commit -m 'Return JSON from root endpoint'",
-      "cd ~/dojo-workspace/challenge-03-004 && echo \"const express = require('express');\\nconst app = express();\\nconst PORT = process.env.PORT || 3000;\\n\\napp.get('/', (req, res) => {\\n  res.json({ message: 'Hello World', version: '1.2.0' });\\n});\\n\\napp.get('/health', (req, res) => {\\n  res.json({ status: 'healthy' });\\n});\\n\\napp.listen(PORT, () => console.log(\\`Server on port \\${PORT}\\`));\" > server.js && git add . && git commit -m 'Add health endpoint and version'"
+      "cd ~/dojo-workspace/challenge-03-004 && chmod +x setup-history.sh && bash setup-history.sh"
     ]
   },
 
   "objectives": [
     {
       "id": "obj-1",
-      "description": "Create history-report.md",
+      "description": "Create investigation-report.md",
       "type": "file_exists",
-      "target": "history-report.md",
+      "target": "investigation-report.md",
       "required": true
     },
     {
       "id": "obj-2",
-      "description": "Report mentions the number of commits (4)",
+      "description": "Report mentions the total number of commits (4 on main, 5 total)",
       "type": "file_contains",
-      "target": "history-report.md",
-      "pattern": "4|four",
+      "target": "investigation-report.md",
+      "pattern": "[45]|four|five",
       "required": true
     },
     {
       "id": "obj-3",
-      "description": "Report describes recent changes (health endpoint or version)",
+      "description": "Report includes commit hashes (at least short 7-char hashes)",
       "type": "file_contains",
-      "target": "history-report.md",
-      "pattern": "[Hh]ealth|[Vv]ersion|endpoint",
+      "target": "investigation-report.md",
+      "pattern": "[a-f0-9]{7}",
+      "required": true
+    },
+    {
+      "id": "obj-4",
+      "description": "Report describes the most recent commit changes (error handling, v1.2.0)",
+      "type": "file_contains",
+      "target": "investigation-report.md",
+      "pattern": "[Ee]rror.*handl|1\\.2\\.0|[Bb]ump.*version|middleware",
+      "required": true
+    },
+    {
+      "id": "obj-5",
+      "description": "Report discusses the health endpoint commit",
+      "type": "file_contains",
+      "target": "investigation-report.md",
+      "pattern": "[Hh]ealth|/health|[Ee]ndpoint|uptime|PORT.*env",
+      "required": true
+    },
+    {
+      "id": "obj-6",
+      "description": "Report identifies the branches (main and feature/add-logging)",
+      "type": "file_contains",
+      "target": "investigation-report.md",
+      "pattern": "feature/add-logging|feature.*logging|logging.*branch",
+      "required": true
+    },
+    {
+      "id": "obj-7",
+      "description": "Report compares the branches (logging middleware, different versions)",
+      "type": "file_contains",
+      "target": "investigation-report.md",
+      "pattern": "[Ll]ogg|requestLogger|[Dd]iff.*branch|[Bb]ranch.*diff|logger\\.js",
       "required": true
     }
   ],
@@ -59,45 +95,64 @@
   "bonusObjectives": [
     {
       "id": "bonus-1",
-      "description": "Include commit hashes or dates in report",
+      "description": "Report identifies commit authors (Alice Chen and Bob Martinez)",
       "type": "file_contains",
-      "target": "history-report.md",
-      "pattern": "[a-f0-9]{7}|[0-9]{4}-[0-9]{2}-[0-9]{2}",
-      "xpBonus": 50
+      "target": "investigation-report.md",
+      "pattern": "[Aa]lice|[Bb]ob",
+      "xpBonus": 25
+    },
+    {
+      "id": "bonus-2",
+      "description": "Report uses git blame to identify who wrote specific lines",
+      "type": "file_contains",
+      "target": "investigation-report.md",
+      "pattern": "[Bb]lame|who.*(wrote|changed|modified|authored)",
+      "xpBonus": 25
+    },
+    {
+      "id": "bonus-3",
+      "description": "Report includes an ASCII graph of the branch structure",
+      "type": "file_contains",
+      "target": "investigation-report.md",
+      "pattern": "\\*|---|graph|\\|",
+      "xpBonus": 25
     }
   ],
 
   "hints": [
     {
       "level": 1,
-      "text": "Ask Claude Code to show you the git history and explain recent changes.",
+      "text": "Start with 'git log --oneline --all --graph' for the big picture. This shows all commits on all branches with a visual graph. Count the commits, note the branches, read the messages. Then use 'git show <hash>' to dig into specific commits.",
       "xpCost": 15
     },
     {
       "level": 2,
-      "text": "Try: 'Show me the git log and what changed in the last commit'",
+      "text": "For each question in the report: (1) commit count: count lines from git log --oneline --all, (2) commit list: git log --oneline --all, (3) most recent: git show HEAD, (4) health commit: find its hash in the log then git show <hash>, (5) branches: git branch -a, (6) branch diff: git diff main..feature/add-logging.",
       "xpCost": 35
     },
     {
       "level": 3,
-      "text": "Ask: 'Look at the git history, count the commits, and describe what the most recent commit changed. Save findings to history-report.md'",
+      "text": "Ask Claude Code: 'Investigate the git history of this project. Run git log --oneline --all --graph, git show HEAD, git diff main..feature/add-logging, and git blame server.js. Create investigation-report.md answering: how many commits, list them with hashes, what the latest commit changed, what the health endpoint commit changed, what branches exist, and how the branches differ.'",
       "xpCost": 65
     }
   ],
 
   "solution": {
-    "approach": "Use git log and git diff to explore history and document findings.",
-    "example": "Show me the commit history and create history-report.md with what you find",
+    "approach": "Use git log, show, diff, and blame to investigate the repository history, then document all findings in a detailed report.",
+    "example": "Explore the git history using log, show, diff, and blame commands, then create a comprehensive investigation report with hashes, authors, and branch comparisons",
     "alternativeApproaches": [
-      "What changes were made in this project? Document the history.",
-      "Explore git history and report on the commits"
+      "Ask Claude to walk through the git history and create a report about commits, branches, authors, and changes",
+      "Investigate this repo's history -- how many commits, who wrote them, what branches exist, and how do they differ"
     ]
   },
 
   "learningPoints": [
-    "git log shows commit history",
-    "git diff shows what changed between commits",
-    "Claude Code can interpret and explain git history"
+    "git log --oneline --all --graph gives a visual overview of all branches and commits",
+    "git show <hash> displays a commit's full details including its diff",
+    "git diff branch1..branch2 shows exactly what differs between two branches",
+    "git blame shows who last changed each line in a file -- essential for debugging",
+    "Commit references like HEAD, HEAD~1, and short hashes let you navigate history efficiently",
+    "Reading diff output: - lines are removals, + lines are additions, @@ marks locations"
   ],
 
   "nextChallenge": "03-005"

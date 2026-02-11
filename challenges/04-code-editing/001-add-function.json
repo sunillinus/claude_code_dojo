@@ -2,22 +2,26 @@
   "id": "04-001",
   "module": "code-editing",
   "title": "Add a Function",
-  "description": "Learn to add new functions to existing code. Claude Code integrates new code seamlessly with existing patterns.",
+  "description": "Learn to guide Claude Code to add well-integrated functions that match existing code style, naming conventions, and patterns. Understanding how to be specific about function requirements produces better results than vague requests.",
   "difficulty": "intermediate",
   "xpReward": 200,
-  "estimatedMinutes": 8,
-  "skills": ["code-addition", "pattern-matching"],
+  "estimatedMinutes": 12,
+  "skills": ["code-addition", "pattern-matching", "style-consistency", "function-design"],
 
   "setup": {
     "workingDir": "~/dojo-workspace/challenge-04-001",
     "initialFiles": [
       {
         "path": "README.md",
-        "content": "# Challenge: Add a Function\n\nAdd a new function to the math utilities.\n\n## Objectives\n1. Add a `power` function that calculates a^b\n2. Export it alongside existing functions\n3. Follow the existing code style\n"
+        "content": "# Challenge: Add a Function\n\nLearn how to guide Claude Code to add well-integrated functions to existing code.\n\n## What You'll Learn\n\nAdding a function sounds simple, but doing it well means the new code looks\nlike it was always part of the codebase. Claude Code reads your existing code\nbefore making changes, so it naturally picks up on style patterns. However,\nhow you phrase your request makes a big difference in the quality of what\nyou get.\n\n## Why Specificity Matters\n\nCompare these two requests:\n\n**Vague**: \"Add a function to capitalize strings\"\n\nThis leaves too many decisions to chance:\n- What's the function name? `capitalize`? `capitalizeString`? `toCapitalized`?\n- Does it capitalize just the first letter, or every word?\n- What about edge cases - null, empty string, numbers?\n- Where should it go in the file?\n\n**Specific**: \"Add a `capitalizeWords` function that capitalizes the first\nletter of each word in a string. It should follow the existing arrow\nfunction style with JSDoc comments and handle null/empty input by\nreturning an empty string.\"\n\nThis produces exactly what you want on the first try.\n\n## How Claude Code Matches Style\n\nWhen Claude Code reads your file before editing, it notices:\n\n1. **Function syntax**: Arrow functions (`const fn = () => {}`) vs\n   declarations (`function fn() {}`)\n2. **Documentation**: JSDoc comments, inline comments, or none\n3. **Naming convention**: camelCase, snake_case, descriptive vs terse\n4. **Error handling patterns**: Guard clauses, early returns, exceptions\n5. **Export style**: Named exports, default export, module.exports\n6. **Semicolons, quotes, indentation**: All the formatting details\n\nYou generally don't need to specify all of these - Claude Code infers\nthem from the existing code. But you should specify:\n- **Function name**: Be exact about this\n- **Parameters**: Name them and describe their types\n- **Return value**: What should come back\n- **Edge cases**: How to handle bad input\n- **Placement**: Near related functions if it matters\n\n## Integration Checklist\n\nWhen adding a function, think about:\n- [ ] Is it exported? (If other files need it)\n- [ ] Does it match the existing pattern exactly?\n- [ ] Are edge cases handled the same way as other functions?\n- [ ] Is it placed near related functions?\n\n## The Workspace\n\nYou have `stringUtils.js` - a utility library with 4 string functions.\nAll follow a consistent style:\n- Arrow function syntax\n- JSDoc comments with @param and @returns\n- Guard clauses for invalid input (return empty string)\n- Named exports at the bottom\n\n## Objectives\n\n1. Add a `truncate` function that shortens a string to a given length and\n   appends '...' if truncated. It should:\n   - Accept (str, maxLength) parameters\n   - Return the original string if shorter than maxLength\n   - Handle null/undefined input with a guard clause\n   - Follow the existing arrow function + JSDoc style\n   - Be exported alongside the existing functions\n\n2. Add a `slugify` function that converts a string to a URL-friendly slug.\n   It should:\n   - Convert to lowercase\n   - Replace spaces and special characters with hyphens\n   - Remove consecutive hyphens\n   - Handle null/undefined input with a guard clause\n   - Follow the same style and be exported\n\nBoth functions must match the existing code style exactly.\n"
       },
       {
-        "path": "mathUtils.js",
-        "content": "/**\n * Math utility functions\n */\n\n/**\n * Add two numbers\n * @param {number} a - First number\n * @param {number} b - Second number\n * @returns {number} Sum of a and b\n */\nfunction add(a, b) {\n  return a + b;\n}\n\n/**\n * Subtract two numbers\n * @param {number} a - First number\n * @param {number} b - Second number\n * @returns {number} Difference of a and b\n */\nfunction subtract(a, b) {\n  return a - b;\n}\n\n/**\n * Multiply two numbers\n * @param {number} a - First number\n * @param {number} b - Second number\n * @returns {number} Product of a and b\n */\nfunction multiply(a, b) {\n  return a * b;\n}\n\nmodule.exports = { add, subtract, multiply };\n"
+        "path": "stringUtils.js",
+        "content": "/**\n * String utility functions.\n * All functions handle null/undefined input gracefully.\n */\n\n/**\n * Capitalize the first letter of a string.\n * @param {string} str - The input string.\n * @returns {string} The string with its first letter capitalized.\n */\nconst capitalize = (str) => {\n  if (!str) return '';\n  return str.charAt(0).toUpperCase() + str.slice(1);\n};\n\n/**\n * Capitalize the first letter of each word in a string.\n * @param {string} str - The input string.\n * @returns {string} The string with each word capitalized.\n */\nconst capitalizeWords = (str) => {\n  if (!str) return '';\n  return str\n    .split(' ')\n    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))\n    .join(' ');\n};\n\n/**\n * Reverse a string.\n * @param {string} str - The input string.\n * @returns {string} The reversed string.\n */\nconst reverse = (str) => {\n  if (!str) return '';\n  return str.split('').reverse().join('');\n};\n\n/**\n * Count the number of words in a string.\n * @param {string} str - The input string.\n * @returns {number} The number of words.\n */\nconst countWords = (str) => {\n  if (!str) return 0;\n  return str.trim().split(/\\s+/).length;\n};\n\nmodule.exports = { capitalize, capitalizeWords, reverse, countWords };\n"
+      },
+      {
+        "path": "app.js",
+        "content": "const { capitalize, capitalizeWords, reverse, countWords } = require('./stringUtils');\n\n// Demo usage of string utilities\nconsole.log(capitalize('hello world'));\nconsole.log(capitalizeWords('hello world'));\nconsole.log(reverse('hello'));\nconsole.log(countWords('the quick brown fox'));\n"
       }
     ],
     "cleanBefore": true
@@ -26,26 +30,58 @@
   "objectives": [
     {
       "id": "obj-1",
-      "description": "Add a power function",
+      "description": "A truncate function exists in stringUtils.js",
       "type": "file_contains",
-      "target": "mathUtils.js",
-      "pattern": "function power\\s*\\(",
+      "target": "stringUtils.js",
+      "pattern": "const truncate\\s*=\\s*\\(",
       "required": true
     },
     {
       "id": "obj-2",
-      "description": "Power function uses ** or Math.pow",
+      "description": "The truncate function has a JSDoc comment with @param and @returns",
       "type": "file_contains",
-      "target": "mathUtils.js",
-      "pattern": "\\*\\*|Math\\.pow",
+      "target": "stringUtils.js",
+      "pattern": "@param.*str.*@param.*maxLength.*@returns",
       "required": true
     },
     {
       "id": "obj-3",
-      "description": "Power function is exported",
+      "description": "The truncate function has a guard clause for null/undefined input",
       "type": "file_contains",
-      "target": "mathUtils.js",
-      "pattern": "module\\.exports.*power|exports.*power",
+      "target": "stringUtils.js",
+      "pattern": "truncate[\\s\\S]{0,200}if \\(!str\\)",
+      "required": true
+    },
+    {
+      "id": "obj-4",
+      "description": "A slugify function exists in stringUtils.js",
+      "type": "file_contains",
+      "target": "stringUtils.js",
+      "pattern": "const slugify\\s*=\\s*\\(",
+      "required": true
+    },
+    {
+      "id": "obj-5",
+      "description": "The slugify function has a JSDoc comment",
+      "type": "file_contains",
+      "target": "stringUtils.js",
+      "pattern": "@param[\\s\\S]{0,50}@returns[\\s\\S]{0,200}const slugify",
+      "required": true
+    },
+    {
+      "id": "obj-6",
+      "description": "The slugify function converts to lowercase",
+      "type": "file_contains",
+      "target": "stringUtils.js",
+      "pattern": "slugify[\\s\\S]{0,400}toLowerCase",
+      "required": true
+    },
+    {
+      "id": "obj-7",
+      "description": "Both truncate and slugify are exported",
+      "type": "file_contains",
+      "target": "stringUtils.js",
+      "pattern": "module\\.exports.*truncate[\\s\\S]*slugify|module\\.exports.*slugify[\\s\\S]*truncate",
       "required": true
     }
   ],
@@ -53,45 +89,63 @@
   "bonusObjectives": [
     {
       "id": "bonus-1",
-      "description": "Include JSDoc comment for power function",
+      "description": "The truncate function appends '...' when the string is truncated",
       "type": "file_contains",
-      "target": "mathUtils.js",
-      "pattern": "/\\*\\*[^*]*\\*.*power|@param.*@returns",
-      "xpBonus": 50
+      "target": "stringUtils.js",
+      "pattern": "truncate[\\s\\S]{0,500}\\.\\.\\.",
+      "xpBonus": 30
+    },
+    {
+      "id": "bonus-2",
+      "description": "The slugify function removes consecutive hyphens",
+      "type": "file_contains",
+      "target": "stringUtils.js",
+      "pattern": "slugify[\\s\\S]{0,500}-{2,}|slugify[\\s\\S]{0,500}\\[-\\]\\+|slugify[\\s\\S]{0,500}-+",
+      "xpBonus": 30
+    },
+    {
+      "id": "bonus-3",
+      "description": "The slugify function has a guard clause for null/undefined",
+      "type": "file_contains",
+      "target": "stringUtils.js",
+      "pattern": "slugify[\\s\\S]{0,200}if \\(!str\\)",
+      "xpBonus": 20
     }
   ],
 
   "hints": [
     {
       "level": 1,
-      "text": "Ask Claude Code to add a new function following the existing pattern.",
+      "text": "Read stringUtils.js first and notice the pattern: arrow function syntax, JSDoc with @param/@returns, guard clause for bad input, named export at the bottom. Your new functions should follow the exact same pattern.",
       "xpCost": 15
     },
     {
       "level": 2,
-      "text": "Try: 'Add a power function to mathUtils.js that calculates a^b'",
+      "text": "Be specific in your request. For example: 'Add a truncate function to stringUtils.js that takes (str, maxLength) and returns the string shortened to maxLength with \"...\" appended if truncated. Follow the existing arrow function + JSDoc + guard clause style. Export it with the other functions.'",
       "xpCost": 40
     },
     {
       "level": 3,
-      "text": "Ask: 'Add a power(a, b) function to mathUtils.js that returns a^b. Follow the existing style with JSDoc comments and export it.'",
-      "xpCost": 75
+      "text": "You can add both in one request: 'Add two functions to stringUtils.js following the existing style (arrow functions, JSDoc, guard clauses): 1) truncate(str, maxLength) - shortens string to maxLength and appends \"...\" if truncated, returns empty string for null input. 2) slugify(str) - converts to URL-friendly slug (lowercase, hyphens for spaces, remove special chars, collapse consecutive hyphens), returns empty string for null input. Export both alongside existing functions.'",
+      "xpCost": 80
     }
   ],
 
   "solution": {
-    "approach": "Ask Claude Code to add a function matching the existing code style.",
-    "example": "Add a power function to mathUtils.js following the same style as the other functions",
+    "approach": "Ask Claude Code to add both functions with specific signatures, behavior, and edge case handling, mentioning to follow the existing style.",
+    "example": "Add a truncate(str, maxLength) function and a slugify(str) function to stringUtils.js. Both should follow the existing arrow function + JSDoc + guard clause pattern. Export them with the other functions.",
     "alternativeApproaches": [
-      "Add exponentiation to the math utilities",
-      "Create a power function that raises a to the power of b"
+      "Add one function at a time, verifying each matches the style before proceeding",
+      "Ask Claude Code to read the file first and then add functions that match the pattern"
     ]
   },
 
   "learningPoints": [
-    "Claude Code matches existing code style automatically",
-    "Describing the function clearly helps get correct implementation",
-    "Asking to follow existing patterns ensures consistency"
+    "Specifying exact function names, parameters, and return types prevents rework",
+    "Claude Code reads existing code and matches style automatically, but you should call out edge case handling explicitly",
+    "Always mention that new functions should be exported if the file uses module.exports",
+    "Adding functions near related code (and to the exports) keeps the codebase organized",
+    "Vague requests like 'add a function' produce inconsistent results compared to specific requests"
   ],
 
   "nextChallenge": "04-002"

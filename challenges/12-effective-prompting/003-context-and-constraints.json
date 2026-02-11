@@ -2,26 +2,46 @@
   "id": "12-003",
   "module": "effective-prompting",
   "title": "Context and Constraints",
-  "description": "Learn to provide context and constraints for better results that fit your project.",
+  "description": "Learn to provide the right context so Claude Code understands your project's history, conventions, and boundaries. Master the difference between persistent context (CLAUDE.md) and per-prompt context.",
   "difficulty": "intermediate",
-  "xpReward": 200,
+  "xpReward": 125,
   "estimatedMinutes": 12,
-  "skills": ["context-setting", "constraints"],
+  "skills": ["context-setting", "constraints", "claude-md-context", "scope-limitation"],
 
   "setup": {
     "workingDir": "~/dojo-workspace/challenge-12-003",
     "initialFiles": [
       {
         "path": "README.md",
-        "content": "# Challenge: Context and Constraints\n\nLearn to provide context that shapes Claude's responses.\n\n## Project Context\n- This is a healthcare application\n- We use TypeScript with strict mode\n- We follow functional programming principles\n- Error handling must be comprehensive\n- All user data must be validated\n\n## Objectives\n1. Create a patient data validator WITH context\n2. The code should reflect the constraints above\n"
+        "content": "# Challenge: Context and Constraints\n\nLearn to provide context that shapes Claude Code's output to fit your project.\n\n## Why Context Matters\n\nClaude Code doesn't know:\n- Your project's history or architecture decisions\n- Your team's coding conventions or style preferences\n- Your business rules or domain constraints\n- Which libraries you've chosen (and which you've rejected)\n- What you've already tried that didn't work\n\nWithout context, Claude makes reasonable guesses. With context, Claude makes\ninformed decisions that match your project.\n\n## Types of Context\n\n### 1. Project Context\nWhat the project is, what it does, who it's for.\n- \"This is an e-commerce platform for selling handmade goods\"\n- \"This is an internal tool used by our support team\"\n- \"This is a medical records system that must comply with HIPAA\"\n\nProject context shapes the level of care, error handling, and security\nthat Claude applies. A medical records system gets different treatment\nthan a personal todo app.\n\n### 2. Technical Constraints\nWhat technologies, versions, and patterns to use (or avoid).\n- \"We use React 18 with hooks, no class components\"\n- \"This is a TypeScript strict mode project\"\n- \"We use PostgreSQL, not MongoDB\"\n- \"Target Node.js 18+ (use native fetch, no axios)\"\n\nTechnical constraints prevent Claude from introducing incompatible\ntechnologies or patterns that don't fit your stack.\n\n### 3. Business Rules\nDomain-specific requirements that affect the code.\n- \"Users must be 18+ to create an account\"\n- \"Prices are always in cents (integers), never floating point dollars\"\n- \"All user actions must be logged for the audit trail\"\n- \"Passwords must be at least 12 characters with mixed case and numbers\"\n\nBusiness rules are the most commonly forgotten context. Claude can't infer\nthem -- you must state them explicitly.\n\n### 4. Team Conventions\nPatterns and styles your team has agreed on.\n- \"We use the repository pattern for data access\"\n- \"Error messages follow the format: [MODULE] Error: description\"\n- \"All public functions have JSDoc comments\"\n- \"We prefix private methods with an underscore\"\n\nReference existing files: \"Follow the same pattern used in src/api/users.js\"\nis worth a thousand words of description.\n\n## How to Provide Context\n\n### In-Prompt Context (per-conversation)\nInclude context directly in your prompt when it's task-specific:\n- \"Looking at src/auth/middleware.js for the pattern, create similar\n  middleware for rate limiting\"\n- \"This project uses the repository pattern (see src/repos/userRepo.ts).\n  Create a productRepo.ts following the same structure\"\n\n### CLAUDE.md (persistent context)\nPut context in CLAUDE.md when it applies to ALL work in the project:\n- Tech stack and versions\n- Coding conventions\n- Common commands (build, test, lint)\n- Architecture decisions\n- Forbidden patterns or dependencies\n\nClaude Code reads CLAUDE.md automatically. Anything in it becomes the\nbaseline for every conversation.\n\n### When to Use Which\n\n| Context Type | Where to Put It | Why |\n|-------------|-----------------|-----|\n| Tech stack | CLAUDE.md | Applies to everything |\n| Coding conventions | CLAUDE.md | Consistency across all work |\n| Build/test commands | CLAUDE.md | Used frequently |\n| Task-specific requirements | In the prompt | Only relevant now |\n| Reference to existing code | In the prompt | Specific to this task |\n| One-time business rule | In the prompt | May not apply elsewhere |\n| Universal business rules | CLAUDE.md | Applies to everything |\n\n## Scope Limitation\n\nOne of the most important constraints is SCOPE -- telling Claude what NOT\nto touch:\n- \"Only modify files in src/api/\" -- prevents changes to shared code\n- \"Do not change the database schema\" -- protects existing data structures\n- \"Keep the public API unchanged\" -- preserves backwards compatibility\n- \"Only add code, don't modify existing functions\" -- minimizes risk\n\nScope limitation is especially important for:\n- Large codebases (Claude might \"helpfully\" fix unrelated issues)\n- Refactoring (you want controlled, reviewable changes)\n- Bug fixes (changing too much makes it hard to verify the fix)\n\n## Negative Constraints\n\nSometimes what NOT to do is as important as what to do:\n- \"Do NOT add new npm dependencies\"\n- \"Do NOT use any or type assertions in TypeScript\"\n- \"Do NOT change the existing test structure\"\n- \"Do NOT use inline styles, use CSS modules\"\n\nNegative constraints prevent Claude from taking shortcuts that create\ntechnical debt or violate team agreements.\n\n## Common Context Mistakes\n\n1. **Assuming Claude knows your stack**: Always state it. \"This is a React\n   project\" is never redundant -- it prevents Claude from suggesting Vue.\n2. **Forgetting business rules**: Claude will write technically correct code\n   that violates your domain requirements.\n3. **Not referencing existing patterns**: \"Like we do in userService.ts\" is\n   more effective than describing the pattern from scratch.\n4. **Over-constraining**: Don't list 20 constraints for a simple task. Match\n   the constraint level to the task complexity.\n\n## Your Exercise\n\nThis project is a React + TypeScript e-commerce admin panel with specific\npatterns and constraints. Create a context-guide.md documenting:\n\n1. What context to provide for different task types in this project\n2. Example prompts that include appropriate context\n3. What belongs in CLAUDE.md vs what goes in individual prompts\n4. Scope limitation examples for this project\n5. Negative constraints that matter for this codebase\n\nStudy the existing code to understand the patterns, then create your guide.\n"
+      },
+      {
+        "path": "package.json",
+        "content": "{\n  \"name\": \"ecommerce-admin\",\n  \"version\": \"2.1.0\",\n  \"dependencies\": {\n    \"react\": \"^18.2.0\",\n    \"react-dom\": \"^18.2.0\",\n    \"zustand\": \"^4.4.0\",\n    \"react-query\": \"^3.39.0\",\n    \"react-router-dom\": \"^6.0.0\"\n  },\n  \"devDependencies\": {\n    \"typescript\": \"^5.3.0\",\n    \"vitest\": \"^1.0.0\",\n    \"@testing-library/react\": \"^14.0.0\"\n  },\n  \"scripts\": {\n    \"dev\": \"vite\",\n    \"build\": \"tsc && vite build\",\n    \"test\": \"vitest\",\n    \"lint\": \"eslint src/\"\n  }\n}\n"
       },
       {
         "path": "tsconfig.json",
-        "content": "{\n  \"compilerOptions\": {\n    \"strict\": true,\n    \"noImplicitAny\": true,\n    \"target\": \"ES2020\"\n  }\n}\n"
+        "content": "{\n  \"compilerOptions\": {\n    \"strict\": true,\n    \"noImplicitAny\": true,\n    \"target\": \"ES2020\",\n    \"module\": \"ESNext\",\n    \"jsx\": \"react-jsx\",\n    \"moduleResolution\": \"bundler\"\n  },\n  \"include\": [\"src\"]\n}\n"
       },
       {
-        "path": "types.ts",
-        "content": "export interface Patient {\n  id: string;\n  firstName: string;\n  lastName: string;\n  dateOfBirth: string;\n  email: string;\n  phone?: string;\n  medicalRecordNumber: string;\n}\n\nexport type ValidationResult = \n  | { success: true; data: Patient }\n  | { success: false; errors: string[] };\n"
+        "path": "src/types/product.ts",
+        "content": "export interface Product {\n  id: string;\n  name: string;\n  description: string;\n  priceInCents: number;  // Always store prices as integers (cents)\n  category: string;\n  stockCount: number;\n  isActive: boolean;\n  createdAt: string;\n  updatedAt: string;\n}\n\nexport interface ProductFormData {\n  name: string;\n  description: string;\n  priceInCents: number;\n  category: string;\n  stockCount: number;\n}\n\nexport type ProductSortField = 'name' | 'priceInCents' | 'createdAt' | 'stockCount';\n"
+      },
+      {
+        "path": "src/types/order.ts",
+        "content": "export interface Order {\n  id: string;\n  customerId: string;\n  items: OrderItem[];\n  totalInCents: number;\n  status: OrderStatus;\n  createdAt: string;\n}\n\nexport interface OrderItem {\n  productId: string;\n  productName: string;\n  quantity: number;\n  unitPriceInCents: number;\n}\n\nexport type OrderStatus = 'pending' | 'confirmed' | 'shipped' | 'delivered' | 'cancelled';\n"
+      },
+      {
+        "path": "src/hooks/useProducts.ts",
+        "content": "import { useQuery, useMutation, useQueryClient } from 'react-query';\nimport { productApi } from '../api/productApi';\nimport type { Product, ProductFormData } from '../types/product';\n\nexport function useProducts() {\n  return useQuery<Product[]>('products', productApi.getAll);\n}\n\nexport function useProduct(id: string) {\n  return useQuery<Product>(['product', id], () => productApi.getById(id));\n}\n\nexport function useCreateProduct() {\n  const queryClient = useQueryClient();\n  return useMutation(\n    (data: ProductFormData) => productApi.create(data),\n    { onSuccess: () => queryClient.invalidateQueries('products') }\n  );\n}\n"
+      },
+      {
+        "path": "src/api/productApi.ts",
+        "content": "import type { Product, ProductFormData } from '../types/product';\n\nconst BASE_URL = '/api/products';\n\nexport const productApi = {\n  async getAll(): Promise<Product[]> {\n    const response = await fetch(BASE_URL);\n    if (!response.ok) throw new Error(`Failed to fetch products: ${response.status}`);\n    return response.json();\n  },\n\n  async getById(id: string): Promise<Product> {\n    const response = await fetch(`${BASE_URL}/${id}`);\n    if (!response.ok) throw new Error(`Failed to fetch product ${id}: ${response.status}`);\n    return response.json();\n  },\n\n  async create(data: ProductFormData): Promise<Product> {\n    const response = await fetch(BASE_URL, {\n      method: 'POST',\n      headers: { 'Content-Type': 'application/json' },\n      body: JSON.stringify(data),\n    });\n    if (!response.ok) throw new Error(`Failed to create product: ${response.status}`);\n    return response.json();\n  },\n};\n"
+      },
+      {
+        "path": "src/stores/uiStore.ts",
+        "content": "import { create } from 'zustand';\n\ninterface UIState {\n  sidebarOpen: boolean;\n  theme: 'light' | 'dark';\n  toasts: Toast[];\n  toggleSidebar: () => void;\n  setTheme: (theme: 'light' | 'dark') => void;\n  addToast: (message: string, type: 'success' | 'error' | 'info') => void;\n  removeToast: (id: string) => void;\n}\n\ninterface Toast {\n  id: string;\n  message: string;\n  type: 'success' | 'error' | 'info';\n}\n\nexport const useUIStore = create<UIState>((set) => ({\n  sidebarOpen: true,\n  theme: 'light',\n  toasts: [],\n  toggleSidebar: () => set((state) => ({ sidebarOpen: !state.sidebarOpen })),\n  setTheme: (theme) => set({ theme }),\n  addToast: (message, type) =>\n    set((state) => ({\n      toasts: [...state.toasts, { id: crypto.randomUUID(), message, type }],\n    })),\n  removeToast: (id) =>\n    set((state) => ({ toasts: state.toasts.filter((t) => t.id !== id) })),\n}));\n"
       }
     ],
     "cleanBefore": true
@@ -30,33 +50,57 @@
   "objectives": [
     {
       "id": "obj-1",
-      "description": "Create a patient validator file",
+      "description": "Create context-guide.md",
       "type": "file_exists",
-      "target": "patientValidator.ts",
+      "target": "context-guide.md",
       "required": true
     },
     {
       "id": "obj-2",
-      "description": "Use TypeScript types",
+      "description": "Guide covers project context (what the project is, tech stack)",
       "type": "file_contains",
-      "target": "patientValidator.ts",
-      "pattern": "Patient|ValidationResult|: string|: boolean",
+      "target": "context-guide.md",
+      "pattern": "[Pp]roject.*context|[Tt]ech.*stack|[Rr]eact|[Tt]ype[Ss]cript|e.commerce|admin",
       "required": true
     },
     {
       "id": "obj-3",
-      "description": "Include comprehensive validation",
+      "description": "Guide covers technical constraints (libraries, patterns)",
       "type": "file_contains",
-      "target": "patientValidator.ts",
-      "pattern": "email|dateOfBirth|medicalRecordNumber",
+      "target": "context-guide.md",
+      "pattern": "[Tt]echnical.*constraint|[Zz]ustand|react.query|[Hh]ook|[Pp]attern",
       "required": true
     },
     {
       "id": "obj-4",
-      "description": "Return validation errors",
+      "description": "Guide includes example prompts with context",
       "type": "file_contains",
-      "target": "patientValidator.ts",
-      "pattern": "errors|success.*false|invalid|Invalid",
+      "target": "context-guide.md",
+      "pattern": "[Ee]xample.*prompt|[Ss]ample.*prompt|[Pp]rompt.*example|[Pp]rompt:",
+      "required": true
+    },
+    {
+      "id": "obj-5",
+      "description": "Guide distinguishes CLAUDE.md context vs per-prompt context",
+      "type": "file_contains",
+      "target": "context-guide.md",
+      "pattern": "CLAUDE\\.md|[Pp]ersistent.*context|[Pp]er.prompt|[Ii]nline.*context|[Pp]roject.*config",
+      "required": true
+    },
+    {
+      "id": "obj-6",
+      "description": "Guide includes scope limitation examples",
+      "type": "file_contains",
+      "target": "context-guide.md",
+      "pattern": "[Ss]cope|[Oo]nly.*modif|[Dd]o not.*change|[Dd]on't.*touch|[Ll]imit",
+      "required": true
+    },
+    {
+      "id": "obj-7",
+      "description": "Guide includes negative constraints (what NOT to do)",
+      "type": "file_contains",
+      "target": "context-guide.md",
+      "pattern": "[Nn]egative.*constraint|[Dd]o [Nn][Oo][Tt]|[Aa]void|[Nn]ever|[Ff]orbid",
       "required": true
     }
   ],
@@ -64,53 +108,56 @@
   "bonusObjectives": [
     {
       "id": "bonus-1",
-      "description": "Use functional programming style (pure functions, no mutations)",
+      "description": "Guide references specific existing files as pattern examples",
       "type": "file_contains",
-      "target": "patientValidator.ts",
-      "pattern": "const.*=.*=>|readonly|Readonly",
-      "xpBonus": 40
+      "target": "context-guide.md",
+      "pattern": "productApi|useProducts|uiStore|product\\.ts|order\\.ts",
+      "xpBonus": 25
     },
     {
       "id": "bonus-2",
-      "description": "Validate date format (ISO or specific format)",
+      "description": "Guide covers business rules relevant to e-commerce (prices in cents, order statuses)",
       "type": "file_contains",
-      "target": "patientValidator.ts",
-      "pattern": "Date|ISO|YYYY|\\d{4}-\\d{2}-\\d{2}",
-      "xpBonus": 40
+      "target": "context-guide.md",
+      "pattern": "[Cc]ents|[Pp]rice.*integer|[Bb]usiness.*rule|[Oo]rder.*status|[Dd]omain",
+      "xpBonus": 25
     }
   ],
 
   "hints": [
     {
       "level": 1,
-      "text": "Include the project context in your request. Mention TypeScript, healthcare, validation requirements.",
-      "xpCost": 15
+      "text": "Start by studying the existing code: look at the types, hooks, API patterns, and store. What conventions do you see? Prices in cents, react-query for data fetching, zustand for UI state, TypeScript strict mode. These are all context a developer would need to share with Claude.",
+      "xpCost": 10
     },
     {
       "level": 2,
-      "text": "Try: 'Create a patient validator using the Patient and ValidationResult types. Use strict TypeScript, functional style, validate all fields.'",
-      "xpCost": 40
+      "text": "Structure your context-guide.md around task types: (1) Adding a new feature (e.g., new API + hook + component) needs tech stack + pattern references, (2) Bug fixing needs scope limits ('only modify X'), (3) Refactoring needs negative constraints ('don't change the API'). For each, write an example prompt that includes the right context.",
+      "xpCost": 25
     },
     {
       "level": 3,
-      "text": "Ask: 'Create patientValidator.ts for a healthcare app. Use the types from types.ts. Requirements: strict TypeScript, pure functions, validate email format, validate dateOfBirth is valid date, validate medicalRecordNumber format, return all validation errors.'",
-      "xpCost": 80
+      "text": "Your context-guide.md should cover: (1) Project overview for CLAUDE.md (React 18, TypeScript strict, zustand, react-query, prices in cents), (2) Per-prompt context examples like 'Following the pattern in useProducts.ts, create useOrders.ts', (3) Scope limits like 'Only modify files in src/api/', (4) Negative constraints like 'Do NOT add new dependencies, do NOT use class components, do NOT use floating-point for prices', (5) Business rules like 'Prices always stored as integers in cents'.",
+      "xpCost": 50
     }
   ],
 
   "solution": {
-    "approach": "Provide context about the project and constraints in your request.",
-    "example": "Create a patient validator with healthcare context and TypeScript constraints",
+    "approach": "Study the existing project patterns, then create context-guide.md covering all context types with concrete examples relevant to this e-commerce admin project.",
+    "example": "Document what belongs in CLAUDE.md (stack, conventions) vs prompts (task-specific references). Include example prompts for adding features, fixing bugs, and refactoring with appropriate context and constraints.",
     "alternativeApproaches": [
-      "Reference the existing types and ask for validation functions",
-      "Specify each validation rule in detail"
+      "Create both the context-guide.md AND a sample CLAUDE.md for the project",
+      "Organize the guide by role (junior dev, senior dev, code reviewer) showing what context each would provide"
     ]
   },
 
   "learningPoints": [
-    "Context helps Claude understand your project's needs",
-    "Constraints like 'strict TypeScript' shape the output",
-    "Reference existing code for consistent style"
+    "Claude Code doesn't know your project's history, conventions, or business rules -- you must provide them",
+    "Four types of context: project context, technical constraints, business rules, team conventions",
+    "Use CLAUDE.md for persistent context (tech stack, conventions) and inline prompts for task-specific context",
+    "Referencing existing files ('follow the pattern in X') is more effective than describing patterns from scratch",
+    "Scope limitation ('only modify files in src/api/') prevents unintended changes in large codebases",
+    "Negative constraints ('do NOT add dependencies') prevent shortcuts that create technical debt"
   ],
 
   "nextChallenge": "12-004"

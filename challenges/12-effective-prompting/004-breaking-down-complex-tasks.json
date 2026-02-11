@@ -2,22 +2,42 @@
   "id": "12-004",
   "module": "effective-prompting",
   "title": "Breaking Down Complex Tasks",
-  "description": "Learn to break down complex requests into smaller, manageable steps.",
+  "description": "Learn to decompose complex feature requests into ordered, independently verifiable steps. Master the plan-then-execute pattern that prevents compounding errors and makes code reviews manageable.",
   "difficulty": "intermediate",
-  "xpReward": 225,
-  "estimatedMinutes": 15,
-  "skills": ["task-decomposition", "planning"],
+  "xpReward": 125,
+  "estimatedMinutes": 12,
+  "skills": ["task-decomposition", "planning", "dependency-analysis", "verification"],
 
   "setup": {
     "workingDir": "~/dojo-workspace/challenge-12-004",
     "initialFiles": [
       {
         "path": "README.md",
-        "content": "# Challenge: Breaking Down Complex Tasks\n\nLearn to decompose complex tasks into smaller steps.\n\n## Complex Task\nBuild a complete authentication system with:\n- User registration\n- Login/logout\n- Password hashing\n- Session management\n- Input validation\n\n## Objectives\n1. First, create a plan (plan.md)\n2. Then implement step by step\n3. Each step should be a focused request\n"
+        "content": "# Challenge: Breaking Down Complex Tasks\n\nLearn to decompose complex requests into manageable, verifiable steps.\n\n## Why Decomposition Matters\n\nWhen you ask Claude Code to do too much at once, three things go wrong:\n\n### 1. Context Limits\nClaude Code has a finite context window. A single massive prompt that tries\nto specify an entire feature will:\n- Leave less room for Claude to reason about the implementation\n- Force Claude to hold too many requirements in mind simultaneously\n- Result in some requirements being dropped or misinterpreted\n\n### 2. Error Compounding\nIf step 3 has a mistake and steps 4-8 build on it, you have to undo\neverything. But if you verify step 3 before starting step 4, you catch\nthe mistake when it's cheap to fix.\n\nThis is the same principle behind unit testing: find bugs early, close to\nwhere they were introduced.\n\n### 3. Review Difficulty\nA 500-line diff from one massive prompt is nearly impossible to review\nmeaningfully. Ten 50-line diffs, each with a clear purpose, can be\nreviewed and validated individually.\n\n## How to Decompose\n\n### Step 1: Identify the Components\nList everything the feature needs. Don't worry about order yet.\n\nExample for \"Add a notification system\":\n- Notification data model/types\n- Database table or storage\n- API endpoints (create, list, mark-read, delete)\n- Real-time delivery (WebSocket or polling)\n- UI components (notification bell, dropdown, individual notification)\n- Preferences (which notifications to receive)\n- Email integration for critical notifications\n\n### Step 2: Find Dependencies\nWhich components depend on which? Draw the dependency graph:\n- Types come first (everything depends on them)\n- Storage depends on types\n- API depends on types + storage\n- UI depends on types + API\n- Real-time depends on API\n- Preferences depends on types + storage + UI\n- Email depends on types + preferences\n\n### Step 3: Order by Dependencies\nArrange steps so each one only depends on completed steps:\n1. Define notification types and interfaces\n2. Create storage/database layer\n3. Build API endpoints\n4. Create UI components\n5. Add real-time delivery\n6. Build preferences system\n7. Add email integration\n\n### Step 4: Make Each Step Verifiable\nEach step should have clear success criteria you can check:\n- Step 1: \"Types compile with no errors\"\n- Step 2: \"Can store and retrieve a notification in tests\"\n- Step 3: \"API endpoints return correct responses (test with curl)\"\n- Step 4: \"Component renders notification list with mock data\"\n\n## The Plan-Then-Execute Pattern\n\nBefore writing any code, ask Claude to help you plan:\n\n1. **Use /plan or ask for a plan first**:\n   \"I need to add a notification system. Before writing any code, create\n   a plan breaking this into steps with dependencies and verification\n   criteria for each step.\"\n\n2. **Review the plan**: Check for missing steps, wrong ordering, unclear\n   verification criteria.\n\n3. **Execute step by step**: One prompt per step. Verify before continuing.\n\n4. **Adjust the plan**: If step 3 reveals something unexpected, update the\n   plan before continuing.\n\n## Step Size: The Goldilocks Rule\n\nEach step should be:\n- **Big enough** to be meaningful (not \"add a semicolon\")\n- **Small enough** to be reviewable in under 5 minutes\n- **Independent enough** to be verified on its own\n- **Complete enough** that the codebase is in a working state after it\n\nGood step size: \"Create the notification API endpoints with request/response\nvalidation and error handling\"\n\nToo small: \"Create the GET endpoint\" then \"Create the POST endpoint\" then\n\"Add validation to GET\" -- this creates unnecessary overhead.\n\nToo big: \"Create the entire notification backend including API, WebSocket,\nemail, and preferences\" -- this can't be reviewed or verified easily.\n\n## The Checkpoint Pattern\n\nAfter each step, verify before proceeding:\n\n```\nStep 1: Create types --> Verify: types compile\nStep 2: Create storage --> Verify: tests pass\nStep 3: Create API --> Verify: curl tests work\nStep 4: Create UI --> Verify: component renders\n```\n\nIf verification fails, fix the current step before moving on. This prevents\nthe cascade of errors that makes debugging massive changes so painful.\n\n## When NOT to Decompose\n\nDon't over-plan simple tasks:\n- Renaming a variable across files (one prompt)\n- Adding a JSDoc comment to a function (one prompt)\n- Fixing a specific, well-understood bug (one prompt)\n- Adding a single utility function (one prompt)\n\nThe rule of thumb: if the task touches fewer than 3 files and has no\nambiguity, just do it in one shot.\n\n## Example Decomposition\n\n**Feature request**: \"Add user authentication to our Express API\"\n\n| Step | Description | Depends On | Verification |\n|------|-------------|------------|--------------|\n| 1 | Define User type and auth types | Nothing | Types compile |\n| 2 | Create user storage with password hashing | Step 1 | Can create and retrieve users in tests |\n| 3 | Build registration endpoint | Steps 1-2 | POST /auth/register creates user |\n| 4 | Build login endpoint with JWT | Steps 1-2 | POST /auth/login returns token |\n| 5 | Create auth middleware | Step 4 | Protected routes reject invalid tokens |\n| 6 | Apply middleware to existing routes | Step 5 | Existing routes require authentication |\n\nEach step is independently verifiable. If step 4 has a bug in JWT signing,\nyou catch it before applying middleware to all your routes.\n\n## Your Exercise\n\nYou have been given a feature request for an existing Express project:\n\"Add a notification system that lets users receive, view, and manage\nnotifications with support for different notification types.\"\n\nDecompose this into 5-8 ordered steps in task-breakdown.md. Each step must\nhave: a description, dependencies (which prior steps it needs), and\nverification criteria (how to confirm it works).\n\nDo NOT implement the feature. The exercise is about planning, not coding.\n"
       },
       {
         "path": "package.json",
-        "content": "{\n  \"name\": \"auth-system\",\n  \"type\": \"module\"\n}\n"
+        "content": "{\n  \"name\": \"notification-api\",\n  \"version\": \"1.0.0\",\n  \"type\": \"module\",\n  \"dependencies\": {\n    \"express\": \"^4.18.0\",\n    \"better-sqlite3\": \"^9.0.0\",\n    \"jsonwebtoken\": \"^9.0.0\"\n  },\n  \"devDependencies\": {\n    \"vitest\": \"^1.0.0\"\n  },\n  \"scripts\": {\n    \"dev\": \"node src/server.js\",\n    \"test\": \"vitest\"\n  }\n}\n"
+      },
+      {
+        "path": "src/server.js",
+        "content": "import express from 'express';\nimport { authRouter } from './routes/auth.js';\nimport { userRouter } from './routes/users.js';\nimport { authenticate } from './middleware/auth.js';\n\nconst app = express();\napp.use(express.json());\n\n// Public routes\napp.use('/api/auth', authRouter);\n\n// Protected routes\napp.use('/api/users', authenticate, userRouter);\n\n// TODO: Add notification routes here\n\napp.listen(3000, () => {\n  console.log('Server running on port 3000');\n});\n\nexport default app;\n"
+      },
+      {
+        "path": "src/routes/auth.js",
+        "content": "import { Router } from 'express';\n\nexport const authRouter = Router();\n\nauthRouter.post('/register', async (req, res) => {\n  // Registration logic\n  res.status(201).json({ message: 'User created' });\n});\n\nauthRouter.post('/login', async (req, res) => {\n  // Login logic\n  res.json({ token: 'jwt-token-here' });\n});\n"
+      },
+      {
+        "path": "src/routes/users.js",
+        "content": "import { Router } from 'express';\n\nexport const userRouter = Router();\n\nuserRouter.get('/me', async (req, res) => {\n  res.json({ user: req.user });\n});\n\nuserRouter.put('/me', async (req, res) => {\n  // Update user profile\n  res.json({ message: 'Profile updated' });\n});\n"
+      },
+      {
+        "path": "src/middleware/auth.js",
+        "content": "import jwt from 'jsonwebtoken';\n\nconst JWT_SECRET = process.env.JWT_SECRET || 'dev-secret';\n\nexport function authenticate(req, res, next) {\n  const token = req.headers.authorization?.split(' ')[1];\n  if (!token) return res.status(401).json({ error: 'Authentication required' });\n\n  try {\n    req.user = jwt.verify(token, JWT_SECRET);\n    next();\n  } catch {\n    res.status(401).json({ error: 'Invalid token' });\n  }\n}\n"
+      },
+      {
+        "path": "src/db.js",
+        "content": "import Database from 'better-sqlite3';\n\nconst db = new Database('app.db');\n\n// Existing tables\ndb.exec(`\n  CREATE TABLE IF NOT EXISTS users (\n    id TEXT PRIMARY KEY,\n    email TEXT UNIQUE NOT NULL,\n    password_hash TEXT NOT NULL,\n    name TEXT NOT NULL,\n    created_at TEXT DEFAULT (datetime('now'))\n  )\n`);\n\nexport default db;\n"
       }
     ],
     "cleanBefore": true
@@ -26,32 +46,49 @@
   "objectives": [
     {
       "id": "obj-1",
-      "description": "Create a plan breaking down the task",
+      "description": "Create task-breakdown.md",
       "type": "file_exists",
-      "target": "plan.md",
+      "target": "task-breakdown.md",
       "required": true
     },
     {
       "id": "obj-2",
-      "description": "Plan has multiple steps",
+      "description": "Breakdown contains at least 5 distinct steps",
       "type": "file_contains",
-      "target": "plan.md",
-      "pattern": "Step [123]|1\\.|2\\.|3\\.|##.*[Ss]tep",
+      "target": "task-breakdown.md",
+      "pattern": "[Ss]tep.*[5678]|##.*[5678]|\\b[5678]\\.",
       "required": true
     },
     {
       "id": "obj-3",
-      "description": "Create user management module",
-      "type": "file_exists",
-      "target": "auth/userStore.js",
+      "description": "Steps include descriptions of what to build",
+      "type": "file_contains",
+      "target": "task-breakdown.md",
+      "pattern": "[Nn]otification|[Tt]ype|[Ee]ndpoint|[Rr]oute|API|[Cc]omponent|[Ss]torage|[Dd]atabase",
       "required": true
     },
     {
       "id": "obj-4",
-      "description": "Create password hashing utility",
+      "description": "Steps include dependency information (what each step depends on)",
       "type": "file_contains",
-      "target": "auth/userStore.js",
-      "pattern": "hash|bcrypt|crypto|password",
+      "target": "task-breakdown.md",
+      "pattern": "[Dd]epend|[Rr]equire|[Aa]fter.*[Ss]tep|[Nn]eed.*[Ss]tep|[Pp]rerequisite|[Bb]uild.*on|[Nn]one|[Nn]o.*depend",
+      "required": true
+    },
+    {
+      "id": "obj-5",
+      "description": "Steps include verification criteria (how to confirm each step works)",
+      "type": "file_contains",
+      "target": "task-breakdown.md",
+      "pattern": "[Vv]erif|[Cc]heck|[Cc]onfirm|[Tt]est|[Vv]alidat|[Cc]ompile|[Cc]url|[Ss]uccess.*criter",
+      "required": true
+    },
+    {
+      "id": "obj-6",
+      "description": "Steps are ordered logically (types/models before API, API before UI)",
+      "type": "file_contains",
+      "target": "task-breakdown.md",
+      "pattern": "[Tt]ype|[Mm]odel|[Ii]nterface|[Ss]chema|[Dd]efine",
       "required": true
     }
   ],
@@ -59,52 +96,56 @@
   "bonusObjectives": [
     {
       "id": "bonus-1",
-      "description": "Create session management",
-      "type": "file_exists",
-      "target": "auth/session.js",
-      "xpBonus": 50
+      "description": "Breakdown discusses step sizing (why each step is the right size)",
+      "type": "file_contains",
+      "target": "task-breakdown.md",
+      "pattern": "[Ss]ize|[Ss]cope|[Rr]eview|[Mm]anageable|[Ii]ndependent|[Vv]erifiable|[Cc]heckpoint",
+      "xpBonus": 25
     },
     {
       "id": "bonus-2",
-      "description": "Create input validation",
+      "description": "Breakdown considers the existing project structure (references server.js, db.js, auth middleware)",
       "type": "file_contains",
-      "target": "auth/userStore.js",
-      "pattern": "valid|email|password.*length|regex",
-      "xpBonus": 50
+      "target": "task-breakdown.md",
+      "pattern": "server\\.js|db\\.js|auth|middleware|existing|current",
+      "xpBonus": 25
     }
   ],
 
   "hints": [
     {
       "level": 1,
-      "text": "Start by asking Claude to help you create a plan. Break the auth system into logical components.",
-      "xpCost": 15
+      "text": "Think about what a notification system needs: types/models, database storage, API endpoints, and possibly real-time features. What comes first? Types and models, because everything else depends on them. What comes last? Features that depend on multiple other components being ready.",
+      "xpCost": 10
     },
     {
       "level": 2,
-      "text": "Try: 'Help me break down building an auth system into steps. Create plan.md with: 1) User store, 2) Password hashing, 3) Session management, 4) Registration, 5) Login'",
-      "xpCost": 45
+      "text": "A good decomposition for notifications: (1) Define notification types/interfaces, (2) Create database table and storage functions, (3) Build CRUD API endpoints, (4) Add 'mark as read' functionality, (5) Create notification preferences, (6) Add real-time delivery or polling. For each step, state what it depends on and how to verify it (e.g., 'Verify: GET /api/notifications returns empty array for new user').",
+      "xpCost": 25
     },
     {
       "level": 3,
-      "text": "Step 1: 'Create plan.md breaking auth into steps'. Step 2: 'Create auth/userStore.js with register/login and password hashing'. Step 3: 'Add auth/session.js for token management'",
-      "xpCost": 90
+      "text": "Your task-breakdown.md should have 5-8 steps, each with: (1) A clear title and description, (2) Dependencies listed ('Depends on: Step 1, Step 2' or 'None'), (3) Verification criteria ('Verify: run npm test and notification tests pass'). Consider the existing project: db.js already has SQLite set up, auth middleware exists, server.js has a TODO for notification routes. Reference these in your steps. Start with types, then storage, then API, then features.",
+      "xpCost": 50
     }
   ],
 
   "solution": {
-    "approach": "Plan first, then implement each component separately.",
-    "example": "Break down the auth system and implement it step by step",
+    "approach": "Analyze the notification system requirements, identify components and dependencies, order them logically, and document each step with description, dependencies, and verification criteria in task-breakdown.md.",
+    "example": "Step 1: Define types (no deps, verify: compiles). Step 2: Database table (deps: 1, verify: migration runs). Step 3: CRUD endpoints (deps: 1-2, verify: curl tests). Step 4: Mark-as-read (deps: 3, verify: endpoint works). Step 5: Notification preferences (deps: 1-2, verify: preferences saved). Step 6: List with filtering (deps: 3-5, verify: filtered results).",
     "alternativeApproaches": [
-      "Ask for a plan, then ask to implement each step",
-      "Implement each layer of the system separately"
+      "Organize steps by layer (data -> API -> features) rather than by feature",
+      "Include estimated prompt complexity for each step to help plan the Claude Code session"
     ]
   },
 
   "learningPoints": [
-    "Complex tasks become manageable when broken into steps",
-    "Planning helps identify dependencies and order",
-    "Smaller requests are easier to review and refine"
+    "Decomposition prevents error compounding: verify each step before building on it",
+    "Dependencies determine order: types before storage, storage before API, API before UI",
+    "Each step should be independently verifiable with clear success criteria",
+    "The plan-then-execute pattern catches mistakes early when they're cheap to fix",
+    "Step sizing matters: big enough to be meaningful, small enough to review in 5 minutes",
+    "Don't decompose simple tasks: if it's fewer than 3 files with no ambiguity, do it in one prompt"
   ],
 
   "nextChallenge": "13-001"

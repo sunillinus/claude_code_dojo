@@ -2,22 +2,26 @@
   "id": "14-001",
   "module": "web-research",
   "title": "Fetch Documentation",
-  "description": "Learn to use WebFetch to retrieve documentation and get up-to-date information.",
+  "description": "Learn to use the WebFetch tool to retrieve public web pages, extract specific information with targeted prompts, and understand its limitations around authenticated content.",
   "difficulty": "beginner",
   "xpReward": 150,
-  "estimatedMinutes": 8,
-  "skills": ["web-fetch", "documentation"],
+  "estimatedMinutes": 15,
+  "skills": ["web-fetch", "documentation-research", "prompt-targeting"],
 
   "setup": {
     "workingDir": "~/dojo-workspace/challenge-14-001",
     "initialFiles": [
       {
         "path": "README.md",
-        "content": "# Challenge: Fetch Documentation\n\nUse Claude's web tools to fetch documentation for a library.\n\n## Objectives\n1. Ask Claude to look up the React useState hook documentation\n2. Create a summary of what you learned in notes.md\n3. Create a simple example component using useState\n"
+        "content": "# Challenge: Fetch Documentation with WebFetch\n\nLearn how Claude Code retrieves live web content using the WebFetch tool,\nhow to write effective extraction prompts, and when WebFetch is the wrong\nchoice.\n\n---\n\n## What Is WebFetch?\n\nWebFetch is a built-in Claude Code tool that fetches a URL, converts the\nHTML to markdown, and then processes that markdown with a small, fast AI\nmodel using a prompt you provide. It returns the model's response -- not\nthe raw HTML.\n\nThis means WebFetch is not a simple HTTP client. It is a **fetch +\nsummarize** pipeline:\n\n```\nURL --> HTTP fetch --> HTML-to-Markdown --> Small AI model + your prompt --> Result\n```\n\nBecause a small model processes the content, the quality of your prompt\ndirectly determines the quality of the result.\n\n## WebFetch Parameters\n\n| Parameter | Required | Description |\n|-----------|----------|-------------|\n| `url`     | Yes      | A fully-formed HTTPS URL. HTTP URLs are auto-upgraded to HTTPS. |\n| `prompt`  | Yes      | What information to extract or how to process the page content. |\n\nThere are no other parameters. You cannot set headers, cookies, or\nauthentication tokens.\n\n## How Prompts Drive Quality\n\nThe `prompt` parameter is the most important part of a WebFetch call.\nCompare these two approaches:\n\n**Vague prompt (poor results):**\n```\nurl: \"https://nodejs.org/docs/latest/api/fs.html\"\nprompt: \"Tell me about this page\"\n```\nThis returns a generic summary that misses the details you need.\n\n**Targeted prompt (excellent results):**\n```\nurl: \"https://nodejs.org/docs/latest/api/fs.html\"\nprompt: \"List all async file-reading functions (readFile, read, etc.), their\n         signatures, and which ones return Promises vs use callbacks.\"\n```\nThis returns a focused, structured extraction of exactly what you need.\n\n**Tips for writing good prompts:**\n- Be specific: \"List all HTTP methods\" beats \"describe the API\"\n- Request structure: \"Create a table of...\" or \"List with bullet points...\"\n- Ask for details: \"Include parameter types and return values\"\n- Scope it: \"Only the Authentication section\" narrows the extraction\n\n## Caching Behavior\n\nWebFetch includes a self-cleaning **15-minute cache**. If you fetch the\nsame URL within 15 minutes, the cached version is returned instantly.\nThis means:\n- Repeated fetches of the same URL are fast and free\n- You can refine your prompt on the same URL without network delay\n- After 15 minutes, the next fetch will be live\n\n## Redirect Handling\n\nWhen a URL redirects to a different host, WebFetch will inform you and\nprovide the redirect URL in a special format. You then need to make a\nnew WebFetch request with the redirect URL.\n\n## What WebFetch CANNOT Do\n\nThis is critical knowledge. WebFetch will **fail** on:\n\n| Blocked Content | Examples |\n|-----------------|----------|\n| Authenticated pages | Google Docs, Confluence, Jira |\n| Private repositories | GitHub private repos, GitLab private |\n| Login-gated content | Paid documentation, internal wikis |\n| API endpoints requiring tokens | Any API needing Authorization headers |\n\nWebFetch has NO way to pass authentication. If you need authenticated\ncontent, use a specialized MCP tool or the `gh` CLI for GitHub.\n\n**Special case -- GitHub:** Even for public GitHub content, prefer the\n`gh` CLI via Bash. It handles API rate limits, pagination, and gives\nstructured data:\n```\n# Prefer this for GitHub:\ngh api repos/owner/repo/issues\ngh pr view 123\n\n# Instead of:\nWebFetch(url: \"https://github.com/owner/repo/issues\")\n```\n\n## When to Use WebFetch\n\n| Good Use Cases | Bad Use Cases |\n|----------------|---------------|\n| Public documentation (MDN, Node.js docs) | Private GitHub repos |\n| Blog posts and tutorials | Google Docs / Sheets |\n| Public API references | Jira / Confluence pages |\n| Stack Overflow answers | Content behind login walls |\n| Open-source project READMEs | Internal company wikis |\n| Package registry pages (npm, PyPI) | API calls needing auth tokens |\n\n---\n\n## Your Task\n\nYou are building a Node.js project that needs to read and write files.\nYou need to research the Node.js `fs` (file system) module to understand\nthe available approaches.\n\n**Use WebFetch** to fetch the official Node.js `fs` module documentation\nand create a research document.\n\n### Steps:\n1. Use WebFetch to fetch `https://nodejs.org/docs/latest/api/fs.html`\n   with a targeted prompt to extract information about file-reading and\n   file-writing functions\n2. Create `research.md` documenting your findings\n3. Your research document must cover specific technical details (see\n   objectives below)\n\n### What research.md Must Include:\n- At least 3 async file-reading/writing functions with their signatures\n- The difference between callback-based and Promise-based APIs\n- The `fs/promises` import path for Promise-based usage\n- A code example showing how to read a file using the Promises API\n- The WebFetch prompt you used (so others can reproduce your research)\n\n## Objectives\n1. Create research.md with Node.js fs module documentation findings\n2. Document at least 3 async functions (readFile, writeFile, etc.)\n3. Explain the callback vs Promise API distinction\n4. Include a working code example using fs/promises\n5. Record the WebFetch prompt you used for reproducibility\n"
       },
       {
         "path": "package.json",
-        "content": "{\n  \"name\": \"web-research\",\n  \"dependencies\": {\n    \"react\": \"^18.0.0\"\n  }\n}\n"
+        "content": "{\n  \"name\": \"fs-research-project\",\n  \"version\": \"1.0.0\",\n  \"type\": \"module\",\n  \"description\": \"A project that needs fs module research\",\n  \"scripts\": {\n    \"start\": \"node src/index.js\"\n  }\n}\n"
+      },
+      {
+        "path": "src/index.js",
+        "content": "// TODO: Implement file operations after researching the fs module\n// We need to:\n// 1. Read a configuration file (JSON)\n// 2. Write processed output to a new file\n// 3. Check if files exist before reading\n// 4. Handle errors gracefully\n//\n// Research the Node.js fs module first!\n\nconsole.log('File operations not yet implemented - research fs module first');\n"
       }
     ],
     "cleanBefore": true
@@ -26,32 +30,41 @@
   "objectives": [
     {
       "id": "obj-1",
-      "description": "Create notes.md with documentation summary",
+      "description": "Create research.md with fs module findings",
       "type": "file_exists",
-      "target": "notes.md",
+      "target": "research.md",
       "required": true
     },
     {
       "id": "obj-2",
-      "description": "Notes explain useState",
+      "description": "Document at least 3 async fs functions (readFile, writeFile, appendFile, readdir, stat, etc.)",
       "type": "file_contains",
-      "target": "notes.md",
-      "pattern": "useState|state|hook",
+      "target": "research.md",
+      "pattern": "readFile|writeFile|appendFile|readdir|mkdir|stat|access|rename|unlink",
       "required": true
     },
     {
       "id": "obj-3",
-      "description": "Create example component",
-      "type": "file_exists",
-      "target": "Counter.jsx",
+      "description": "Explain the callback vs Promise API distinction",
+      "type": "file_contains",
+      "target": "research.md",
+      "pattern": "callback|[Pp]romise|fs/promises|fs\\.promises",
       "required": true
     },
     {
       "id": "obj-4",
-      "description": "Component uses useState",
+      "description": "Include a code example using the Promises API",
       "type": "file_contains",
-      "target": "Counter.jsx",
-      "pattern": "useState|setCount|setState",
+      "target": "research.md",
+      "pattern": "import.*fs/promises|require.*fs/promises|fs\\.promises|await.*readFile|await.*writeFile",
+      "required": true
+    },
+    {
+      "id": "obj-5",
+      "description": "Record the WebFetch prompt used for reproducibility",
+      "type": "file_contains",
+      "target": "research.md",
+      "pattern": "[Pp]rompt|[Ww]eb[Ff]etch|[Ff]etch.*url|[Qq]uery.*used",
       "required": true
     }
   ],
@@ -59,10 +72,18 @@
   "bonusObjectives": [
     {
       "id": "bonus-1",
-      "description": "Notes mention rules of hooks",
+      "description": "Document error handling patterns for fs operations (ENOENT, EACCES, etc.)",
       "type": "file_contains",
-      "target": "notes.md",
-      "pattern": "[Rr]ule|[Tt]op level|[Cc]onditional|[Oo]nly call",
+      "target": "research.md",
+      "pattern": "ENOENT|EACCES|EEXIST|error.*code|err\\.code|catch|try",
+      "xpBonus": 30
+    },
+    {
+      "id": "bonus-2",
+      "description": "Explain when to use synchronous vs asynchronous fs functions",
+      "type": "file_contains",
+      "target": "research.md",
+      "pattern": "[Ss]ync|[Ss]ynchronous|[Bb]locking|[Nn]on.blocking|readFileSync|writeFileSync",
       "xpBonus": 30
     }
   ],
@@ -70,34 +91,38 @@
   "hints": [
     {
       "level": 1,
-      "text": "Ask Claude to look up and explain React's useState hook, then create examples based on what it finds.",
+      "text": "Think about your WebFetch prompt carefully. Instead of asking to 'summarize the page', ask for specific things: function names, signatures, the difference between callback and Promise APIs. Targeted prompts get targeted results.",
       "xpCost": 10
     },
     {
       "level": 2,
-      "text": "Try: 'Look up React useState documentation, summarize it in notes.md, and create a Counter component example'",
+      "text": "Try fetching https://nodejs.org/docs/latest/api/fs.html with a prompt like: 'List all async file-reading and file-writing functions, their signatures, and explain the difference between the callback API (fs.readFile) and the Promise API (fs/promises). Include the import path for Promises.'",
       "xpCost": 30
     },
     {
       "level": 3,
-      "text": "Ask: 'Fetch the React useState documentation, then: 1) Create notes.md explaining how useState works, 2) Create Counter.jsx showing a working example with increment/decrement buttons'",
+      "text": "Ask Claude: 'Use WebFetch to fetch https://nodejs.org/docs/latest/api/fs.html and extract: 1) all async read/write functions with signatures, 2) callback vs Promise API differences, 3) how to import fs/promises. Then create research.md with the findings, a code example, and the prompt you used.'",
       "xpCost": 60
     }
   ],
 
   "solution": {
-    "approach": "Ask Claude to fetch documentation and create summary and examples.",
-    "example": "Look up useState docs, create notes and example component",
+    "approach": "Use WebFetch with a targeted prompt on the official Node.js fs documentation URL to extract async file operation functions, the callback vs Promise distinction, and create a structured research document.",
+    "example": "Fetch https://nodejs.org/docs/latest/api/fs.html with a prompt extracting async functions and API styles, then synthesize into research.md with code examples and methodology notes.",
     "alternativeApproaches": [
-      "Ask for specific aspects of the documentation",
-      "Request multiple examples showing different use cases"
+      "Fetch the page twice with different prompts: one for function signatures, another for usage patterns",
+      "Fetch both the main fs page and the specific fs/promises page for deeper coverage",
+      "Use WebFetch on MDN's Node.js fs documentation as a second source for comparison"
     ]
   },
 
   "learningPoints": [
-    "Claude can fetch and summarize documentation",
-    "Web research provides current, accurate information",
-    "Always verify information with official sources"
+    "WebFetch is a fetch-then-summarize pipeline, not a raw HTTP client -- the prompt you provide shapes what comes back",
+    "Targeted extraction prompts ('list all async functions with signatures') produce far better results than vague ones ('tell me about this page')",
+    "WebFetch cannot access authenticated content -- no Google Docs, Jira, Confluence, or private GitHub repos",
+    "For GitHub content, always prefer the gh CLI over WebFetch",
+    "The 15-minute cache means you can refine prompts on the same URL without network delay",
+    "Always document your research methodology (URL + prompt) so findings are reproducible"
   ],
 
   "nextChallenge": "14-002"

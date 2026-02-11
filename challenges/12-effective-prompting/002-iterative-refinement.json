@@ -2,26 +2,30 @@
   "id": "12-002",
   "module": "effective-prompting",
   "title": "Iterative Refinement",
-  "description": "Learn to refine your requests through multiple iterations to get exactly what you need.",
+  "description": "Learn to build on Claude Code's output through targeted follow-up prompts. Master the refinement loop: prompt, review, refine, review, accept -- the workflow that turns good-enough into exactly-right.",
   "difficulty": "intermediate",
-  "xpReward": 175,
-  "estimatedMinutes": 10,
-  "skills": ["iteration", "feedback-loop"],
+  "xpReward": 125,
+  "estimatedMinutes": 12,
+  "skills": ["iteration", "feedback-loop", "course-correction", "context-awareness"],
 
   "setup": {
     "workingDir": "~/dojo-workspace/challenge-12-002",
     "initialFiles": [
       {
         "path": "README.md",
-        "content": "# Challenge: Iterative Refinement\n\nPractice refining requests through multiple iterations.\n\n## Objectives\n1. Start with a basic button component\n2. Iteratively add features through follow-up requests\n3. Track each iteration in changelog.md\n\n## Target Features\n- Multiple variants (primary, secondary, danger)\n- Different sizes (sm, md, lg)\n- Loading state with spinner\n- Disabled state\n"
+        "content": "# Challenge: Iterative Refinement\n\nLearn to build on Claude Code's output through targeted follow-up prompts.\n\n## Why Iteration Works\n\nClaude Code maintains conversation context. This means each follow-up prompt\nbuilds on everything that came before -- the code it wrote, the decisions it\nmade, and the patterns it established. This is your superpower.\n\nInstead of crafting one perfect prompt, you can:\n1. Start with a reasonable first attempt\n2. Review what Claude produced\n3. Give targeted feedback to refine it\n4. Repeat until it's exactly right\n\nThis is often faster than trying to specify everything upfront, because you\ncan react to what you see rather than predict what you need.\n\n## The Refinement Loop\n\n```\nInitial Prompt --> Review Output --> Targeted Feedback --> Review --> Accept\n       |                                    |                  |\n       |                              (or refine again)        |\n       v                                    v                  v\n  \"Build an API         \"Keep the structure     \"Perfect, now\n   endpoint for          but use async/await     add JSDoc\n   user profiles\"        instead of callbacks\"   comments\"\n```\n\n## Types of Refinement\n\n### 1. Targeted Feedback\nKeep what works, change what doesn't.\n- \"Keep the structure but change the naming convention to camelCase\"\n- \"The validation logic is great, but move it to a separate function\"\n- \"Good approach, but use a Map instead of a plain object for the cache\"\n\nThis is the most efficient type. You acknowledge what's right, pinpoint\nwhat's wrong, and specify the fix.\n\n### 2. Course Correction\nRedirect when Claude went in the wrong direction.\n- \"That's close, but I need a REST endpoint, not a GraphQL resolver\"\n- \"I wanted this as a class, not a collection of functions\"\n- \"This should return a Promise, not use callbacks\"\n\nBe clear about WHAT is wrong and WHAT you want instead. Don't just say\n\"that's wrong\" -- say \"I need X instead of Y\".\n\n### 3. Narrowing Scope\nFocus Claude on a specific part of what it produced.\n- \"Focus only on the validation logic -- the rest is fine\"\n- \"Just improve the error messages, don't change the control flow\"\n- \"Only refactor the database queries, leave the route handlers alone\"\n\nThis prevents Claude from making unwanted changes to code you've already\napproved. Scope narrowing is critical after the first iteration.\n\n### 4. Widening Scope\nExtend a proven pattern to new areas.\n- \"Now apply that same error handling pattern to the other 3 files\"\n- \"Great, create similar endpoints for products and orders\"\n- \"Use this same test structure for the remaining modules\"\n\nThis leverages context -- Claude remembers the pattern it just built and\ncan replicate it consistently.\n\n### 5. Incremental Enhancement\nAdd features one at a time to existing code.\n- \"Now add input validation to the create endpoint\"\n- \"Add rate limiting to this middleware\"\n- \"Include pagination support in the list endpoint\"\n\nEach enhancement builds on stable, reviewed code rather than trying to\nget everything right in one shot.\n\n## When to Start Over vs. When to Refine\n\n**Refine when:**\n- The overall structure and approach are sound\n- You need specific changes to specific parts\n- Claude understood your intent but got details wrong\n- You want to add features to working code\n\n**Start over when:**\n- The fundamental approach is wrong (REST when you needed GraphQL)\n- The conversation has become confused with contradictory instructions\n- Context pollution: too many corrections have made Claude's model of\n  your requirements inconsistent\n- You realize the original requirements were wrong\n\nSign of context pollution: Claude starts reintroducing things you already\nasked it to remove, or makes changes that conflict with earlier instructions.\nWhen this happens, start a fresh prompt with all your requirements clearly\nstated upfront.\n\n## Anti-Patterns to Avoid\n\n- **\"Make it better\"** -- too vague for refinement. Better: \"Make the error\n  messages more descriptive by including the field name and expected format\"\n- **Contradicting yourself** -- \"Use classes\" then \"Actually use functions\"\n  then \"Hmm, maybe classes\" creates confusion\n- **Refining too many things at once** -- one or two changes per iteration\n  keeps things manageable\n- **Not reviewing before refining** -- always read the output carefully before\n  giving feedback\n\n## Your Exercise\n\nYou will build a REST API endpoint for managing a task list, using iterative\nrefinement. Instead of trying to specify everything upfront, start simple\nand build up through multiple refinement steps.\n\nDocument your refinement process in refinement-log.md, showing:\n- Your initial prompt\n- What Claude produced (summary)\n- What you would refine and why\n- Your follow-up prompt\n- Repeat for at least 4 iterations\n\nThe goal is NOT to build perfect code -- it's to practice the refinement\nloop and demonstrate different types of refinement.\n\nStart by asking Claude to create a basic Express endpoint, then iteratively\nrefine it through targeted feedback, scope narrowing, and enhancement.\n"
       },
       {
-        "path": "Button.jsx",
-        "content": "// Start with: \"Create a basic React button component\"\n// Then iterate: \"Add variant prop\", \"Add size prop\", etc.\n\nexport function Button({ children }) {\n  return <button>{children}</button>;\n}\n"
+        "path": "package.json",
+        "content": "{\n  \"name\": \"task-api\",\n  \"version\": \"1.0.0\",\n  \"type\": \"module\",\n  \"dependencies\": {\n    \"express\": \"^4.18.0\"\n  }\n}\n"
       },
       {
-        "path": "changelog.md",
-        "content": "# Button Component Changelog\n\nTrack each iteration here:\n\n## Iteration 1\n- Request: \"...\"\n- Changes: ...\n\n## Iteration 2\n- Request: \"...\"\n- Changes: ...\n"
+        "path": "server.js",
+        "content": "// Starting point: a minimal Express server\n// Build your task API endpoint through iterative refinement\n\nimport express from 'express';\n\nconst app = express();\napp.use(express.json());\n\n// Your task endpoints will go here\n\napp.listen(3000, () => {\n  console.log('Server running on port 3000');\n});\n\nexport default app;\n"
+      },
+      {
+        "path": "refinement-log.md",
+        "content": "# Refinement Log\n\nDocument your iterative refinement process here.\n\n## Iteration 1: Initial Prompt\n\n**Prompt**: (what you asked Claude)\n\n**What Claude produced**: (brief summary)\n\n**What to refine**: (what needs improvement and why)\n\n## Iteration 2: First Refinement\n\n**Prompt**: (your follow-up)\n\n**Refinement type**: (targeted feedback / course correction / narrowing / widening / enhancement)\n\n**What changed**: (summary of changes)\n\n**What to refine next**: (what still needs work)\n\n## Iteration 3: Second Refinement\n\n(continue the pattern...)\n\n## Iteration 4: Third Refinement\n\n(continue the pattern...)\n\n## Reflection\n\n- What refinement types did you use?\n- When was refinement more efficient than starting over?\n- What would you do differently next time?\n"
       }
     ],
     "cleanBefore": true
@@ -30,34 +34,49 @@
   "objectives": [
     {
       "id": "obj-1",
-      "description": "Add variant prop to Button",
-      "type": "file_contains",
-      "target": "Button.jsx",
-      "pattern": "variant|primary|secondary|danger",
+      "description": "refinement-log.md exists with content",
+      "type": "file_exists",
+      "target": "refinement-log.md",
       "required": true
     },
     {
       "id": "obj-2",
-      "description": "Add size prop to Button",
+      "description": "Log documents at least 4 iterations with prompts",
       "type": "file_contains",
-      "target": "Button.jsx",
-      "pattern": "size|sm|md|lg|small|medium|large",
+      "target": "refinement-log.md",
+      "pattern": "[Ii]teration.*[34]|[Ss]tep.*[34]|[Rr]ound.*[34]|##.*[34]",
       "required": true
     },
     {
       "id": "obj-3",
-      "description": "Add loading state",
+      "description": "Log shows initial prompt for the task",
       "type": "file_contains",
-      "target": "Button.jsx",
-      "pattern": "loading|isLoading|spinner|Loading",
+      "target": "refinement-log.md",
+      "pattern": "[Ii]nitial.*[Pp]rompt|[Ff]irst.*[Pp]rompt|[Ss]tart.*with",
       "required": true
     },
     {
       "id": "obj-4",
-      "description": "Document iterations in changelog",
+      "description": "Log includes follow-up refinement prompts",
       "type": "file_contains",
-      "target": "changelog.md",
-      "pattern": "Iteration.*[23]|variant|size|loading",
+      "target": "refinement-log.md",
+      "pattern": "[Rr]efine|[Ff]ollow.up|[Cc]hange|[Ii]mprove|[Kk]eep.*but|[Ii]nstead|[Aa]dd.*to|[Ff]ocus.*on",
+      "required": true
+    },
+    {
+      "id": "obj-5",
+      "description": "Log identifies refinement types (targeted, narrowing, widening, etc.)",
+      "type": "file_contains",
+      "target": "refinement-log.md",
+      "pattern": "[Tt]argeted|[Nn]arrow|[Ww]iden|[Cc]ourse.*correct|[Ee]nhance|[Ff]eedback|[Ss]cope",
+      "required": true
+    },
+    {
+      "id": "obj-6",
+      "description": "Log includes reflection on the refinement process",
+      "type": "file_contains",
+      "target": "refinement-log.md",
+      "pattern": "[Rr]eflect|[Ll]earn|[Tt]akeaway|[Nn]ext.*time|[Dd]ifferent|[Ww]ork.*well|[Ee]fficient",
       "required": true
     }
   ],
@@ -65,53 +84,56 @@
   "bonusObjectives": [
     {
       "id": "bonus-1",
-      "description": "Add disabled state",
+      "description": "Log discusses when to start over vs continue refining",
       "type": "file_contains",
-      "target": "Button.jsx",
-      "pattern": "disabled|isDisabled",
-      "xpBonus": 35
+      "target": "refinement-log.md",
+      "pattern": "[Ss]tart.*over|[Ff]resh|[Cc]ontext.*pollut|[Rr]eset|[Ss]cratch|[Aa]bandon",
+      "xpBonus": 25
     },
     {
       "id": "bonus-2",
-      "description": "Add TypeScript types or PropTypes",
+      "description": "Task API endpoint was actually built through the refinement process",
       "type": "file_contains",
-      "target": "Button.jsx",
-      "pattern": "PropTypes|interface|type.*Props|: React\\.FC",
-      "xpBonus": 40
+      "target": "server.js",
+      "pattern": "app\\.(get|post|put|delete|patch).*task|router\\.(get|post|put|delete)",
+      "xpBonus": 25
     }
   ],
 
   "hints": [
     {
       "level": 1,
-      "text": "Start simple, then add one feature at a time. Each request builds on the previous result.",
+      "text": "Start simple: ask Claude to 'create a basic CRUD endpoint for tasks in server.js with GET and POST routes'. Review what it produces. Then think: what would you change? The naming? The structure? The error handling? That becomes your next prompt.",
       "xpCost": 10
     },
     {
       "level": 2,
-      "text": "Try: 'Add variant prop with primary/secondary/danger' then 'Add size prop' then 'Add loading state'",
-      "xpCost": 35
+      "text": "Try these refinement types in order: (1) Initial: 'Create basic task CRUD routes', (2) Targeted feedback: 'Keep the routes but add input validation for the POST endpoint', (3) Scope narrowing: 'Only improve the error responses, don't change the route structure', (4) Enhancement: 'Add pagination to the GET /tasks endpoint'. Document each step in refinement-log.md.",
+      "xpCost": 25
     },
     {
       "level": 3,
-      "text": "Iterate: 1) 'Add variant prop (primary, secondary, danger) with different colors' 2) 'Add size prop (sm, md, lg)' 3) 'Add loading prop that shows a spinner and disables the button'",
-      "xpCost": 70
+      "text": "Fill out each iteration section in refinement-log.md with: the exact prompt you used (or would use), what type of refinement it represents, what changed, and what needs work next. In the Reflection section, note which refinement type was most efficient and when starting over might have been better. The key insight: targeted feedback ('keep X but change Y') is almost always more efficient than vague feedback ('make it better').",
+      "xpCost": 50
     }
   ],
 
   "solution": {
-    "approach": "Build up the component through multiple requests, each adding one feature.",
-    "example": "Iteratively add features to the Button component",
+    "approach": "Build a task API through 4+ iterations, documenting each prompt, the refinement type used, and what changed. End with a reflection on the process.",
+    "example": "Iteration 1: basic CRUD routes. Iteration 2: add validation (targeted). Iteration 3: improve error messages only (narrowing). Iteration 4: add pagination (enhancement). Reflect on efficiency.",
     "alternativeApproaches": [
-      "Ask for all features at once with detailed specs",
-      "Add features one by one with feedback between"
+      "Build a different feature (e.g., auth middleware) through iterative refinement",
+      "Deliberately make a wrong-direction prompt to practice course correction"
     ]
   },
 
   "learningPoints": [
-    "Complex features are easier to build iteratively",
-    "Each iteration lets you validate before continuing",
-    "Iterative refinement gives you more control over the result"
+    "Iteration leverages Claude Code's conversation context -- each prompt builds on the last",
+    "Five refinement types: targeted feedback, course correction, narrowing scope, widening scope, incremental enhancement",
+    "Targeted feedback ('keep X but change Y') is the most efficient refinement type",
+    "Watch for context pollution -- if Claude reintroduces removed features, start a fresh conversation",
+    "One to two changes per iteration keeps refinement manageable and reviewable",
+    "Starting simple and iterating is often faster than trying to specify everything upfront"
   ],
 
   "nextChallenge": "12-003"

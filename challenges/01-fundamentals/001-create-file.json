@@ -2,18 +2,22 @@
   "id": "01-001",
   "module": "fundamentals",
   "title": "Create Your First File",
-  "description": "Learn to create files using natural language commands. This is the foundation of working with Claude Code - simply describe what you want, and Claude Code makes it happen.",
+  "description": "Learn how Claude Code creates files using the Write tool. Understand absolute paths, how Write overwrites existing files, and why being specific about filenames and content produces better results.",
   "difficulty": "beginner",
   "xpReward": 100,
-  "estimatedMinutes": 5,
-  "skills": ["file-creation"],
+  "estimatedMinutes": 10,
+  "skills": ["file-creation", "write-tool"],
 
   "setup": {
     "workingDir": "~/dojo-workspace/challenge-01-001",
     "initialFiles": [
       {
         "path": "README.md",
-        "content": "# Challenge Workspace\n\nWelcome to your first Claude Code Dojo challenge!\n\nYour task: Create a configuration file for a new project.\n\n## Objectives\n1. Create a file named `config.json`\n2. It should contain valid JSON with a `name` property\n\n## Bonus\n- Add a `version` field for extra XP!\n"
+        "content": "# Challenge: Create Your First File\n\nLearn how Claude Code creates files and apply that knowledge to build\na real project configuration from scratch.\n\n---\n\n## How Claude Code Creates Files\n\nWhen you ask Claude Code to create a file, it does not type into an\neditor or run `echo` commands. Instead, it uses a dedicated tool\ncalled **Write**. Understanding how this tool works helps you give\nbetter instructions and predict what Claude Code will do.\n\n### The Write Tool\n\nEvery file-creation request translates into a Write tool call with\ntwo required parameters:\n\n| Parameter   | Description                                  | Example                                  |\n|-------------|----------------------------------------------|------------------------------------------|\n| `file_path` | The **absolute** path where the file is saved | `/Users/you/project/package.json`        |\n| `content`   | The complete text content of the file         | `{\\n  \"name\": \"my-app\"\\n}`               |\n\nThe path must be absolute (starting from the filesystem root, like\n`/Users/...` on macOS or `/home/...` on Linux). Relative paths like\n`./package.json` are not accepted by the Write tool.\n\n### Creating vs. Overwriting\n\nThe Write tool has an important behavior you need to understand:\n\n- If the file **does not exist**, Write creates it (including any\n  necessary parent directories).\n- If the file **already exists**, Write **completely overwrites** it\n  with the new content. The old content is gone.\n\nThis means that if you want to modify an existing file, Write is the\nwrong tool -- you should use Edit instead (covered in Challenge 01-003).\nClaude Code knows this rule: it will always Read a file before using\nWrite on an existing path, so it can preserve content that should not\nchange.\n\n### Why Specificity Matters\n\nClaude Code decides what to write based on your description. Compare\nthese two requests:\n\n**Vague request:**\n> \"Create a config file for my project.\"\n\nClaude Code must guess: JSON or YAML? What fields? What project name?\nThe result may not match what you wanted.\n\n**Specific request:**\n> \"Create a package.json with name 'my-api', version '1.0.0',\n> description 'REST API for user management', and a start script\n> that runs 'node server.js'.\"\n\nNow Claude Code knows exactly what to produce. Specificity saves\ntime because you avoid back-and-forth corrections.\n\n### How Claude Code Resolves Paths\n\nWhen you say \"create package.json\", Claude Code combines the current\nworking directory with your filename to form the absolute path. If\nyour working directory is `/Users/you/project`, then `package.json`\nbecomes `/Users/you/project/package.json`.\n\nYou can also specify subdirectories:\n> \"Create src/config/database.json\"\n\nClaude Code will create the `src/config/` directories if they do not\nexist, then write the file inside them.\n\n### Quick Reference\n\n```\nYou say:          \"Create package.json with name my-app\"\nClaude Code uses: Write tool\n  file_path:      /absolute/path/to/workspace/package.json\n  content:        { \"name\": \"my-app\" ... }\nResult:           New file on disk (or overwritten if it existed)\n```\n\n---\n\n## Your Task\n\nCreate a `package.json` file for a Node.js utility library called\n`string-utils`. This is the kind of real configuration file every\nNode.js project needs.\n\nYour package.json must include ALL of the following fields:\n\n1. **name** -- set to `string-utils`\n2. **version** -- set to `1.0.0`\n3. **description** -- a meaningful description of the library\n   (not empty)\n4. **main** -- set to `index.js` (the entry point)\n5. **scripts** -- an object containing at least a `test` script\n6. **keywords** -- an array with at least two keywords\n7. **license** -- set to `MIT`\n\nThe file must be valid JSON.\n\n## Objectives\n1. Create `package.json` in the workspace root\n2. Include all 7 required fields with the correct values\n3. Bonus: Add an `author` field and a `repository` field\n"
+      },
+      {
+        "path": "CONCEPTS.md",
+        "content": "# Key Concepts: The Write Tool\n\n## Tool Signature\n\n```\nWrite(file_path: string, content: string)\n```\n\n## Rules\n\n1. `file_path` must be an absolute path\n2. If the file exists, it is completely overwritten\n3. Parent directories are created automatically\n4. Claude Code must Read before Write on existing files\n5. Content is written exactly as provided (no formatting changes)\n\n## Common Patterns\n\n- Creating config files (package.json, tsconfig.json, .env)\n- Scaffolding new source files\n- Generating documentation\n- Writing test files\n\n## Anti-Patterns\n\n- Using Write to modify a single line (use Edit instead)\n- Forgetting to specify content details (leads to generic output)\n- Not specifying the filename (Claude Code must guess)\n"
       }
     ],
     "cleanBefore": true
@@ -22,17 +26,65 @@
   "objectives": [
     {
       "id": "obj-1",
-      "description": "Create a file named `config.json` in the workspace",
+      "description": "Create a file named `package.json` in the workspace",
       "type": "file_exists",
-      "target": "config.json",
+      "target": "package.json",
       "required": true
     },
     {
       "id": "obj-2",
-      "description": "The file should contain valid JSON with a `name` property",
+      "description": "package.json has `name` set to `string-utils`",
       "type": "file_contains",
-      "target": "config.json",
-      "pattern": "\"name\"\\s*:\\s*\"[^\"]+\"",
+      "target": "package.json",
+      "pattern": "\"name\"\\s*:\\s*\"string-utils\"",
+      "required": true
+    },
+    {
+      "id": "obj-3",
+      "description": "package.json has `version` set to `1.0.0`",
+      "type": "file_contains",
+      "target": "package.json",
+      "pattern": "\"version\"\\s*:\\s*\"1\\.0\\.0\"",
+      "required": true
+    },
+    {
+      "id": "obj-4",
+      "description": "package.json has a non-empty `description` field",
+      "type": "file_contains",
+      "target": "package.json",
+      "pattern": "\"description\"\\s*:\\s*\"[^\"]+\"",
+      "required": true
+    },
+    {
+      "id": "obj-5",
+      "description": "package.json has `main` set to `index.js`",
+      "type": "file_contains",
+      "target": "package.json",
+      "pattern": "\"main\"\\s*:\\s*\"index\\.js\"",
+      "required": true
+    },
+    {
+      "id": "obj-6",
+      "description": "package.json has a `scripts` object with a `test` script",
+      "type": "file_contains",
+      "target": "package.json",
+      "pattern": "\"test\"\\s*:",
+      "required": true
+    },
+    {
+      "id": "obj-7",
+      "description": "package.json has a `keywords` array with at least two entries",
+      "type": "file_contains",
+      "target": "package.json",
+      "pattern": "\"keywords\"\\s*:\\s*\\[\\s*\"[^\"]+\"\\s*,\\s*\"[^\"]+\"",
+      "required": true
+    },
+    {
+      "id": "obj-8",
+      "description": "package.json has `license` set to `MIT`",
+      "type": "file_contains",
+      "target": "package.json",
+      "pattern": "\"license\"\\s*:\\s*\"MIT\"",
       "required": true
     }
   ],
@@ -40,45 +92,55 @@
   "bonusObjectives": [
     {
       "id": "bonus-1",
-      "description": "Add a `version` field to the config",
+      "description": "Add an `author` field to package.json",
       "type": "file_contains",
-      "target": "config.json",
-      "pattern": "\"version\"",
-      "xpBonus": 25
+      "target": "package.json",
+      "pattern": "\"author\"\\s*:",
+      "xpBonus": 15
+    },
+    {
+      "id": "bonus-2",
+      "description": "Add a `repository` field to package.json",
+      "type": "file_contains",
+      "target": "package.json",
+      "pattern": "\"repository\"\\s*:",
+      "xpBonus": 15
     }
   ],
 
   "hints": [
     {
       "level": 1,
-      "text": "Claude Code can create files when you describe what you want. Think about how you'd ask a colleague to create a file for you.",
+      "text": "Read the README carefully -- it lists exactly 7 fields your package.json needs. Think about what value each field should have before asking Claude Code to create the file.",
       "xpCost": 10
     },
     {
       "level": 2,
-      "text": "Try being specific about the filename and what content you want inside. For example: 'Create a file called X with content Y'",
+      "text": "Be explicit in your request. For example: 'Create package.json with name string-utils, version 1.0.0, main index.js, license MIT, a test script, keywords array, and a description.' The more specific you are, the more accurate the result.",
       "xpCost": 25
     },
     {
       "level": 3,
-      "text": "Type: 'Create a config.json file with { \"name\": \"my-project\" }' - Claude Code will create the file exactly as described.",
+      "text": "Ask Claude Code: 'Create a package.json file for a library called string-utils at version 1.0.0. Set main to index.js, license to MIT. Add a test script, a keywords array with at least two keywords like [\"string\", \"utility\"], and a meaningful description.' Then verify the result has all 7 fields.",
       "xpCost": 50
     }
   ],
 
   "solution": {
-    "approach": "Claude Code understands natural language requests for file operations. Simply describe the file you want to create and its contents.",
-    "example": "Create a config.json file with the following content: { \"name\": \"my-project\", \"version\": \"1.0.0\" }",
+    "approach": "Give Claude Code a detailed description of every field you need in package.json. The Write tool will create the file with exactly the content Claude Code generates from your description.",
+    "example": "Create a package.json for a Node.js utility library called string-utils. Version 1.0.0, main entry point is index.js, license is MIT. Include a test script, keywords array with 'string' and 'utility', and a description like 'A collection of string manipulation utilities'.",
     "alternativeApproaches": [
-      "Write a JSON configuration file named config.json for a project called my-app",
-      "Initialize a new config.json with project metadata including name and version"
+      "Create the file in stages: first ask for the basic package.json, then ask to add missing fields one at a time.",
+      "Describe the project conceptually: 'I am building a string utility library for npm. Create the package.json with all standard fields.' Then check if the result matches all 7 requirements."
     ]
   },
 
   "learningPoints": [
-    "Claude Code can create files from natural language descriptions",
-    "You don't need to know specific commands - just describe what you want",
-    "Being specific about filenames and content helps Claude Code be accurate"
+    "Claude Code uses the Write tool to create files, which requires an absolute file_path and complete content",
+    "The Write tool overwrites existing files entirely -- use Edit for modifications",
+    "Being specific about filenames, field names, and values produces more accurate results",
+    "Claude Code creates parent directories automatically when the path includes subdirectories",
+    "Understanding the tool behind the scenes helps you give better instructions"
   ],
 
   "nextChallenge": "01-002"

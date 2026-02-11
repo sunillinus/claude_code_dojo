@@ -2,26 +2,66 @@
   "id": "16-003",
   "module": "agentic-loops",
   "title": "Completion Promises",
-  "description": "Learn to define clear completion promises that tell Ralph Loop when the task is done.",
+  "description": "Master completion promises -- the measurable criteria that tell Ralph Loop when a task is done. Learn to write promises across different categories and understand how Claude verifies them.",
   "difficulty": "advanced",
   "xpReward": 275,
   "estimatedMinutes": 15,
-  "skills": ["completion-criteria", "goal-definition"],
+  "skills": ["completion-criteria", "goal-definition", "verification-design"],
 
   "setup": {
     "workingDir": "~/dojo-workspace/challenge-16-003",
     "initialFiles": [
       {
         "path": "README.md",
-        "content": "# Challenge: Completion Promises\n\nLearn to define clear completion criteria for Ralph Loop.\n\n## What are Completion Promises?\nCompletion promises define when Ralph Loop should stop working. Without clear completion criteria, loops might run indefinitely or stop prematurely.\n\n## Objectives\n1. Define measurable completion criteria\n2. Start a loop with explicit success conditions\n3. Verify completion criteria are met\n"
+        "content": "# Challenge: Completion Promises\n\nMaster the art of writing completion promises -- the measurable criteria\nthat tell Ralph Loop when a task is truly done.\n\n---\n\n## What Is a Completion Promise?\n\nA completion promise is a **verifiable condition** that Claude checks after\neach iteration of a Ralph Loop to determine whether to continue or stop.\nWithout clear completion promises, a loop might run indefinitely (never\nknowing it's done) or stop prematurely (thinking it's done when it's not).\n\nThink of a completion promise as a contract: \"I will keep working until\nthis specific, checkable condition is true.\"\n\n## Categories of Completion Promises\n\nCompletion promises fall into several categories, each suited to\ndifferent types of tasks:\n\n### Code Quality Promises\nThese verify structural properties of the code itself.\n\n| Promise | How Claude Verifies It |\n|---------|----------------------|\n| \"All functions have error handling\" | Read each function, check for try/catch |\n| \"No TODO comments remain in src/\" | Grep for TODO across all files |\n| \"Every async function awaits properly\" | Read code, check for missing awaits |\n| \"No console.log statements in production code\" | Grep for console.log |\n\n### Test-Based Promises\nThese use test execution as the verification method.\n\n| Promise | How Claude Verifies It |\n|---------|----------------------|\n| \"All tests pass\" | Run `npm test`, check exit code |\n| \"Test coverage exceeds 80%\" | Run coverage report, check percentage |\n| \"Every module has at least one test file\" | Check for matching test files |\n| \"No skipped tests remain\" | Grep for .skip or xit |\n\n### Structural Promises\nThese verify file and module organization.\n\n| Promise | How Claude Verifies It |\n|---------|----------------------|\n| \"Every module has an index.js with re-exports\" | Check each directory |\n| \"All files follow the naming convention\" | Glob for files, check names |\n| \"No circular dependencies exist\" | Analyze import chains |\n\n### Documentation Promises\nThese verify that documentation exists and is complete.\n\n| Promise | How Claude Verifies It |\n|---------|----------------------|\n| \"Every public function has JSDoc\" | Read each exported function |\n| \"All @param tags include types\" | Check JSDoc format |\n| \"Every module has a top-level description\" | Check file headers |\n\n### Standards Promises\nThese use external tools for verification.\n\n| Promise | How Claude Verifies It |\n|---------|----------------------|\n| \"All files pass ESLint with no warnings\" | Run `npx eslint .` |\n| \"TypeScript compiles with no errors\" | Run `tsc --noEmit` |\n| \"No security vulnerabilities in dependencies\" | Run `npm audit` |\n\n## Measurable vs Vague Promises\n\nThe key quality of a good completion promise is that it's **measurable**.\nClaude must be able to check it programmatically -- by reading files,\nrunning commands, or searching the codebase.\n\n| Vague (Bad) | Measurable (Good) | Why It's Better |\n|-------------|-------------------|-----------------|\n| \"Code is clean\" | \"No TODO comments, no console.log, no unused variables\" | Each condition is grep-able |\n| \"Tests are good\" | \"All tests pass and coverage > 80%\" | Verifiable with commands |\n| \"Docs are complete\" | \"Every exported function has @param and @returns in JSDoc\" | Checkable by reading code |\n| \"Error handling is solid\" | \"Every async function has try/catch wrapping external calls\" | Pattern-matchable |\n| \"Code is consistent\" | \"All files use const/let (no var), arrow functions, and async/await\" | Searchable patterns |\n\n## Compound Promises\n\nFor complex tasks, you often need multiple criteria that must ALL be true.\nThese are compound promises.\n\nExample:\n```\nCOMPLETION CRITERIA:\n- All tests pass (run npm test)\n- Test coverage exceeds 80% (run npm run coverage)\n- No lint warnings (run npm run lint)\n- Every function has JSDoc (check each file)\n```\n\nClaude checks each condition. If any fails, it identifies the gap, fixes\nit, and verifies again. The loop continues until ALL conditions are met.\n\n## The Iteration Cycle\n\nHere's how Claude uses completion promises during a loop:\n\n1. **Attempt**: Make changes to address the task\n2. **Verify**: Check each completion promise\n3. **If all pass**: Stop and report success\n4. **If any fail**: Identify which promise failed and why\n5. **Fix**: Make targeted changes to address the gap\n6. **Verify again**: Re-check all promises\n7. **Repeat** until all pass\n\nThis cycle is why measurable promises matter -- Claude needs to run\nconcrete checks, not make subjective judgments.\n\n## Promise Scope and Iteration Count\n\nThe scope of your promises affects how many iterations the loop takes:\n\n- **Narrow promises** finish fast: \"Fix the divide-by-zero bug in\n  calculator.js\" might take 1-2 iterations\n- **Medium promises** take several iterations: \"Add error handling to\n  all 5 service files\" might take 5-10 iterations\n- **Broad promises** take many iterations: \"Refactor the entire codebase\n  to use TypeScript\" might take 20+ iterations\n\nWider scope isn't necessarily bad, but you should be aware of the time\ntradeoff. Sometimes breaking a broad promise into multiple focused loops\nis more effective.\n\n---\n\n## Your Task\n\nThis workspace contains a project with multiple improvement opportunities.\nExamine the code to understand its current state.\n\nCreate a file called `completion-promises.md` containing completion promises\nfor 5 different scenarios. For each scenario, write:\n\n1. The scenario description (what task the loop would perform)\n2. The completion promise(s) -- specific, measurable conditions\n3. How Claude would verify each promise (what command to run or what to check)\n4. Whether the promise is narrow, medium, or broad scope\n\nThe 5 scenarios should span at least 3 different categories from the list\nabove (code quality, test-based, structural, documentation, standards).\n"
       },
       {
         "path": "package.json",
-        "content": "{\n  \"name\": \"completion-test\",\n  \"scripts\": {\n    \"test\": \"node --test\",\n    \"lint\": \"echo 'Lint check'\"\n  }\n}\n"
+        "content": "{\n  \"name\": \"task-manager-api\",\n  \"version\": \"1.0.0\",\n  \"scripts\": {\n    \"test\": \"node --test\",\n    \"lint\": \"echo 'Lint check passed'\",\n    \"start\": \"node src/index.js\"\n  }\n}\n"
       },
       {
-        "path": "src/calculator.js",
-        "content": "// Calculator module - needs tests and docs\n\nfunction add(a, b) {\n  return a + b;\n}\n\nfunction subtract(a, b) {\n  return a - b;\n}\n\nfunction multiply(a, b) {\n  return a * b;\n}\n\nfunction divide(a, b) {\n  if (b === 0) throw new Error('Division by zero');\n  return a / b;\n}\n\nmodule.exports = { add, subtract, multiply, divide };\n"
+        "path": "src/index.js",
+        "content": "const { createApp } = require('./app');\n\nconst app = createApp();\nconst PORT = process.env.PORT || 3000;\n\napp.listen(PORT, () => {\n  console.log(`Server running on port ${PORT}`);\n});\n"
+      },
+      {
+        "path": "src/app.js",
+        "content": "const express = require('express');\nconst { taskRoutes } = require('./routes/tasks');\nconst { userRoutes } = require('./routes/users');\nconst { projectRoutes } = require('./routes/projects');\n\nfunction createApp() {\n  const app = express();\n  app.use(express.json());\n  app.use('/api/tasks', taskRoutes);\n  app.use('/api/users', userRoutes);\n  app.use('/api/projects', projectRoutes);\n  return app;\n}\n\nmodule.exports = { createApp };\n"
+      },
+      {
+        "path": "src/routes/tasks.js",
+        "content": "const express = require('express');\nconst router = express.Router();\nconst db = require('../db');\n\n// TODO: add input validation\nrouter.get('/', async (req, res) => {\n  const tasks = await db.query('SELECT * FROM tasks');\n  res.json(tasks);\n});\n\n// TODO: add error handling\nrouter.post('/', async (req, res) => {\n  const { title, description, assignee, priority } = req.body;\n  const task = await db.query(\n    'INSERT INTO tasks (title, description, assignee, priority, status) VALUES ($1, $2, $3, $4, $5) RETURNING *',\n    [title, description, assignee, priority, 'open']\n  );\n  res.status(201).json(task);\n});\n\nrouter.get('/:id', async (req, res) => {\n  const task = await db.query('SELECT * FROM tasks WHERE id = $1', [req.params.id]);\n  if (!task) return res.status(404).json({ error: 'Task not found' });\n  res.json(task);\n});\n\n// TODO: validate status transitions\nrouter.patch('/:id/status', async (req, res) => {\n  const { status } = req.body;\n  const task = await db.query(\n    'UPDATE tasks SET status = $1 WHERE id = $2 RETURNING *',\n    [status, req.params.id]\n  );\n  res.json(task);\n});\n\nrouter.delete('/:id', async (req, res) => {\n  await db.query('DELETE FROM tasks WHERE id = $1', [req.params.id]);\n  res.status(204).end();\n});\n\nmodule.exports = { taskRoutes: router };\n"
+      },
+      {
+        "path": "src/routes/users.js",
+        "content": "const express = require('express');\nconst router = express.Router();\nconst db = require('../db');\n\nrouter.get('/', async (req, res) => {\n  const users = await db.query('SELECT id, name, email, role FROM users');\n  res.json(users);\n});\n\nrouter.post('/', async (req, res) => {\n  const { name, email, role } = req.body;\n  const user = await db.query(\n    'INSERT INTO users (name, email, role) VALUES ($1, $2, $3) RETURNING id, name, email, role',\n    [name, email, role]\n  );\n  res.status(201).json(user);\n});\n\nrouter.get('/:id', async (req, res) => {\n  const user = await db.query('SELECT id, name, email, role FROM users WHERE id = $1', [req.params.id]);\n  if (!user) return res.status(404).json({ error: 'User not found' });\n  res.json(user);\n});\n\nrouter.put('/:id', async (req, res) => {\n  const { name, email, role } = req.body;\n  const user = await db.query(\n    'UPDATE users SET name = $1, email = $2, role = $3 WHERE id = $4 RETURNING id, name, email, role',\n    [name, email, role, req.params.id]\n  );\n  res.json(user);\n});\n\nrouter.delete('/:id', async (req, res) => {\n  await db.query('DELETE FROM users WHERE id = $1', [req.params.id]);\n  res.status(204).end();\n});\n\nmodule.exports = { userRoutes: router };\n"
+      },
+      {
+        "path": "src/routes/projects.js",
+        "content": "const express = require('express');\nconst router = express.Router();\nconst db = require('../db');\n\nrouter.get('/', async (req, res) => {\n  const projects = await db.query('SELECT * FROM projects');\n  res.json(projects);\n});\n\nrouter.post('/', async (req, res) => {\n  const { name, description, owner } = req.body;\n  const project = await db.query(\n    'INSERT INTO projects (name, description, owner) VALUES ($1, $2, $3) RETURNING *',\n    [name, description, owner]\n  );\n  res.status(201).json(project);\n});\n\nrouter.get('/:id', async (req, res) => {\n  const project = await db.query('SELECT * FROM projects WHERE id = $1', [req.params.id]);\n  if (!project) return res.status(404).json({ error: 'Project not found' });\n  res.json(project);\n});\n\nrouter.get('/:id/tasks', async (req, res) => {\n  const tasks = await db.query('SELECT * FROM tasks WHERE project_id = $1', [req.params.id]);\n  res.json(tasks);\n});\n\nrouter.delete('/:id', async (req, res) => {\n  await db.query('DELETE FROM projects WHERE id = $1', [req.params.id]);\n  res.status(204).end();\n});\n\nmodule.exports = { projectRoutes: router };\n"
+      },
+      {
+        "path": "src/models/task.js",
+        "content": "// Task model - no validation, no documentation\nclass Task {\n  constructor(id, title, description, assignee, priority, status, projectId) {\n    this.id = id;\n    this.title = title;\n    this.description = description;\n    this.assignee = assignee;\n    this.priority = priority;\n    this.status = status;\n    this.projectId = projectId;\n  }\n\n  isOverdue() {\n    // TODO: implement\n    return false;\n  }\n\n  assign(userId) {\n    this.assignee = userId;\n  }\n\n  updateStatus(newStatus) {\n    // TODO: validate status transitions\n    this.status = newStatus;\n  }\n}\n\nmodule.exports = { Task };\n"
+      },
+      {
+        "path": "src/models/user.js",
+        "content": "class User {\n  constructor(id, name, email, role) {\n    this.id = id;\n    this.name = name;\n    this.email = email;\n    this.role = role;\n  }\n\n  hasPermission(action) {\n    // TODO: implement role-based permissions\n    return true;\n  }\n\n  toJSON() {\n    return { id: this.id, name: this.name, email: this.email, role: this.role };\n  }\n}\n\nmodule.exports = { User };\n"
+      },
+      {
+        "path": "src/models/project.js",
+        "content": "class Project {\n  constructor(id, name, description, owner) {\n    this.id = id;\n    this.name = name;\n    this.description = description;\n    this.owner = owner;\n  }\n\n  isOwnedBy(userId) {\n    return this.owner === userId;\n  }\n}\n\nmodule.exports = { Project };\n"
+      },
+      {
+        "path": "src/db.js",
+        "content": "const db = {\n  query: async (sql, params) => {\n    // simulated database\n    return [];\n  }\n};\n\nmodule.exports = db;\n"
+      },
+      {
+        "path": "src/utils/format.js",
+        "content": "function formatDate(date) {\n  return date.toISOString().split('T')[0];\n}\n\nfunction formatCurrency(amount) {\n  return `$${amount.toFixed(2)}`;\n}\n\nfunction capitalize(str) {\n  return str.charAt(0).toUpperCase() + str.slice(1);\n}\n\nfunction slugify(text) {\n  return text.toLowerCase().replace(/\\s+/g, '-').replace(/[^a-z0-9-]/g, '');\n}\n\nmodule.exports = { formatDate, formatCurrency, capitalize, slugify };\n"
+      },
+      {
+        "path": "src/utils/validate.js",
+        "content": "function isValidEmail(email) {\n  return /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email);\n}\n\nfunction isPositiveInteger(value) {\n  return Number.isInteger(value) && value > 0;\n}\n\nfunction isNonEmptyString(value) {\n  return typeof value === 'string' && value.trim().length > 0;\n}\n\nmodule.exports = { isValidEmail, isPositiveInteger, isNonEmptyString };\n"
       }
     ],
     "cleanBefore": true
@@ -30,32 +70,49 @@
   "objectives": [
     {
       "id": "obj-1",
-      "description": "Create test file for calculator",
+      "description": "Create completion-promises.md",
       "type": "file_exists",
-      "target": "src/calculator.test.js",
+      "target": "completion-promises.md",
       "required": true
     },
     {
       "id": "obj-2",
-      "description": "Test all four functions",
+      "description": "Contains 5 different scenarios with completion promises",
       "type": "file_contains",
-      "target": "src/calculator.test.js",
-      "pattern": "add|subtract|multiply|divide",
+      "target": "completion-promises.md",
+      "pattern": "[Ss]cenario|[Pp]romise|[Cc]riteri",
       "required": true
     },
     {
       "id": "obj-3",
-      "description": "Test edge cases",
+      "description": "Promises include verification method -- how Claude checks each promise",
       "type": "file_contains",
-      "target": "src/calculator.test.js",
-      "pattern": "zero|error|throw|negative|0",
+      "target": "completion-promises.md",
+      "pattern": "[Vv]erif|[Cc]heck|[Rr]un|[Ss]earch|[Gg]rep|[Rr]ead|[Cc]ommand|[Cc]onfirm",
       "required": true
     },
     {
       "id": "obj-4",
-      "description": "Document completion criteria",
-      "type": "file_exists",
-      "target": "completion-criteria.md",
+      "description": "Promises span at least 3 categories (code quality, tests, structural, documentation, standards)",
+      "type": "file_contains",
+      "target": "completion-promises.md",
+      "pattern": "[Cc]ode [Qq]uality|[Tt]est|[Ss]tructural|[Dd]ocumentation|[Ss]tandard|[Ll]int|JSDoc|TODO|[Ee]rror [Hh]andl",
+      "required": true
+    },
+    {
+      "id": "obj-5",
+      "description": "Each promise explains why it is measurable (not vague or subjective)",
+      "type": "file_contains",
+      "target": "completion-promises.md",
+      "pattern": "[Mm]easurable|[Ss]pecific|[Vv]erifiable|[Cc]oncrete|[Oo]bjective|[Qq]uantif",
+      "required": true
+    },
+    {
+      "id": "obj-6",
+      "description": "Promises include scope assessment (narrow, medium, or broad)",
+      "type": "file_contains",
+      "target": "completion-promises.md",
+      "pattern": "[Nn]arrow|[Mm]edium|[Bb]road|[Ss]cope|[Ii]teration",
       "required": true
     }
   ],
@@ -63,53 +120,65 @@
   "bonusObjectives": [
     {
       "id": "bonus-1",
-      "description": "Add JSDoc documentation",
+      "description": "Includes at least one compound promise (multiple criteria that all must be true)",
       "type": "file_contains",
-      "target": "src/calculator.js",
-      "pattern": "@param|@returns|@throws|\\* ",
-      "xpBonus": 50
+      "target": "completion-promises.md",
+      "pattern": "[Cc]ompound|AND|[Aa]ll.*must|[Bb]oth.*and|[Mm]ultiple.*criteri",
+      "xpBonus": 40
     },
     {
       "id": "bonus-2",
-      "description": "Tests pass when run",
-      "type": "command_output_contains",
-      "command": "cd ~/dojo-workspace/challenge-16-003 && npm test 2>&1 | tail -3",
-      "pattern": "pass|ok|passing",
-      "xpBonus": 50
+      "description": "References specific files from the project as promise targets",
+      "type": "file_contains",
+      "target": "completion-promises.md",
+      "pattern": "tasks\\.js|users\\.js|projects\\.js|task\\.js|format\\.js|validate\\.js",
+      "xpBonus": 30
+    },
+    {
+      "id": "bonus-3",
+      "description": "Discusses tradeoffs between narrow and broad promise scope",
+      "type": "file_contains",
+      "target": "completion-promises.md",
+      "pattern": "[Tt]radeoff|[Bb]alance|[Ff]aster|[Ss]lower|[Bb]reak.*down|[Ss]plit|[Ff]ocus",
+      "xpBonus": 30
     }
   ],
 
   "hints": [
     {
       "level": 1,
-      "text": "Define completion as: 'Done when all 4 functions have tests, including edge cases, and tests pass'.",
+      "text": "Read the README to understand the categories of completion promises and what makes a promise measurable. Then examine the project files -- notice the TODOs, the missing documentation, the lack of tests, and the inconsistent error handling. Each of these is a scenario you can write promises for.",
       "xpCost": 20
     },
     {
       "level": 2,
-      "text": "Try: '/ralph-loop Write comprehensive tests for calculator.js. COMPLETION: Tests exist for add, subtract, multiply, divide including edge cases (division by zero). All tests pass.'",
+      "text": "For each scenario, think about: What specific condition would be true when the task is done? How would Claude check it? Is it a grep, a command, or reading code? For example: Scenario 1 (code quality): 'No TODO comments remain' -- verified by grep. Scenario 2 (tests): 'Each route file has a corresponding test file' -- verified by checking file existence. Scenario 3 (documentation): 'Every exported function has JSDoc' -- verified by reading each file.",
       "xpCost": 55
     },
     {
       "level": 3,
-      "text": "Ask: '/ralph-loop Task: Create calculator.test.js with comprehensive tests. COMPLETION CRITERIA: 1) Tests for add with positive/negative numbers, 2) Tests for subtract, 3) Tests for multiply, 4) Tests for divide including division-by-zero error, 5) npm test passes, 6) Create completion-criteria.md documenting these criteria.'",
+      "text": "Create completion-promises.md with 5 scenarios: 1) Code Quality -- 'No TODO comments remain in src/' (narrow scope, verify with grep). 2) Test-Based -- 'Every route file has tests and all tests pass' (medium scope, verify with npm test). 3) Documentation -- 'Every function in src/models/ and src/utils/ has JSDoc with @param/@returns' (medium scope, verify by reading files). 4) Standards -- 'All async route handlers have try/catch and return proper HTTP status codes' (medium scope, verify by reading routes). 5) Compound -- 'No TODOs remain AND all functions have JSDoc AND all tests pass' (broad scope, verify with multiple checks). For each, explain why it's measurable and classify its scope.",
       "xpCost": 110
     }
   ],
 
   "solution": {
-    "approach": "Define explicit, measurable completion criteria for the loop.",
-    "example": "Create tests with clear completion promises",
+    "approach": "Examine the project to identify improvement opportunities across different categories. Write 5 completion promises that are specific, measurable, and verifiable, covering at least 3 different categories. Explain the verification method and scope for each.",
+    "example": "Create completion-promises.md with 5 scenarios spanning code quality (remove TODOs), tests (add test files), documentation (add JSDoc), standards (error handling), and a compound promise combining multiple criteria.",
     "alternativeApproaches": [
-      "Use a checklist format for completion criteria",
-      "Define success as passing specific commands"
+      "Organize by category rather than by scenario",
+      "Include both good and bad versions of each promise to contrast them"
     ]
   },
 
   "learningPoints": [
-    "Clear completion criteria prevent infinite loops",
-    "Measurable criteria help verify success",
-    "Document completion criteria for transparency"
+    "Completion promises must be measurable -- Claude needs a concrete way to check them",
+    "Promises fall into categories: code quality, test-based, structural, documentation, standards",
+    "Verification method matters: grep for patterns, run commands for tests/lint, read files for structure",
+    "Compound promises combine multiple criteria that must ALL be true",
+    "Narrow promises finish fast (1-2 iterations); broad promises take many iterations",
+    "Vague promises like 'make it better' are useless -- Claude can't verify subjective judgments",
+    "The iteration cycle is: attempt -> verify -> if not met, fix -> verify again"
   ],
 
   "nextChallenge": "16-004"

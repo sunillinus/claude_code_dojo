@@ -1,19 +1,19 @@
 {
   "id": "06-002",
   "module": "subagents",
-  "title": "Parallel Research",
-  "description": "Learn to request multiple research tasks that run in parallel. Parallel execution speeds up complex investigations.",
+  "title": "Parallel & Background Subagents",
+  "description": "Learn to run multiple subagents in parallel and use background agents. This is key to working efficiently on complex tasks.",
   "difficulty": "intermediate",
   "xpReward": 250,
-  "estimatedMinutes": 12,
-  "skills": ["parallel-subagents", "multi-task-research"],
+  "estimatedMinutes": 15,
+  "skills": ["parallel-subagents", "background-agents"],
 
   "setup": {
     "workingDir": "~/dojo-workspace/challenge-06-002",
     "initialFiles": [
       {
         "path": "README.md",
-        "content": "# Challenge: Parallel Research\n\nResearch multiple aspects of this project simultaneously.\n\n## Objectives\n1. Research the authentication system\n2. Research the database layer\n3. Research the API structure\n4. Combine findings into architecture-overview.md\n"
+        "content": "# Challenge: Parallel & Background Subagents\n\nLearn to run subagents in parallel and in the background.\n\n## Parallel Subagents\n\nWhen you have independent tasks, Claude Code can spawn multiple\nsubagents at the same time. Each runs in its own context:\n\n```\nYou: \"Research auth, database, and API structure simultaneously\"\n\nClaude Code spawns:\n  [Explore Agent 1] → researching auth\n  [Explore Agent 2] → researching database   (all run at same time)\n  [Explore Agent 3] → researching API\n```\n\nThis is much faster than doing them one at a time.\n\n## Background Subagents\n\nNormally, subagents block - you wait for them to finish. But you can\nask for background execution:\n\n- \"Run this in the background\"\n- \"Check on that background task\"\n- \"What's the status of the background agent?\"\n\nBackground agents:\n- Return immediately with a task ID\n- Write output to a file you can check later\n- Let you continue working while they run\n\n## Resuming Agents\n\nEvery subagent gets an agent ID when it finishes. You can resume it:\n- \"Resume that explore agent to dig deeper into the auth module\"\n- The agent picks up with its full previous context preserved\n\n## Objectives\n1. Ask for 3 parallel explore agents to research different parts of this codebase\n2. Ask for a background agent to do a longer task\n3. Create parallel-notes.md documenting the experience\n"
       },
       {
         "path": "src/index.js",
@@ -62,33 +62,33 @@
   "objectives": [
     {
       "id": "obj-1",
-      "description": "Create architecture-overview.md",
+      "description": "Create parallel-notes.md",
       "type": "file_exists",
-      "target": "architecture-overview.md",
+      "target": "parallel-notes.md",
       "required": true
     },
     {
       "id": "obj-2",
-      "description": "Document authentication (JWT, middleware)",
+      "description": "Notes cover parallel execution",
       "type": "file_contains",
-      "target": "architecture-overview.md",
-      "pattern": "[Aa]uth|JWT|token|middleware",
+      "target": "parallel-notes.md",
+      "pattern": "[Pp]arallel|[Ss]imultaneous|[Cc]oncurrent|at the same time|at once",
       "required": true
     },
     {
       "id": "obj-3",
-      "description": "Document database (PostgreSQL, models)",
+      "description": "Notes cover background agents",
       "type": "file_contains",
-      "target": "architecture-overview.md",
-      "pattern": "[Dd]atabase|[Pp]ostgres|[Mm]odel|User|Product",
+      "target": "parallel-notes.md",
+      "pattern": "[Bb]ackground|non.blocking|task.?[Ii][Dd]|output.?file",
       "required": true
     },
     {
       "id": "obj-4",
-      "description": "Document API structure (routes, endpoints)",
+      "description": "Notes include findings from at least 2 different areas of the codebase",
       "type": "file_contains",
-      "target": "architecture-overview.md",
-      "pattern": "[Rr]oute|[Ee]ndpoint|API|/users|/products",
+      "target": "parallel-notes.md",
+      "pattern": "[Aa]uth|[Dd]atabase|[Rr]oute|[Mm]odel",
       "required": true
     }
   ],
@@ -96,10 +96,10 @@
   "bonusObjectives": [
     {
       "id": "bonus-1",
-      "description": "Include a visual diagram or clear section structure",
+      "description": "Document how parallel agents save time vs sequential",
       "type": "file_contains",
-      "target": "architecture-overview.md",
-      "pattern": "##|```|→|->|\\|",
+      "target": "parallel-notes.md",
+      "pattern": "[Ff]aster|[Ss]peed|[Tt]ime|[Ee]fficient|sequential",
       "xpBonus": 50
     }
   ],
@@ -107,34 +107,36 @@
   "hints": [
     {
       "level": 1,
-      "text": "Ask Claude Code to research multiple aspects of the codebase - it can run searches in parallel.",
+      "text": "Ask Claude: 'Use 3 parallel explore agents to research: 1) the auth system, 2) the database layer, 3) the API routes'",
       "xpCost": 20
     },
     {
       "level": 2,
-      "text": "Try: 'Research the auth system, database layer, and API routes, then create an architecture overview'",
+      "text": "For background agents, try: 'Run an agent in the background to create a comprehensive architecture document'. Then check on it with 'What's the status of that background task?'",
       "xpCost": 50
     },
     {
       "level": 3,
-      "text": "Ask: 'I need to understand this codebase. Please research in parallel: 1) the authentication system 2) the database models and connection 3) the API route structure. Combine findings into architecture-overview.md'",
+      "text": "Your parallel-notes.md should cover: 1) What happened when you ran parallel agents (they all started at once), 2) What happened with the background agent (you got a task ID back), 3) Findings from the research, 4) When parallel execution is useful vs sequential.",
       "xpCost": 95
     }
   ],
 
   "solution": {
-    "approach": "Request multiple research tasks that Claude Code can execute in parallel.",
-    "example": "Research auth, database, and API structure in parallel, then combine into an overview",
+    "approach": "Request parallel exploration, try a background agent, then document the experience.",
+    "example": "Run 3 explore agents in parallel, then a background agent, document in parallel-notes.md",
     "alternativeApproaches": [
-      "Explore the three main architectural areas and document them",
-      "Create a comprehensive architecture document covering auth, db, and routes"
+      "Ask for parallel research on auth, db, and routes, then document",
+      "Request concurrent exploration of different code areas"
     ]
   },
 
   "learningPoints": [
-    "Claude Code can run multiple subagent tasks in parallel",
-    "Breaking research into focused areas gets better results",
-    "Combining findings creates comprehensive documentation"
+    "Claude Code can spawn multiple subagents simultaneously for independent tasks",
+    "Parallel execution is faster than sequential for independent research",
+    "Background agents return immediately and let you continue working",
+    "Background agents write to an output file you can check with Read or tail",
+    "Each agent gets an ID you can use to resume it later"
   ],
 
   "nextChallenge": "06-003"

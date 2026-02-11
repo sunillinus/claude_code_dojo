@@ -2,26 +2,30 @@
   "id": "13-003",
   "module": "code-generation",
   "title": "Generate from Specifications",
-  "description": "Generate code from detailed specifications or requirements documents.",
+  "description": "Learn spec-driven code generation: writing clear specifications, using them to generate implementations, and verifying the output matches the spec. Specs are the most reliable way to communicate intent to Claude Code.",
   "difficulty": "intermediate",
   "xpReward": 225,
   "estimatedMinutes": 15,
-  "skills": ["spec-to-code", "requirements"],
+  "skills": ["spec-to-code", "api-design", "validation-logic", "specification-writing"],
 
   "setup": {
     "workingDir": "~/dojo-workspace/challenge-13-003",
     "initialFiles": [
       {
         "path": "README.md",
-        "content": "# Challenge: Generate from Specifications\n\nImplement code based on the API specification provided.\n\n## Objectives\n1. Read the API spec in api-spec.md\n2. Generate the implementation\n3. Ensure all endpoints match the spec\n"
+        "content": "# Challenge: Generate from Specifications\n\nLearn to write clear specifications and use them to generate accurate\nimplementations with Claude Code.\n\n## Why Specifications Beat Code Descriptions\n\nThere are two ways to tell Claude Code what to build:\n\n**Code description** (fragile):\n\"Build a bookmark API with CRUD, make sure it validates URLs and\nhandles duplicates\"\n\n**Specification** (precise):\n```\nPOST /api/bookmarks\nRequest: { url: string, title?: string, tags?: string[] }\nResponse 201: { id, url, title, tags, createdAt }\nResponse 400: { error: \"Invalid URL format\" } when url fails URL validation\nResponse 409: { error: \"Bookmark already exists\", existingId: \"...\" }\n```\n\nThe code description is ambiguous. What does \"validates URLs\" mean exactly?\nWhat does \"handles duplicates\" mean - reject them? Merge them? The\nspecification removes all ambiguity. It says WHAT should happen without\ndictating HOW. This gives Claude Code freedom to choose the best\nimplementation while ensuring the result is correct.\n\nSpecifications are also implementation-agnostic. You could hand the same\nspec to a developer using Express, FastAPI, or Rails, and they would all\nbuild something that behaves identically. This same property makes specs\nperfect for Claude Code - it knows the target behavior without being\nconstrained in approach.\n\n## Anatomy of a Good Specification\n\n### 1. API Contract Definition\n\nFor each endpoint, define:\n- **Method and path**: GET /api/bookmarks\n- **Request shape**: Query params, body fields with types\n- **Success response**: Status code and body shape\n- **Error responses**: Each error case with status code and body\n- **Edge cases**: What happens with empty input, large payloads, etc.\n\nThe request and response shapes should use concrete examples. Instead of\nsaying \"returns a bookmark object,\" show the exact JSON structure with\nfield names and types.\n\n### 2. Data Model Description\n\nDefine your data model with:\n- **Fields**: Name and type for each field\n- **Constraints**: Required/optional, min/max length, allowed values\n- **Relationships**: Which fields reference other entities\n- **Auto-generated fields**: IDs, timestamps, computed values\n\nExample:\n```\nBookmark {\n  id: string (UUID, auto-generated)\n  url: string (required, must be valid URL)\n  title: string (optional, max 200 chars, defaults to url hostname)\n  tags: string[] (optional, each tag max 50 chars, max 10 tags)\n  createdAt: ISO 8601 string (auto-generated)\n  updatedAt: ISO 8601 string (auto-updated on change)\n}\n```\n\nNotice how every field has its type, whether it is required, and any\nconstraints. This level of detail means Claude Code does not need to\nmake any assumptions about your data model.\n\n### 3. Behavior Specification\n\nBusiness rules and validation logic:\n- What makes input valid/invalid?\n- How are conflicts resolved?\n- What are the ordering/sorting rules?\n- How does filtering work?\n- What are the default values for optional fields?\n\n### 4. Error Specification\n\nEvery possible error condition:\n- What triggers each error?\n- What status code is returned?\n- What is the error response body shape?\n- Are errors cumulative (multiple errors returned) or fail-fast?\n- What is the exact error message string?\n\nThe last point is critical. When your spec says the error message is\n\"URL is required\" (not \"url is required\" or \"Missing URL\"), Claude Code\nwill use that exact string. This makes automated testing straightforward.\n\n## The Spec-Generate-Test-Refine Cycle\n\nSpec-driven generation follows a cycle:\n\n1. **Write the spec**: Define what the code should do\n2. **Generate**: Ask Claude Code to implement the spec\n3. **Test**: Verify the implementation matches the spec\n4. **Refine**: Fix any mismatches between spec and implementation\n\nThis cycle is iterative. After testing, you may find that your spec was\nincomplete (you forgot an error case) or that the implementation diverged\nfrom the spec (wrong status code). Both are normal. Update the spec or\nthe implementation as needed, then verify again.\n\nThe spec itself may need updates as you discover edge cases during testing.\nThis is a feature, not a bug. The spec evolves with your understanding\nof the problem.\n\n## Specification Anti-Patterns\n\n| Anti-Pattern | Problem | Better Approach |\n|-------------|---------|----------------|\n| Vague types | \"takes some data\" | Explicit types: { url: string, title?: string } |\n| Missing errors | Only happy path defined | Define every error: 400, 404, 409 |\n| Implicit behavior | \"handles duplicates\" | \"returns 409 with existingId\" |\n| Over-specification | \"use a for loop to...\" | Describe WHAT, not HOW |\n| No edge cases | Only normal flow | Empty input, boundary values, null fields |\n| Ambiguous messages | \"returns an error\" | Exact message: \"URL is required\" |\n\n## Pointing Claude Code at a Spec File\n\nRather than copying spec details into your prompt, point Claude Code at\nthe spec file directly:\n\n```\n\"Read SPEC.md and implement the API it describes.\"\n```\n\nThis is better than paraphrasing the spec in your prompt because:\n- Claude Code sees the complete, authoritative specification\n- You avoid transcription errors\n- The spec file stays as the single source of truth\n- You can iterate on the spec file itself\n\n## Your Exercise\n\nThis workspace contains a `SPEC.md` file with a detailed API specification\nfor a bookmark management API. It defines 4 endpoints with request/response\nshapes, validation rules, and error codes.\n\nYour task: Use Claude Code to generate the complete implementation from\nthe spec. The implementation should match every detail: correct status\ncodes, proper validation, exact error messages.\n\nAfter generating, review the code against the spec. Does every endpoint\nexist? Does every validation rule fire? Are the error messages exact\nmatches? This verification step is part of the exercise.\n\n## Objectives\n1. Generate the implementation from SPEC.md\n2. All 4 endpoints must exist and handle the specified methods\n3. Validation rules must be implemented (URL format, required fields)\n4. Error responses must match the spec (correct status codes and messages)\n"
       },
       {
-        "path": "api-spec.md",
-        "content": "# Task API Specification\n\n## Data Model\n```\nTask {\n  id: string (UUID)\n  title: string (required, max 100 chars)\n  description: string (optional)\n  status: 'todo' | 'in_progress' | 'done'\n  priority: 'low' | 'medium' | 'high'\n  dueDate: ISO date string (optional)\n  createdAt: ISO date string\n  updatedAt: ISO date string\n}\n```\n\n## Endpoints\n\n### GET /tasks\nReturns all tasks. Supports query params:\n- status: filter by status\n- priority: filter by priority\n\n### GET /tasks/:id\nReturns single task or 404\n\n### POST /tasks\nCreate task. Required: title. Returns 201 with created task.\n\n### PUT /tasks/:id\nUpdate task. Returns updated task or 404.\n\n### DELETE /tasks/:id\nDelete task. Returns 204 or 404.\n"
+        "path": "SPEC.md",
+        "content": "# Bookmark API Specification\n\n## Data Model\n\n```\nBookmark {\n  id: string (UUID, auto-generated)\n  url: string (required, must be valid URL starting with http:// or https://)\n  title: string (optional, max 200 characters)\n  tags: string[] (optional, defaults to empty array)\n  createdAt: string (ISO 8601, auto-generated)\n  updatedAt: string (ISO 8601, auto-generated, updates on modification)\n}\n```\n\n## Endpoints\n\n### GET /api/bookmarks\n\nReturns all bookmarks. Supports filtering.\n\nQuery Parameters:\n- `tag` (optional): Filter bookmarks that contain this tag\n- `search` (optional): Filter bookmarks where title or url contains this string (case-insensitive)\n\nResponse 200:\n```json\n{\n  \"data\": [\n    { \"id\": \"...\", \"url\": \"...\", \"title\": \"...\", \"tags\": [...], \"createdAt\": \"...\", \"updatedAt\": \"...\" }\n  ],\n  \"count\": 0\n}\n```\n\n### GET /api/bookmarks/:id\n\nReturns a single bookmark by ID.\n\nResponse 200:\n```json\n{ \"data\": { \"id\": \"...\", \"url\": \"...\", \"title\": \"...\", \"tags\": [...], \"createdAt\": \"...\", \"updatedAt\": \"...\" } }\n```\n\nResponse 404:\n```json\n{ \"error\": \"Bookmark not found\" }\n```\n\n### POST /api/bookmarks\n\nCreates a new bookmark.\n\nRequest Body:\n```json\n{ \"url\": \"https://example.com\", \"title\": \"Example\", \"tags\": [\"reference\"] }\n```\n\nValidation Rules:\n- `url` is required. If missing: 400 `{ \"error\": \"URL is required\" }`\n- `url` must start with http:// or https://. If invalid: 400 `{ \"error\": \"Invalid URL format\" }`\n- `title` if provided must be <= 200 chars. If too long: 400 `{ \"error\": \"Title must be 200 characters or less\" }`\n- If a bookmark with the same `url` already exists: 409 `{ \"error\": \"Bookmark already exists\", \"existingId\": \"<id>\" }`\n\nResponse 201:\n```json\n{ \"data\": { \"id\": \"...\", \"url\": \"...\", \"title\": \"...\", \"tags\": [...], \"createdAt\": \"...\", \"updatedAt\": \"...\" } }\n```\n\n### DELETE /api/bookmarks/:id\n\nDeletes a bookmark by ID.\n\nResponse 204: No body\n\nResponse 404:\n```json\n{ \"error\": \"Bookmark not found\" }\n```\n\n## Error Response Format\n\nAll errors follow this shape:\n```json\n{ \"error\": \"Human-readable error message\" }\n```\n\nFor 409 Conflict, an additional field is included:\n```json\n{ \"error\": \"Bookmark already exists\", \"existingId\": \"<uuid>\" }\n```\n"
       },
       {
         "path": "package.json",
-        "content": "{\n  \"name\": \"task-api\",\n  \"type\": \"module\",\n  \"dependencies\": {\n    \"express\": \"^4.18.0\",\n    \"uuid\": \"^9.0.0\"\n  }\n}\n"
+        "content": "{\n  \"name\": \"bookmark-api\",\n  \"version\": \"1.0.0\",\n  \"type\": \"module\",\n  \"scripts\": {\n    \"start\": \"node src/index.js\",\n    \"dev\": \"node --watch src/index.js\"\n  },\n  \"dependencies\": {\n    \"express\": \"^4.18.0\",\n    \"uuid\": \"^9.0.0\"\n  }\n}"
+      },
+      {
+        "path": "src/.gitkeep",
+        "content": ""
       }
     ],
     "cleanBefore": true
@@ -30,33 +34,65 @@
   "objectives": [
     {
       "id": "obj-1",
-      "description": "Create task routes file",
+      "description": "Create a routes file for bookmark endpoints",
       "type": "file_exists",
-      "target": "routes/tasks.js",
+      "target": "src/routes/bookmarks.js",
       "required": true
     },
     {
       "id": "obj-2",
-      "description": "Implement GET /tasks endpoint",
+      "description": "Implement GET /api/bookmarks (list endpoint)",
       "type": "file_contains",
-      "target": "routes/tasks.js",
-      "pattern": "get\\(['\"]/?['\"]|router\\.get",
+      "target": "src/routes/bookmarks.js",
+      "pattern": "router\\.get\\(['\"]\\/?['\"]|get.*\\/",
       "required": true
     },
     {
       "id": "obj-3",
-      "description": "Implement POST /tasks endpoint",
+      "description": "Implement POST /api/bookmarks (create endpoint)",
       "type": "file_contains",
-      "target": "routes/tasks.js",
-      "pattern": "post\\(['\"]/?['\"]|router\\.post",
+      "target": "src/routes/bookmarks.js",
+      "pattern": "router\\.post\\(['\"]\\/?['\"]|post.*\\/",
       "required": true
     },
     {
       "id": "obj-4",
-      "description": "Include status filtering",
+      "description": "Implement DELETE /api/bookmarks/:id",
       "type": "file_contains",
-      "target": "routes/tasks.js",
-      "pattern": "status|query\\.status|filter",
+      "target": "src/routes/bookmarks.js",
+      "pattern": "router\\.delete|delete.*/:id|delete.*params",
+      "required": true
+    },
+    {
+      "id": "obj-5",
+      "description": "URL validation implemented (must start with http:// or https://)",
+      "type": "file_contains",
+      "target": "src/routes/bookmarks.js",
+      "pattern": "http://|https://|Invalid URL|url.*required|URL is required",
+      "required": true
+    },
+    {
+      "id": "obj-6",
+      "description": "409 Conflict handling for duplicate URLs with existingId",
+      "type": "file_contains",
+      "target": "src/routes/bookmarks.js",
+      "pattern": "409|existingId|already exists|Bookmark already exists",
+      "required": true
+    },
+    {
+      "id": "obj-7",
+      "description": "404 Not Found handling for missing bookmarks",
+      "type": "file_contains",
+      "target": "src/routes/bookmarks.js",
+      "pattern": "404|not found|Bookmark not found|Not found",
+      "required": true
+    },
+    {
+      "id": "obj-8",
+      "description": "Create the Express app entry point that mounts routes",
+      "type": "file_contains",
+      "target": "src/index.js",
+      "pattern": "/api/bookmarks|bookmarkRoutes|bookmarks",
       "required": true
     }
   ],
@@ -64,53 +100,72 @@
   "bonusObjectives": [
     {
       "id": "bonus-1",
-      "description": "Implement all CRUD operations",
+      "description": "Tag filtering implemented on GET /api/bookmarks",
       "type": "file_contains",
-      "target": "routes/tasks.js",
-      "pattern": "put\\(|delete\\(",
-      "xpBonus": 50
+      "target": "src/routes/bookmarks.js",
+      "pattern": "tag|query\\.tag|filter.*tag|tags.*include",
+      "xpBonus": 40
     },
     {
       "id": "bonus-2",
-      "description": "Add input validation",
+      "description": "Search filtering implemented (case-insensitive title/url search)",
       "type": "file_contains",
-      "target": "routes/tasks.js",
-      "pattern": "valid|required|title.*length|!title",
-      "xpBonus": 50
+      "target": "src/routes/bookmarks.js",
+      "pattern": "search|query\\.search|toLowerCase|includes.*search|search.*includes",
+      "xpBonus": 40
+    },
+    {
+      "id": "bonus-3",
+      "description": "Title length validation (max 200 characters)",
+      "type": "file_contains",
+      "target": "src/routes/bookmarks.js",
+      "pattern": "200.*char|title.*length|length.*200|Title must be",
+      "xpBonus": 30
+    },
+    {
+      "id": "bonus-4",
+      "description": "Response includes count field in list endpoint",
+      "type": "file_contains",
+      "target": "src/routes/bookmarks.js",
+      "pattern": "count|length",
+      "xpBonus": 15
     }
   ],
 
   "hints": [
     {
       "level": 1,
-      "text": "Reference the spec file in your request. Ask Claude to implement exactly what's specified.",
+      "text": "The key insight of spec-driven generation is to let the spec do the talking. Don't re-describe it - point Claude Code at the file: 'Read SPEC.md and implement the complete Bookmark API it describes. Create src/routes/bookmarks.js with all endpoints, and src/index.js as the Express entry point.' Claude Code will follow the spec's details.",
       "xpCost": 15
     },
     {
       "level": 2,
-      "text": "Try: 'Read api-spec.md and implement the Task API routes. Follow the spec exactly.'",
+      "text": "After the initial generation, verify against the spec: Does POST return 400 with 'URL is required' when url is missing? Does it return 409 with 'existingId' for duplicates? Does GET support 'tag' and 'search' query params? Does DELETE return 204 on success? Check each detail from the spec. Ask Claude Code to fix any mismatches.",
       "xpCost": 45
     },
     {
       "level": 3,
-      "text": "Ask: 'Implement routes/tasks.js based on api-spec.md. Include: GET /tasks with status/priority filtering, GET /tasks/:id, POST /tasks with validation, PUT /tasks/:id, DELETE /tasks/:id. Use an in-memory array for storage.'",
+      "text": "If validation is incomplete, ask specifically: 'Update the POST /api/bookmarks handler to validate: 1) url is required (400, \"URL is required\"), 2) url starts with http:// or https:// (400, \"Invalid URL format\"), 3) title max 200 chars (400, \"Title must be 200 characters or less\"), 4) duplicate url returns 409 with existingId. Use an in-memory array for storage. Each error message must match SPEC.md exactly.'",
       "xpCost": 90
     }
   ],
 
   "solution": {
-    "approach": "Reference the specification file and ask for exact implementation.",
-    "example": "Implement the Task API based on api-spec.md",
+    "approach": "Point Claude Code at SPEC.md and ask for a complete implementation. Then verify each endpoint's behavior, status codes, and error messages match the spec exactly. Fix any deviations.",
+    "example": "Prompt: 'Read SPEC.md. Implement the Bookmark API described in it. Create src/routes/bookmarks.js with all 4 endpoints (GET list, GET by ID, POST, DELETE). Create src/index.js to set up Express and mount routes at /api/bookmarks. Use an in-memory array for storage. Every status code, validation rule, and error message must match the spec exactly.'",
     "alternativeApproaches": [
-      "Copy spec details into your request",
-      "Ask for one endpoint at a time"
+      "Generate one endpoint at a time, verifying each against the spec before moving on",
+      "Generate a separate validation module and route module",
+      "Generate the data layer first, then the route handlers"
     ]
   },
 
   "learningPoints": [
-    "Specifications guide accurate code generation",
-    "Reference existing files for context",
-    "Claude can follow detailed requirements"
+    "Specifications describe WHAT, not HOW - this gives Claude Code implementation freedom while ensuring correctness",
+    "A good API spec defines: endpoint contracts, data models, validation rules, and all error cases",
+    "The spec-generate-test-refine cycle is iterative - expect to verify and fix",
+    "Exact error messages and status codes in the spec make verification straightforward",
+    "Pointing Claude Code at a spec file is more reliable than re-describing requirements in your prompt"
   ],
 
   "nextChallenge": "13-004"

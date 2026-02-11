@@ -2,38 +2,46 @@
   "id": "04-005",
   "module": "code-editing",
   "title": "Multi-file Refactor",
-  "description": "Learn to refactor code across multiple files. Claude Code can coordinate changes across your entire codebase.",
+  "description": "Learn to refactor code across multiple files when changing a shared interface. When a core function signature changes, every file that calls it must be updated consistently - this is where Claude Code's codebase-wide understanding shines.",
   "difficulty": "advanced",
   "xpReward": 350,
-  "estimatedMinutes": 15,
-  "skills": ["multi-file-editing", "api-refactoring"],
+  "estimatedMinutes": 18,
+  "skills": ["multi-file-editing", "api-refactoring", "dependency-analysis", "incremental-changes"],
 
   "setup": {
     "workingDir": "~/dojo-workspace/challenge-04-005",
     "initialFiles": [
       {
         "path": "README.md",
-        "content": "# Challenge: Multi-file Refactor\n\nRename the API function and update all usages.\n\n## Objectives\n1. Rename `getUser` to `fetchUserById` in userApi.js\n2. Update ALL files that use this function\n3. Ensure nothing breaks\n"
+        "content": "# Challenge: Multi-file Refactor\n\nLearn to refactor code across multiple files when a shared interface changes.\n\n## Why Multi-file Refactoring Is Hard\n\nChanging a function signature in one file is easy. But when that function\nis imported and called in 4, 10, or 50 other files, a simple rename or\nparameter change becomes a coordination problem. Miss even one call site\nand you have a runtime error.\n\n## Planning the Change\n\nBefore touching any code, map out the full impact:\n\n1. **Find all call sites**: Use Grep to search for the function name\n   across the entire project. Don't rely on your memory - search.\n   ```\n   Search for: formatPrice\n   Found in: checkout.js, cart.js, productList.js, receipt.js, admin.js\n   ```\n\n2. **Understand each usage**: Each call site may pass different arguments\n   or use the return value differently.\n\n3. **Plan the migration**: Decide what the new signature looks like and\n   what default values make sense for backward compatibility.\n\n## Dependency Order\n\nChange files in the right order:\n\n1. **Update the source function** first (where it's defined)\n2. **Update leaf consumers** (files that just call the function)\n3. **Update intermediate files** (files that import and re-export)\n\nAlternatively, add the new parameters with defaults so existing calls\nstill work:\n```javascript\n// Before: formatPrice(amount)\n// After: formatPrice(amount, currency = 'USD', locale = 'en-US')\n// Old calls like formatPrice(9.99) still work!\n```\n\n## Keeping Things Working\n\nThe safest approach is incremental:\n1. Add new parameters with sensible defaults\n2. Update the implementation to use the new parameters\n3. Update each call site one at a time\n4. Optionally remove defaults once all call sites are updated\n\nAt every step, the code still works. No broken intermediate state.\n\n## Using Grep to Find All Call Sites\n\nBefore changing an interface, always search first:\n- Search for the function name to find all imports and calls\n- Search for destructuring patterns: `{ formatPrice }` or `{ formatPrice,`\n- Don't forget test files!\n\nClaude Code does this automatically when you ask it to refactor a\nfunction across the project. But understanding the process helps you\nverify the result.\n\n## Shared Interfaces\n\nWhen changing a function used by multiple files, consider:\n- **Adding parameters**: Safest with defaults\n- **Removing parameters**: Find all callers, update them first\n- **Renaming**: Must update every import and every call\n- **Changing return type**: Every consumer that reads the return needs updating\n\n## The Workspace\n\nYou have a small e-commerce project where `formatPrice(amount)` is used\neverywhere. The business now requires multi-currency support, so the\nfunction needs to change to `formatPrice(amount, currency, locale)`.\n\nThe function is defined in `utils/formatters.js` and used in:\n- `components/ProductCard.js` - displays product prices\n- `components/CartItem.js` - shows item prices and subtotals\n- `components/OrderSummary.js` - shows totals, tax, shipping\n- `pages/CheckoutPage.js` - final checkout display\n- `tests/formatters.test.js` - unit tests\n\n## Objectives\n\n1. Update `formatPrice` in utils/formatters.js to accept\n   `(amount, currency, locale)` parameters with sensible defaults\n2. Update ALL call sites across the project to use the new signature\n3. Ensure no file still calls `formatPrice` with only one argument\n   (every call should explicitly pass currency)\n4. Update the tests to cover the new parameters\n5. No file should have the old single-argument calls remaining\n"
       },
       {
-        "path": "api/userApi.js",
-        "content": "// User API module\n\nasync function getUser(id) {\n  const response = await fetch(`/api/users/${id}`);\n  return response.json();\n}\n\nasync function getUsers() {\n  const response = await fetch('/api/users');\n  return response.json();\n}\n\nasync function createUser(data) {\n  const response = await fetch('/api/users', {\n    method: 'POST',\n    body: JSON.stringify(data)\n  });\n  return response.json();\n}\n\nmodule.exports = { getUser, getUsers, createUser };\n"
+        "path": "utils/formatters.js",
+        "content": "/**\n * Format a price for display.\n * Currently only supports USD.\n *\n * @param {number} amount - The price amount.\n * @returns {string} Formatted price string.\n */\nfunction formatPrice(amount) {\n  if (typeof amount !== 'number' || isNaN(amount)) {\n    return '$0.00';\n  }\n  return `$${amount.toFixed(2)}`;\n}\n\n/**\n * Format a date for display.\n * @param {Date|string} date - The date to format.\n * @returns {string} Formatted date string.\n */\nfunction formatDate(date) {\n  const d = new Date(date);\n  return d.toLocaleDateString('en-US', {\n    year: 'numeric',\n    month: 'long',\n    day: 'numeric'\n  });\n}\n\n/**\n * Format a percentage for display.\n * @param {number} value - The decimal value (0.15 = 15%).\n * @returns {string} Formatted percentage string.\n */\nfunction formatPercentage(value) {\n  if (typeof value !== 'number') return '0%';\n  return `${(value * 100).toFixed(1)}%`;\n}\n\nmodule.exports = { formatPrice, formatDate, formatPercentage };\n"
       },
       {
-        "path": "services/profileService.js",
-        "content": "const { getUser } = require('../api/userApi');\n\nasync function loadProfile(userId) {\n  const user = await getUser(userId);\n  return {\n    displayName: user.name,\n    avatar: user.avatar,\n    bio: user.bio\n  };\n}\n\nmodule.exports = { loadProfile };\n"
+        "path": "components/ProductCard.js",
+        "content": "const { formatPrice } = require('../utils/formatters');\n\n/**\n * Render a product card.\n * @param {Object} product - The product data.\n * @returns {string} HTML string for the product card.\n */\nfunction renderProductCard(product) {\n  const priceDisplay = formatPrice(product.price);\n  const salePriceDisplay = product.salePrice\n    ? formatPrice(product.salePrice)\n    : null;\n\n  return `\n    <div class=\"product-card\">\n      <img src=\"${product.image}\" alt=\"${product.name}\" />\n      <h3>${product.name}</h3>\n      <p class=\"price ${salePriceDisplay ? 'strikethrough' : ''}\">\n        ${priceDisplay}\n      </p>\n      ${salePriceDisplay ? `<p class=\"sale-price\">${salePriceDisplay}</p>` : ''}\n      <button>Add to Cart</button>\n    </div>\n  `;\n}\n\n/**\n * Render a list of product cards.\n * @param {Array} products - Array of product objects.\n * @returns {string} HTML string.\n */\nfunction renderProductList(products) {\n  return products.map(renderProductCard).join('\\n');\n}\n\nmodule.exports = { renderProductCard, renderProductList };\n"
       },
       {
-        "path": "services/dashboardService.js",
-        "content": "const { getUser, getUsers } = require('../api/userApi');\n\nasync function loadDashboard(currentUserId) {\n  const currentUser = await getUser(currentUserId);\n  const allUsers = await getUsers();\n  \n  return {\n    user: currentUser,\n    teamMembers: allUsers.filter(u => u.team === currentUser.team)\n  };\n}\n\nmodule.exports = { loadDashboard };\n"
+        "path": "components/CartItem.js",
+        "content": "const { formatPrice } = require('../utils/formatters');\n\n/**\n * Render a cart item row.\n * @param {Object} item - The cart item.\n * @returns {string} HTML string for the cart item.\n */\nfunction renderCartItem(item) {\n  const unitPrice = formatPrice(item.price);\n  const subtotal = formatPrice(item.price * item.quantity);\n\n  return `\n    <div class=\"cart-item\">\n      <span class=\"item-name\">${item.name}</span>\n      <span class=\"unit-price\">${unitPrice}</span>\n      <span class=\"quantity\">x${item.quantity}</span>\n      <span class=\"subtotal\">${subtotal}</span>\n    </div>\n  `;\n}\n\n/**\n * Render the full cart.\n * @param {Array} items - Array of cart items.\n * @returns {string} HTML string.\n */\nfunction renderCart(items) {\n  const itemRows = items.map(renderCartItem).join('\\n');\n  const total = items.reduce((sum, item) => sum + item.price * item.quantity, 0);\n\n  return `\n    <div class=\"cart\">\n      ${itemRows}\n      <div class=\"cart-total\">Total: ${formatPrice(total)}</div>\n    </div>\n  `;\n}\n\nmodule.exports = { renderCartItem, renderCart };\n"
       },
       {
-        "path": "components/UserProfile.js",
-        "content": "const { getUser } = require('../api/userApi');\n\nclass UserProfile {\n  constructor(userId) {\n    this.userId = userId;\n    this.user = null;\n  }\n\n  async load() {\n    this.user = await getUser(this.userId);\n    return this;\n  }\n\n  render() {\n    if (!this.user) return '<div>Loading...</div>';\n    return `<div class=\"profile\">${this.user.name}</div>`;\n  }\n}\n\nmodule.exports = UserProfile;\n"
+        "path": "components/OrderSummary.js",
+        "content": "const { formatPrice, formatPercentage } = require('../utils/formatters');\n\n/**\n * Render the order summary.\n * @param {Object} order - The order data.\n * @returns {string} HTML string.\n */\nfunction renderOrderSummary(order) {\n  const subtotal = formatPrice(order.subtotal);\n  const taxAmount = formatPrice(order.taxAmount);\n  const shipping = order.shippingCost === 0\n    ? 'FREE'\n    : formatPrice(order.shippingCost);\n  const discount = order.discount\n    ? formatPrice(order.discount)\n    : null;\n  const total = formatPrice(order.total);\n\n  return `\n    <div class=\"order-summary\">\n      <div class=\"line\">Subtotal: ${subtotal}</div>\n      <div class=\"line\">Tax (${formatPercentage(order.taxRate)}): ${taxAmount}</div>\n      <div class=\"line\">Shipping: ${shipping}</div>\n      ${discount ? `<div class=\"line discount\">Discount: -${discount}</div>` : ''}\n      <div class=\"line total\">Total: ${total}</div>\n    </div>\n  `;\n}\n\nmodule.exports = { renderOrderSummary };\n"
       },
       {
-        "path": "tests/userApi.test.js",
-        "content": "const { getUser, getUsers } = require('../api/userApi');\n\ndescribe('User API', () => {\n  test('getUser fetches a single user', async () => {\n    const user = await getUser('123');\n    expect(user).toBeDefined();\n  });\n\n  test('getUsers fetches all users', async () => {\n    const users = await getUsers();\n    expect(Array.isArray(users)).toBe(true);\n  });\n});\n"
+        "path": "pages/CheckoutPage.js",
+        "content": "const { formatPrice, formatDate } = require('../utils/formatters');\nconst { renderOrderSummary } = require('../components/OrderSummary');\nconst { renderCart } = require('../components/CartItem');\n\n/**\n * Render the checkout page.\n * @param {Object} checkout - Checkout data.\n * @returns {string} HTML string.\n */\nfunction renderCheckoutPage(checkout) {\n  const estimatedTotal = formatPrice(checkout.estimatedTotal);\n  const savedAmount = checkout.savedAmount > 0\n    ? formatPrice(checkout.savedAmount)\n    : null;\n\n  return `\n    <div class=\"checkout-page\">\n      <h1>Checkout</h1>\n      <div class=\"cart-section\">\n        <h2>Your Items</h2>\n        ${renderCart(checkout.items)}\n      </div>\n      <div class=\"summary-section\">\n        ${renderOrderSummary(checkout.order)}\n      </div>\n      ${savedAmount ? `<div class=\"savings\">You saved ${savedAmount}!</div>` : ''}\n      <div class=\"estimated-total\">\n        Estimated Total: ${estimatedTotal}\n      </div>\n      <div class=\"delivery-date\">\n        Estimated Delivery: ${formatDate(checkout.estimatedDelivery)}\n      </div>\n      <button class=\"checkout-btn\">Place Order - ${formatPrice(checkout.order.total)}</button>\n    </div>\n  `;\n}\n\nmodule.exports = { renderCheckoutPage };\n"
+      },
+      {
+        "path": "tests/formatters.test.js",
+        "content": "const { formatPrice, formatDate, formatPercentage } = require('../utils/formatters');\n\ndescribe('formatPrice', () => {\n  test('formats a basic price', () => {\n    expect(formatPrice(9.99)).toBe('$9.99');\n  });\n\n  test('formats zero', () => {\n    expect(formatPrice(0)).toBe('$0.00');\n  });\n\n  test('formats large numbers', () => {\n    expect(formatPrice(1234.5)).toBe('$1234.50');\n  });\n\n  test('handles NaN', () => {\n    expect(formatPrice(NaN)).toBe('$0.00');\n  });\n\n  test('handles non-number input', () => {\n    expect(formatPrice('abc')).toBe('$0.00');\n  });\n});\n\ndescribe('formatDate', () => {\n  test('formats a date object', () => {\n    const result = formatDate(new Date('2024-01-15'));\n    expect(result).toContain('2024');\n  });\n});\n\ndescribe('formatPercentage', () => {\n  test('formats a decimal as percentage', () => {\n    expect(formatPercentage(0.15)).toBe('15.0%');\n  });\n});\n"
+      },
+      {
+        "path": "config/currencies.js",
+        "content": "/**\n * Currency configuration.\n * Used to determine formatting rules for different currencies.\n */\nconst CURRENCIES = {\n  USD: { symbol: '$', locale: 'en-US', code: 'USD' },\n  EUR: { symbol: '\\u20ac', locale: 'de-DE', code: 'EUR' },\n  GBP: { symbol: '\\u00a3', locale: 'en-GB', code: 'GBP' },\n  JPY: { symbol: '\\u00a5', locale: 'ja-JP', code: 'JPY', decimals: 0 },\n  CAD: { symbol: 'CA$', locale: 'en-CA', code: 'CAD' }\n};\n\nconst DEFAULT_CURRENCY = 'USD';\nconst DEFAULT_LOCALE = 'en-US';\n\nmodule.exports = { CURRENCIES, DEFAULT_CURRENCY, DEFAULT_LOCALE };\n"
       }
     ],
     "cleanBefore": true
@@ -42,34 +50,74 @@
   "objectives": [
     {
       "id": "obj-1",
-      "description": "Function renamed in userApi.js",
+      "description": "formatPrice in utils/formatters.js accepts currency and locale parameters",
       "type": "file_contains",
-      "target": "api/userApi.js",
-      "pattern": "function fetchUserById|fetchUserById.*=",
+      "target": "utils/formatters.js",
+      "pattern": "formatPrice\\s*\\(\\s*amount\\s*,\\s*currency|formatPrice.*amount.*currency.*locale",
       "required": true
     },
     {
       "id": "obj-2",
-      "description": "profileService.js uses new name",
+      "description": "formatPrice uses Intl.NumberFormat or currency-aware formatting",
       "type": "file_contains",
-      "target": "services/profileService.js",
-      "pattern": "fetchUserById",
+      "target": "utils/formatters.js",
+      "pattern": "Intl\\.NumberFormat|toLocaleString|currency|CURRENCIES",
       "required": true
     },
     {
       "id": "obj-3",
-      "description": "dashboardService.js uses new name",
+      "description": "ProductCard.js passes currency to formatPrice",
       "type": "file_contains",
-      "target": "services/dashboardService.js",
-      "pattern": "fetchUserById",
+      "target": "components/ProductCard.js",
+      "pattern": "formatPrice\\(.*,\\s*['\"]|formatPrice\\(.*,\\s*\\w+\\.currency|formatPrice\\(.*,\\s*currency",
       "required": true
     },
     {
       "id": "obj-4",
-      "description": "UserProfile.js uses new name",
+      "description": "CartItem.js passes currency to formatPrice",
       "type": "file_contains",
-      "target": "components/UserProfile.js",
-      "pattern": "fetchUserById",
+      "target": "components/CartItem.js",
+      "pattern": "formatPrice\\(.*,\\s*['\"]|formatPrice\\(.*,\\s*\\w+\\.currency|formatPrice\\(.*,\\s*currency",
+      "required": true
+    },
+    {
+      "id": "obj-5",
+      "description": "OrderSummary.js passes currency to formatPrice",
+      "type": "file_contains",
+      "target": "components/OrderSummary.js",
+      "pattern": "formatPrice\\(.*,\\s*['\"]|formatPrice\\(.*,\\s*\\w+\\.currency|formatPrice\\(.*,\\s*currency",
+      "required": true
+    },
+    {
+      "id": "obj-6",
+      "description": "CheckoutPage.js passes currency to formatPrice",
+      "type": "file_contains",
+      "target": "pages/CheckoutPage.js",
+      "pattern": "formatPrice\\(.*,\\s*['\"]|formatPrice\\(.*,\\s*\\w+\\.currency|formatPrice\\(.*,\\s*currency",
+      "required": true
+    },
+    {
+      "id": "obj-7",
+      "description": "No file still calls formatPrice with only a single argument",
+      "type": "file_not_contains",
+      "target": "components/ProductCard.js",
+      "pattern": "formatPrice\\([^,)]+\\)(?!\\s*;?\\s*//)",
+      "required": true
+    },
+    {
+      "id": "obj-8",
+      "description": "No file still calls formatPrice with only a single argument in CartItem",
+      "type": "file_not_contains",
+      "target": "components/CartItem.js",
+      "pattern": "formatPrice\\([^,)]+\\)(?!\\s*;?\\s*//)",
+      "required": true
+    },
+    {
+      "id": "obj-9",
+      "description": "Tests cover the new currency parameter",
+      "type": "file_contains",
+      "target": "tests/formatters.test.js",
+      "pattern": "formatPrice\\(.*,\\s*['\"]EUR|formatPrice\\(.*,\\s*['\"]GBP|formatPrice\\(.*,\\s*['\"]USD|currency",
       "required": true
     }
   ],
@@ -77,45 +125,66 @@
   "bonusObjectives": [
     {
       "id": "bonus-1",
-      "description": "Tests updated to use new name",
+      "description": "formatPrice uses Intl.NumberFormat for proper locale-aware formatting",
       "type": "file_contains",
-      "target": "tests/userApi.test.js",
-      "pattern": "fetchUserById",
-      "xpBonus": 75
+      "target": "utils/formatters.js",
+      "pattern": "new Intl\\.NumberFormat|Intl\\.NumberFormat",
+      "xpBonus": 50
+    },
+    {
+      "id": "bonus-2",
+      "description": "formatPrice imports or uses the CURRENCIES config",
+      "type": "file_contains",
+      "target": "utils/formatters.js",
+      "pattern": "require.*currencies|CURRENCIES|DEFAULT_CURRENCY",
+      "xpBonus": 40
+    },
+    {
+      "id": "bonus-3",
+      "description": "Tests include a test for EUR or GBP formatting",
+      "type": "file_contains",
+      "target": "tests/formatters.test.js",
+      "pattern": "EUR|GBP|euro|pound|\\u20ac|\\u00a3",
+      "xpBonus": 35
     }
   ],
 
   "hints": [
     {
       "level": 1,
-      "text": "Ask Claude Code to rename the function and update all files that use it.",
+      "text": "Start by understanding the scope of the change. formatPrice is called in 5 files (ProductCard, CartItem, OrderSummary, CheckoutPage, and the tests). You also have a currencies.js config file ready to use. Plan the change: update the function signature with defaults, then update each call site to pass the currency explicitly.",
       "xpCost": 25
     },
     {
       "level": 2,
-      "text": "Try: 'Rename getUser to fetchUserById in userApi.js and update all files that import it'",
+      "text": "Ask Claude Code: 'Refactor formatPrice in utils/formatters.js to accept (amount, currency, locale) parameters. Use Intl.NumberFormat for proper currency formatting. Import DEFAULT_CURRENCY and DEFAULT_LOCALE from config/currencies.js as defaults. Then update every file that calls formatPrice (ProductCard.js, CartItem.js, OrderSummary.js, CheckoutPage.js) to pass the currency explicitly. Update the tests to cover multiple currencies.'",
       "xpCost": 70
     },
     {
       "level": 3,
-      "text": "Ask: 'Refactor: rename the getUser function to fetchUserById. Find all files that use it (profileService, dashboardService, UserProfile, tests) and update the imports and usages.'",
+      "text": "Here's the detailed plan: 1) Update utils/formatters.js: change formatPrice(amount) to formatPrice(amount, currency = DEFAULT_CURRENCY, locale = DEFAULT_LOCALE). Use new Intl.NumberFormat(locale, { style: 'currency', currency }).format(amount). Import defaults from config/currencies.js. 2) ProductCard.js: change formatPrice(product.price) to formatPrice(product.price, product.currency || 'USD'). Same for salePrice. 3) CartItem.js: pass item.currency || 'USD' to all formatPrice calls. 4) OrderSummary.js: pass order.currency || 'USD' to all 5 formatPrice calls. 5) CheckoutPage.js: pass checkout.currency || 'USD' to all formatPrice calls. 6) Tests: add test cases for EUR and GBP formatting.",
       "xpCost": 125
     }
   ],
 
   "solution": {
-    "approach": "Rename the function and update all usages across the codebase.",
-    "example": "Rename getUser to fetchUserById and update all files that use it",
+    "approach": "Update the formatPrice function signature to accept currency and locale with defaults, then systematically update every call site to pass the currency explicitly. Use Intl.NumberFormat for proper locale-aware formatting.",
+    "example": "Refactor formatPrice to accept (amount, currency, locale) with USD/en-US defaults using Intl.NumberFormat. Then update all call sites in ProductCard, CartItem, OrderSummary, CheckoutPage to pass currency. Update tests for multi-currency.",
     "alternativeApproaches": [
-      "Refactor getUser to fetchUserById across the entire project",
-      "Find and replace getUser with fetchUserById in all files"
+      "Add parameters with defaults first (so nothing breaks), then update call sites one file at a time",
+      "Use a find-and-replace approach: search for all formatPrice calls, then update each one",
+      "Create a wrapper function formatPriceUSD that calls the new formatPrice with USD defaults, replacing old calls"
     ]
   },
 
   "learningPoints": [
-    "Claude Code can coordinate changes across multiple files",
-    "Refactoring requires finding all usages first",
-    "Tests should be updated along with source code"
+    "Always search the entire project for call sites before changing a function signature",
+    "Adding parameters with default values is the safest migration strategy - nothing breaks",
+    "Multi-file refactoring requires changing files in dependency order (source first, consumers after)",
+    "Intl.NumberFormat provides proper locale-aware currency formatting built into JavaScript",
+    "Tests must be updated alongside the source code - they are call sites too",
+    "Claude Code can coordinate changes across many files in a single request, but understanding the dependency graph helps you verify the results",
+    "A config file (like currencies.js) centralizes constants so they don't need to be repeated in every file"
   ],
 
   "nextChallenge": "05-001"

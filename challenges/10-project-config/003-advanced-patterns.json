@@ -2,42 +2,78 @@
   "id": "10-003",
   "module": "project-config",
   "title": "Advanced CLAUDE.md Patterns",
-  "description": "Learn advanced CLAUDE.md patterns including architecture documentation, file organization rules, and context about dependencies.",
+  "description": "Learn advanced CLAUDE.md techniques: structured sections for complex projects, file-type specific rules, context-aware instructions, monorepo strategies, and anti-patterns that hurt quality.",
   "difficulty": "intermediate",
   "xpReward": 175,
-  "estimatedMinutes": 10,
-  "skills": ["architecture-docs", "dependency-context"],
+  "estimatedMinutes": 15,
+  "skills": ["advanced-claude-md", "monorepo-config", "context-aware-rules"],
 
   "setup": {
     "workingDir": "~/dojo-workspace/challenge-10-003",
     "initialFiles": [
       {
         "path": "README.md",
-        "content": "# Challenge: Advanced CLAUDE.md Patterns\n\nThis is a complex project. Create comprehensive documentation in CLAUDE.md.\n\n## Objectives\n1. Document the architecture (API, services, database)\n2. Explain key dependencies and why they're used\n3. Add file organization rules\n4. Include common workflows\n"
-      },
-      {
-        "path": "CLAUDE.md",
-        "content": "# E-Commerce API\n\nBackend API for an e-commerce platform.\n"
+        "content": "# Challenge: Advanced CLAUDE.md Patterns\n\nLearn advanced techniques for structuring CLAUDE.md in complex projects,\nespecially monorepos with multiple packages.\n\n## Structured Sections for Complex Projects\n\nSimple projects need simple CLAUDE.md files. But as projects grow, you\nneed more structure. Here are the sections that matter most for larger\nprojects:\n\n```markdown\n## Architecture\nDescribe how the system is organized. What are the major components?\nHow do they communicate? This helps Claude Code understand where new\ncode should go and how pieces fit together.\n\n## Conventions\nCoding standards that apply project-wide. This section grows as the\nteam makes decisions.\n\n## Commands\nAll the scripts a developer needs. Group by purpose (dev, test, build,\ndatabase, deployment).\n\n## Warnings\nCritical things Claude Code must know. \"Never modify the migration\nfiles directly.\" \"The auth module is security-critical - always request\nreview.\" These prevent costly mistakes.\n```\n\n## File-Type Specific Rules\n\nDifferent file types often have different conventions. You can specify\nrules that apply only to certain files:\n\n```markdown\n## File-Specific Rules\n- For `.test.ts` files: always use describe/it blocks, never use\n  test() directly\n- For `.dto.ts` files: always use class-validator decorators\n- For `*.controller.ts`: keep controllers thin, delegate to services\n- For `*.migration.ts`: never edit existing migrations, create new ones\n- For `*.stories.tsx`: follow Component Story Format (CSF) 3.0\n```\n\nThis is powerful because Claude Code can check the file extension or\npath pattern of whatever file it is editing and apply the right rules.\n\n## Context-Aware Instructions\n\nSome rules only matter in certain situations. You can write conditional\nguidelines:\n\n```markdown\n## Context-Specific Guidelines\n- When editing API routes, always update the OpenAPI spec in docs/api.yaml\n- When adding a new database model, also create a migration\n- When modifying shared types, check all packages that import them\n- When adding a new environment variable, update .env.example\n- When creating a new component, create a corresponding test file\n```\n\nThese \"when X, also do Y\" rules catch the follow-up steps that\ndevelopers often forget.\n\n## Keeping CLAUDE.md Concise\n\nClaude Code reads the entire CLAUDE.md at the start of every session.\nThis has implications:\n\n- **Under ~100 lines**: Ideal. Claude Code processes everything clearly\n- **100-300 lines**: Fine for complex projects. Use clear headers so\n  Claude can scan for relevant sections\n- **300-500 lines**: Getting long. Consider splitting into subdirectory\n  CLAUDE.md files\n- **Over 500 lines**: Too long. Quality degrades because critical\n  instructions get buried in noise\n\nEvery line should earn its place. Remove anything that Claude Code\ncan figure out on its own (like \"this is a JavaScript project\" when\npackage.json exists).\n\n## Anti-Patterns to Avoid\n\n| Anti-Pattern | Why It Hurts | Better Alternative |\n|-------------|-------------|--------------------|\n| Too long (500+ lines) | Critical rules get buried | Split into subdirectory files |\n| Too vague (\"write good code\") | Not actionable | \"Use early returns over nested ifs\" |\n| Contradictory rules | Confuses Claude Code | Review for conflicts |\n| Listing every file | Wastes context window | Let Claude Code explore |\n| Duplicating README | Redundant information | Reference README instead |\n| Including secrets | Security risk | Use .env files |\n\n## CLAUDE.md in Monorepos\n\nMonorepos need a layered CLAUDE.md strategy. Claude Code merges all\nCLAUDE.md files from the git root down to the current working directory:\n\n```\nmy-monorepo/\n  CLAUDE.md              <-- Root: shared conventions, repo overview\n  packages/\n    frontend/\n      CLAUDE.md          <-- Frontend-specific: React patterns, components\n    backend/\n      CLAUDE.md          <-- Backend-specific: API patterns, database\n    shared/\n      CLAUDE.md          <-- Shared lib: export rules, compatibility\n```\n\n**Root CLAUDE.md** should contain:\n- Overall project description and architecture\n- Conventions that apply everywhere (TypeScript, linting, git)\n- Monorepo-specific commands (workspaces, turborepo)\n- Cross-package rules (\"shared/ must not import from frontend/ or backend/\")\n\n**Package CLAUDE.md files** should contain:\n- Package-specific tech stack and patterns\n- Package-specific commands\n- Rules that ONLY apply to that package\n\nThe key principle: put rules at the most specific level where they\napply. Do not repeat root rules in every package file.\n\n## Your Task\n\nThis workspace is a monorepo with three packages: a React frontend,\nan Express backend, and a shared types library. Your job is to create\na layered CLAUDE.md structure:\n\n1. **Root CLAUDE.md** - Project overview, shared conventions, monorepo\n   commands, architecture overview, cross-package rules\n2. **packages/frontend/CLAUDE.md** - React-specific patterns and commands\n3. **packages/backend/CLAUDE.md** - API-specific patterns and commands\n4. **packages/shared/CLAUDE.md** - Shared library rules and constraints\n\nExamine the existing code to understand the project before writing.\n"
       },
       {
         "path": "package.json",
-        "content": "{\n  \"name\": \"ecommerce-api\",\n  \"dependencies\": {\n    \"express\": \"^4.18.0\",\n    \"prisma\": \"^5.0.0\",\n    \"@prisma/client\": \"^5.0.0\",\n    \"zod\": \"^3.22.0\",\n    \"jsonwebtoken\": \"^9.0.0\",\n    \"bcrypt\": \"^5.1.0\",\n    \"stripe\": \"^14.0.0\"\n  }\n}\n"
+        "content": "{\n  \"name\": \"taskflow-monorepo\",\n  \"private\": true,\n  \"workspaces\": [\"packages/*\"],\n  \"scripts\": {\n    \"dev\": \"turbo run dev\",\n    \"build\": \"turbo run build\",\n    \"test\": \"turbo run test\",\n    \"lint\": \"turbo run lint\",\n    \"clean\": \"turbo run clean\"\n  },\n  \"devDependencies\": {\n    \"turbo\": \"^2.0.0\",\n    \"typescript\": \"^5.3.0\"\n  }\n}\n"
       },
       {
-        "path": "src/index.ts",
-        "content": "import express from 'express';\nimport { userRoutes } from './routes/users';\nimport { productRoutes } from './routes/products';\nimport { orderRoutes } from './routes/orders';\nimport { errorHandler } from './middleware/errors';\n\nconst app = express();\napp.use('/api/users', userRoutes);\napp.use('/api/products', productRoutes);\napp.use('/api/orders', orderRoutes);\napp.use(errorHandler);\n"
+        "path": "turbo.json",
+        "content": "{\n  \"$schema\": \"https://turbo.build/schema.json\",\n  \"pipeline\": {\n    \"build\": {\n      \"dependsOn\": [\"^build\"],\n      \"outputs\": [\"dist/**\"]\n    },\n    \"dev\": {\n      \"cache\": false,\n      \"persistent\": true\n    },\n    \"test\": {\n      \"dependsOn\": [\"build\"]\n    },\n    \"lint\": {}\n  }\n}\n"
       },
       {
-        "path": "src/routes/users.ts",
-        "content": "import { Router } from 'express';\nimport { UserController } from '../controllers/UserController';\n\nexport const userRoutes = Router();\nuserRoutes.post('/register', UserController.register);\nuserRoutes.post('/login', UserController.login);\n"
+        "path": "packages/frontend/package.json",
+        "content": "{\n  \"name\": \"@taskflow/frontend\",\n  \"scripts\": {\n    \"dev\": \"vite\",\n    \"build\": \"tsc && vite build\",\n    \"test\": \"vitest\",\n    \"lint\": \"eslint src/\"\n  },\n  \"dependencies\": {\n    \"react\": \"^18.2.0\",\n    \"react-dom\": \"^18.2.0\",\n    \"react-router-dom\": \"^6.20.0\",\n    \"@tanstack/react-query\": \"^5.0.0\",\n    \"@taskflow/shared\": \"workspace:*\"\n  }\n}\n"
       },
       {
-        "path": "src/services/PaymentService.ts",
-        "content": "import Stripe from 'stripe';\n\nexport class PaymentService {\n  private stripe: Stripe;\n  \n  constructor() {\n    this.stripe = new Stripe(process.env.STRIPE_KEY!);\n  }\n  \n  async createPayment(amount: number) {\n    return this.stripe.paymentIntents.create({ amount, currency: 'usd' });\n  }\n}\n"
+        "path": "packages/frontend/src/App.tsx",
+        "content": "import { QueryClient, QueryClientProvider } from '@tanstack/react-query';\nimport { BrowserRouter, Routes, Route } from 'react-router-dom';\nimport { TaskListPage } from './pages/TaskListPage';\nimport { TaskDetailPage } from './pages/TaskDetailPage';\nimport { Layout } from './components/Layout';\n\nconst queryClient = new QueryClient();\n\nexport const App = () => {\n  return (\n    <QueryClientProvider client={queryClient}>\n      <BrowserRouter>\n        <Layout>\n          <Routes>\n            <Route path=\"/\" element={<TaskListPage />} />\n            <Route path=\"/tasks/:id\" element={<TaskDetailPage />} />\n          </Routes>\n        </Layout>\n      </BrowserRouter>\n    </QueryClientProvider>\n  );\n};\n"
       },
       {
-        "path": "prisma/schema.prisma",
-        "content": "generator client {\n  provider = \"prisma-client-js\"\n}\n\ndatasource db {\n  provider = \"postgresql\"\n  url      = env(\"DATABASE_URL\")\n}\n\nmodel User {\n  id        String   @id @default(uuid())\n  email     String   @unique\n  orders    Order[]\n}\n\nmodel Product {\n  id    String @id @default(uuid())\n  name  String\n  price Int\n}\n\nmodel Order {\n  id      String @id @default(uuid())\n  userId  String\n  user    User   @relation(fields: [userId], references: [id])\n  total   Int\n}\n"
+        "path": "packages/frontend/src/hooks/useTasks.ts",
+        "content": "import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';\nimport { Task, CreateTaskInput } from '@taskflow/shared';\nimport { api } from '../lib/api';\n\nexport const useTasks = () => {\n  return useQuery<Task[]>({\n    queryKey: ['tasks'],\n    queryFn: () => api.get('/tasks')\n  });\n};\n\nexport const useCreateTask = () => {\n  const queryClient = useQueryClient();\n  return useMutation({\n    mutationFn: (input: CreateTaskInput) => api.post('/tasks', input),\n    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['tasks'] })\n  });\n};\n"
+      },
+      {
+        "path": "packages/frontend/src/components/TaskCard.tsx",
+        "content": "import { Task } from '@taskflow/shared';\n\ninterface TaskCardProps {\n  task: Task;\n  onSelect: (id: string) => void;\n}\n\nexport const TaskCard = ({ task, onSelect }: TaskCardProps) => {\n  return (\n    <div className=\"task-card\" onClick={() => onSelect(task.id)}>\n      <h3>{task.title}</h3>\n      <span className={`status status-${task.status}`}>{task.status}</span>\n      <p>{task.description}</p>\n    </div>\n  );\n};\n"
+      },
+      {
+        "path": "packages/backend/package.json",
+        "content": "{\n  \"name\": \"@taskflow/backend\",\n  \"scripts\": {\n    \"dev\": \"tsx watch src/index.ts\",\n    \"build\": \"tsc\",\n    \"test\": \"vitest\",\n    \"lint\": \"eslint src/\",\n    \"db:migrate\": \"prisma migrate dev\",\n    \"db:seed\": \"prisma db seed\",\n    \"db:studio\": \"prisma studio\"\n  },\n  \"dependencies\": {\n    \"express\": \"^4.18.0\",\n    \"@prisma/client\": \"^5.0.0\",\n    \"zod\": \"^3.22.0\",\n    \"@taskflow/shared\": \"workspace:*\"\n  }\n}\n"
+      },
+      {
+        "path": "packages/backend/src/index.ts",
+        "content": "import express from 'express';\nimport { taskRoutes } from './routes/tasks';\nimport { userRoutes } from './routes/users';\nimport { errorHandler } from './middleware/errorHandler';\nimport { authMiddleware } from './middleware/auth';\n\nconst app = express();\n\napp.use(express.json());\napp.use('/api/tasks', authMiddleware, taskRoutes);\napp.use('/api/users', userRoutes);\napp.use(errorHandler);\n\napp.listen(process.env.PORT || 4000);\n"
+      },
+      {
+        "path": "packages/backend/src/routes/tasks.ts",
+        "content": "import { Router } from 'express';\nimport { z } from 'zod';\nimport { prisma } from '../lib/prisma';\nimport { CreateTaskInput } from '@taskflow/shared';\n\nexport const taskRoutes = Router();\n\nconst createTaskSchema = z.object({\n  title: z.string().min(1).max(200),\n  description: z.string().optional(),\n  status: z.enum(['todo', 'in_progress', 'done']).default('todo')\n}) satisfies z.ZodType<CreateTaskInput>;\n\ntaskRoutes.get('/', async (req, res) => {\n  const tasks = await prisma.task.findMany({ where: { userId: req.user.id } });\n  res.json(tasks);\n});\n\ntaskRoutes.post('/', async (req, res) => {\n  const data = createTaskSchema.parse(req.body);\n  const task = await prisma.task.create({ data: { ...data, userId: req.user.id } });\n  res.status(201).json(task);\n});\n"
+      },
+      {
+        "path": "packages/backend/prisma/schema.prisma",
+        "content": "generator client {\n  provider = \"prisma-client-js\"\n}\n\ndatasource db {\n  provider = \"postgresql\"\n  url      = env(\"DATABASE_URL\")\n}\n\nmodel User {\n  id       String @id @default(uuid())\n  email    String @unique\n  name     String\n  tasks    Task[]\n}\n\nmodel Task {\n  id          String   @id @default(uuid())\n  title       String\n  description String?\n  status      String   @default(\"todo\")\n  userId      String\n  user        User     @relation(fields: [userId], references: [id])\n  createdAt   DateTime @default(now())\n  updatedAt   DateTime @updatedAt\n}\n"
+      },
+      {
+        "path": "packages/shared/package.json",
+        "content": "{\n  \"name\": \"@taskflow/shared\",\n  \"main\": \"dist/index.js\",\n  \"types\": \"dist/index.d.ts\",\n  \"scripts\": {\n    \"build\": \"tsc\",\n    \"lint\": \"eslint src/\"\n  }\n}\n"
+      },
+      {
+        "path": "packages/shared/src/index.ts",
+        "content": "export type { Task, CreateTaskInput, UpdateTaskInput } from './types/task';\nexport type { User, CreateUserInput } from './types/user';\nexport { TaskStatus, TASK_STATUSES } from './constants';\n"
+      },
+      {
+        "path": "packages/shared/src/types/task.ts",
+        "content": "export interface Task {\n  id: string;\n  title: string;\n  description?: string;\n  status: 'todo' | 'in_progress' | 'done';\n  userId: string;\n  createdAt: string;\n  updatedAt: string;\n}\n\nexport interface CreateTaskInput {\n  title: string;\n  description?: string;\n  status?: 'todo' | 'in_progress' | 'done';\n}\n\nexport interface UpdateTaskInput {\n  title?: string;\n  description?: string;\n  status?: 'todo' | 'in_progress' | 'done';\n}\n"
+      },
+      {
+        "path": "packages/shared/src/types/user.ts",
+        "content": "export interface User {\n  id: string;\n  email: string;\n  name: string;\n}\n\nexport interface CreateUserInput {\n  email: string;\n  name: string;\n  password: string;\n}\n"
+      },
+      {
+        "path": "packages/shared/src/constants.ts",
+        "content": "export const TaskStatus = {\n  TODO: 'todo',\n  IN_PROGRESS: 'in_progress',\n  DONE: 'done'\n} as const;\n\nexport const TASK_STATUSES = Object.values(TaskStatus);\n"
       }
     ],
     "cleanBefore": true
@@ -46,34 +82,55 @@
   "objectives": [
     {
       "id": "obj-1",
-      "description": "Document the architecture layers",
-      "type": "file_contains",
+      "description": "Create root CLAUDE.md with project overview and architecture",
+      "type": "file_exists",
       "target": "CLAUDE.md",
-      "pattern": "[Aa]rchitecture|[Rr]outes|[Cc]ontroller|[Ss]ervice|[Ll]ayer",
       "required": true
     },
     {
       "id": "obj-2",
-      "description": "Explain key dependencies",
+      "description": "Root CLAUDE.md describes the monorepo architecture (frontend, backend, shared)",
       "type": "file_contains",
       "target": "CLAUDE.md",
-      "pattern": "[Pp]risma|[Ss]tripe|[Zz]od|[Dd]ependenc",
+      "pattern": "[Ff]rontend|[Bb]ackend|[Ss]hared|[Mm]onorepo|packages/",
       "required": true
     },
     {
       "id": "obj-3",
-      "description": "Document file organization",
+      "description": "Root CLAUDE.md includes shared conventions or monorepo commands",
       "type": "file_contains",
       "target": "CLAUDE.md",
-      "pattern": "src/|folder|structure|organiz|routes/|services/|controllers/",
+      "pattern": "turbo|[Ww]orkspace|npm run|[Cc]onvention|[Tt]ype[Ss]cript",
       "required": true
     },
     {
       "id": "obj-4",
-      "description": "Include database information",
+      "description": "Create frontend-specific CLAUDE.md",
+      "type": "file_exists",
+      "target": "packages/frontend/CLAUDE.md",
+      "required": true
+    },
+    {
+      "id": "obj-5",
+      "description": "Frontend CLAUDE.md mentions React or component patterns",
       "type": "file_contains",
-      "target": "CLAUDE.md",
-      "pattern": "[Dd]atabase|[Pp]ostgres|[Pp]risma|schema|[Mm]odel",
+      "target": "packages/frontend/CLAUDE.md",
+      "pattern": "[Rr]eact|[Cc]omponent|[Hh]ook|@tanstack|react-query",
+      "required": true
+    },
+    {
+      "id": "obj-6",
+      "description": "Create backend-specific CLAUDE.md",
+      "type": "file_exists",
+      "target": "packages/backend/CLAUDE.md",
+      "required": true
+    },
+    {
+      "id": "obj-7",
+      "description": "Backend CLAUDE.md mentions API, database, or Express patterns",
+      "type": "file_contains",
+      "target": "packages/backend/CLAUDE.md",
+      "pattern": "[Ee]xpress|[Pp]risma|API|[Rr]oute|[Dd]atabase|[Zz]od",
       "required": true
     }
   ],
@@ -81,45 +138,63 @@
   "bonusObjectives": [
     {
       "id": "bonus-1",
-      "description": "Add common workflows (adding a new endpoint, etc.)",
+      "description": "Create shared library CLAUDE.md",
+      "type": "file_exists",
+      "target": "packages/shared/CLAUDE.md",
+      "xpBonus": 30
+    },
+    {
+      "id": "bonus-2",
+      "description": "Root CLAUDE.md includes cross-package dependency rules",
       "type": "file_contains",
       "target": "CLAUDE.md",
-      "pattern": "[Ww]orkflow|[Hh]ow to|[Ss]tep|[Aa]dd.*endpoint|[Cc]reate.*route",
-      "xpBonus": 50
+      "pattern": "shared.*import|import.*shared|depend|@taskflow/shared|[Cc]ross.package",
+      "xpBonus": 30
+    },
+    {
+      "id": "bonus-3",
+      "description": "Include context-aware instructions (when X, also do Y)",
+      "type": "file_contains",
+      "target": "CLAUDE.md",
+      "pattern": "[Ww]hen.*also|[Ww]hen.*update|[Ww]hen.*create|[Ii]f.*then|[Ww]hen editing|[Ww]hen adding|[Ww]hen modifying",
+      "xpBonus": 40
     }
   ],
 
   "hints": [
     {
       "level": 1,
-      "text": "Good CLAUDE.md files document architecture, dependencies, and workflows.",
+      "text": "Think in layers. The root CLAUDE.md is for things that apply everywhere (TypeScript, git conventions, monorepo commands). Each package CLAUDE.md is for things specific to that package (React patterns for frontend, Prisma patterns for backend). Ask yourself: 'Does this rule apply to all packages, or just one?'",
       "xpCost": 15
     },
     {
       "level": 2,
-      "text": "Try: 'Expand CLAUDE.md with architecture documentation, key dependencies explained, and file organization rules'",
-      "xpCost": 35
+      "text": "Examine the code first. The frontend uses React Query and React Router. The backend uses Express, Prisma, and Zod. The shared package exports TypeScript types. Each package CLAUDE.md should reference these specific technologies and how to use them correctly.",
+      "xpCost": 40
     },
     {
       "level": 3,
-      "text": "Ask: 'Create comprehensive CLAUDE.md documentation: 1) Architecture overview (routes → controllers → services → Prisma) 2) Key deps (Prisma for DB, Stripe for payments, Zod for validation) 3) File structure guide 4) How to add a new API endpoint workflow'",
+      "text": "Ask Claude Code: 'This is a monorepo with frontend (React, React Query), backend (Express, Prisma, Zod), and shared (TypeScript types). Create: 1) Root CLAUDE.md - project overview, architecture diagram, turbo commands, shared TypeScript conventions, cross-package rules (shared must not import from frontend/backend), context-aware rules (when modifying shared types, check all importers) 2) packages/frontend/CLAUDE.md - React patterns, hooks conventions, React Query usage 3) packages/backend/CLAUDE.md - Express route patterns, Prisma usage, Zod validation 4) packages/shared/CLAUDE.md - export rules, type naming conventions, build requirements'",
       "xpCost": 65
     }
   ],
 
   "solution": {
-    "approach": "Create comprehensive documentation covering all aspects of the project.",
-    "example": "Build out CLAUDE.md with architecture, dependencies, structure, and workflows",
+    "approach": "Create a layered CLAUDE.md structure: root file for project-wide rules, plus package-specific files for frontend, backend, and shared.",
+    "example": "Create root CLAUDE.md with architecture and shared rules, then create package-specific CLAUDE.md files for frontend, backend, and shared",
     "alternativeApproaches": [
-      "Document everything Claude needs to know about this codebase",
-      "Create a complete project guide in CLAUDE.md"
+      "Ask Claude Code to examine each package and generate appropriate CLAUDE.md files",
+      "Start with the root CLAUDE.md, then create each package file one at a time"
     ]
   },
 
   "learningPoints": [
-    "Architecture docs help Claude understand code relationships",
-    "Explaining WHY dependencies are used helps Claude use them correctly",
-    "Workflow documentation enables Claude to follow team patterns"
+    "Monorepos benefit from layered CLAUDE.md: root for shared rules, subdirectories for package-specific rules",
+    "Claude Code merges all CLAUDE.md files from git root to cwd, so avoid repetition",
+    "File-type specific rules ('for .test.ts files, use describe/it') let you encode patterns per file type",
+    "Context-aware instructions ('when adding a model, also create a migration') catch common follow-up steps",
+    "Keep each CLAUDE.md focused and concise - split rather than making one file too long",
+    "Over 500 lines degrades quality because critical rules get buried in noise"
   ],
 
   "nextChallenge": "10-004"

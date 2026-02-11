@@ -2,53 +2,93 @@
   "id": "03-002",
   "module": "git-basics",
   "title": "Create Feature Branch",
-  "description": "Learn to create and switch to a new branch for feature development. Branches keep your work organized.",
+  "description": "Learn what branches really are (pointers to commits, not copies of files), how to create and switch between them, and why branching is central to modern development workflows.",
   "difficulty": "beginner",
   "xpReward": 125,
-  "estimatedMinutes": 5,
-  "skills": ["git-branch", "git-checkout"],
+  "estimatedMinutes": 10,
+  "skills": ["git-branch", "git-checkout", "git-switch", "branch-naming"],
 
   "setup": {
     "workingDir": "~/dojo-workspace/challenge-03-002",
     "initialFiles": [
       {
         "path": "README.md",
-        "content": "# Challenge: Create Feature Branch\n\nYou're about to add a new feature. Create a branch for it!\n\n## Objectives\n1. Create a new branch called 'feature/add-login'\n2. Switch to that branch\n3. Make a small change and commit it\n"
+        "content": "# Challenge: Create Feature Branch\n\nLearn branching -- one of git's most powerful features -- and why\nbranches are just lightweight pointers, not copies of your code.\n\n## What Is a Branch?\n\nA branch in git is simply a **pointer (label) to a commit**. That's it.\nIt is NOT a copy of your files. It is NOT a separate directory. It is\njust a tiny file containing a 40-character commit hash.\n\nWhen you create a new branch, git doesn't duplicate anything. It just\ncreates a new pointer that starts at the same commit you're currently on.\nAs you make new commits on that branch, the pointer moves forward.\n\n```\nmain:     A --- B --- C\n                      ^\n                      main (pointer)\n                      ^\n                      feature (pointer, just created)\n```\n\nAfter making a commit on the feature branch:\n\n```\nmain:     A --- B --- C\n                      ^  \\\n                      main  D\n                            ^\n                            feature (moved forward)\n```\n\n## HEAD: Where You Are Right Now\n\nHEAD is a special pointer that tells git which branch (or commit) you're\ncurrently working on. When you switch branches, HEAD moves to point at\nthe new branch.\n\n```\nHEAD --> main --> commit C\n```\n\nAfter `git checkout feature`:\n```\nHEAD --> feature --> commit D\n```\n\nWhen you make a new commit, the branch HEAD points to moves forward.\n\n## Creating and Switching Branches\n\n| Command | What It Does |\n|---------|-------------|\n| `git branch` | List all branches (* marks current) |\n| `git branch feature-name` | Create a new branch (stay where you are) |\n| `git checkout -b feature-name` | Create AND switch in one command |\n| `git switch -c feature-name` | Same as above (newer syntax) |\n| `git checkout main` | Switch back to main |\n| `git switch main` | Same (newer syntax) |\n| `git branch -d branch-name` | Delete a branch (safe - only if merged) |\n| `git branch -D branch-name` | Force delete (even if unmerged) |\n\n## Branch Naming Conventions\n\nGood branch names describe the work and use prefixes:\n\n| Prefix | Purpose | Example |\n|--------|---------|--------|\n| `feature/` | New functionality | `feature/user-authentication` |\n| `fix/` | Bug fixes | `fix/login-timeout-error` |\n| `docs/` | Documentation | `docs/api-reference-update` |\n| `refactor/` | Code restructuring | `refactor/extract-utils` |\n| `test/` | Adding tests | `test/payment-edge-cases` |\n\nRules:\n- Use **kebab-case** (hyphens, not spaces or underscores)\n- Be descriptive: `feature/add-search` not `feature/stuff`\n- Keep it short but meaningful\n\n## Why Branches Matter\n\n1. **Parallel development**: Multiple features developed simultaneously\n2. **Safe experimentation**: Try things without affecting stable code\n3. **Code review workflow**: Create branch, make changes, open PR, get review\n4. **Easy rollback**: If a feature doesn't work out, just delete the branch\n\n## How Branches Diverge\n\nBranches diverge when BOTH have new commits:\n\n```\n          D --- E        (feature/login)\n         /\nA --- B --- C\n             \\\n              F --- G    (feature/signup)\n```\n\nHere, main is at C, feature/login has D and E, feature/signup has F and G.\nEach branch has its own independent line of development.\n\n## Warm-up Step\n\nSince this workspace starts fresh, first initialize git and make an\ninitial commit with the existing files. Then proceed to the branching\nexercise.\n\n## Your Task\n\n1. **Initialize git** and commit the existing project files (warm-up)\n2. **Create a feature branch** with a properly named branch\n   (e.g., `feature/add-search` or `feature/add-validation`)\n3. **Make changes on the feature branch** -- add or modify files\n   and commit them\n4. **Switch back to main** and verify it is unchanged (the feature\n   branch changes should not appear on main)\n5. **Create branch-notes.md** explaining:\n   - What a branch actually is (a pointer, not a copy)\n   - What HEAD is\n   - Why you would use branches\n\n## Tips\n- Run `git log --oneline --all --graph` to visualize branch history\n- Use `git branch` to see all branches and which one you're on\n- After switching back to main, check that your feature changes are gone\n  from the working directory -- that proves branches are separate\n"
       },
       {
-        "path": "app.js",
-        "content": "// Main application\nfunction main() {\n  console.log('App starting...');\n}\n\nmain();\n"
+        "path": "src/app.js",
+        "content": "// Weather Dashboard - fetch and display weather data\n\nconst API_BASE = 'https://api.weather.example.com';\n\nasync function fetchWeather(city) {\n  const response = await fetch(`${API_BASE}/current?city=${encodeURIComponent(city)}`);\n  if (!response.ok) throw new Error(`Weather API error: ${response.status}`);\n  return response.json();\n}\n\nfunction formatTemperature(tempKelvin, unit) {\n  if (unit === 'celsius') return (tempKelvin - 273.15).toFixed(1) + ' C';\n  if (unit === 'fahrenheit') return ((tempKelvin - 273.15) * 9/5 + 32).toFixed(1) + ' F';\n  return tempKelvin.toFixed(1) + ' K';\n}\n\nfunction displayWeather(data) {\n  return {\n    city: data.name,\n    temperature: formatTemperature(data.temp, 'celsius'),\n    conditions: data.weather,\n    humidity: data.humidity + '%',\n    wind: data.wind_speed + ' m/s'\n  };\n}\n\nmodule.exports = { fetchWeather, formatTemperature, displayWeather };\n"
+      },
+      {
+        "path": "src/index.js",
+        "content": "const { fetchWeather, displayWeather } = require('./app');\n\nasync function main() {\n  try {\n    const weather = await fetchWeather('London');\n    const display = displayWeather(weather);\n    console.log('Current Weather:', display);\n  } catch (error) {\n    console.error('Failed to fetch weather:', error.message);\n  }\n}\n\nmain();\n"
+      },
+      {
+        "path": "src/config.js",
+        "content": "// Application configuration\nconst config = {\n  defaultCity: 'London',\n  temperatureUnit: 'celsius',\n  refreshInterval: 300000,  // 5 minutes\n  maxCities: 5\n};\n\nmodule.exports = config;\n"
+      },
+      {
+        "path": "package.json",
+        "content": "{\n  \"name\": \"weather-dashboard\",\n  \"version\": \"1.0.0\",\n  \"description\": \"A simple weather dashboard application\",\n  \"main\": \"src/index.js\",\n  \"scripts\": {\n    \"start\": \"node src/index.js\"\n  }\n}\n"
       }
     ],
-    "cleanBefore": true,
-    "postSetup": [
-      "cd ~/dojo-workspace/challenge-03-002 && git init && git add . && git commit -m 'Initial commit'"
-    ]
+    "cleanBefore": true
   },
 
   "objectives": [
     {
       "id": "obj-1",
-      "description": "Create branch 'feature/add-login'",
+      "description": "Git repository is initialized with at least one commit on main",
       "type": "command_output_contains",
-      "command": "git branch 2>/dev/null",
-      "pattern": "feature/add-login",
+      "command": "cd ~/dojo-workspace/challenge-03-002 && git log --oneline 2>&1 | head -1",
+      "pattern": ".",
       "required": true
     },
     {
       "id": "obj-2",
-      "description": "Currently on the feature branch",
+      "description": "A feature branch exists with a proper naming convention (feature/, fix/, docs/, etc.)",
       "type": "command_output_contains",
-      "command": "git branch --show-current 2>/dev/null",
-      "pattern": "feature/add-login",
+      "command": "cd ~/dojo-workspace/challenge-03-002 && git branch 2>&1",
+      "pattern": "feature/|fix/|docs/|refactor/|test/",
       "required": true
     },
     {
       "id": "obj-3",
-      "description": "Made at least one commit on the branch",
+      "description": "Feature branch has at least one commit beyond main",
       "type": "command_output_contains",
-      "command": "git log --oneline feature/add-login 2>/dev/null | wc -l | tr -d ' '",
+      "command": "cd ~/dojo-workspace/challenge-03-002 && git log --oneline --all 2>&1 | wc -l | tr -d ' '",
       "pattern": "^[2-9]|^[1-9][0-9]",
+      "required": true
+    },
+    {
+      "id": "obj-4",
+      "description": "Create branch-notes.md explaining branches as pointers",
+      "type": "file_exists",
+      "target": "branch-notes.md",
+      "required": true
+    },
+    {
+      "id": "obj-5",
+      "description": "branch-notes.md explains that a branch is a pointer (not a copy)",
+      "type": "file_contains",
+      "target": "branch-notes.md",
+      "pattern": "[Pp]ointer|[Ll]abel|[Rr]eference|not.*cop|lightweight",
+      "required": true
+    },
+    {
+      "id": "obj-6",
+      "description": "branch-notes.md mentions HEAD",
+      "type": "file_contains",
+      "target": "branch-notes.md",
+      "pattern": "HEAD|[Cc]urrent.*(branch|commit)|where.*you.*are",
+      "required": true
+    },
+    {
+      "id": "obj-7",
+      "description": "branch-notes.md explains why branches are useful",
+      "type": "file_contains",
+      "target": "branch-notes.md",
+      "pattern": "[Pp]arallel|[Ii]solat|[Ee]xperiment|[Ss]afe|[Rr]eview|[Ss]eparate",
       "required": true
     }
   ],
@@ -56,10 +96,18 @@
   "bonusObjectives": [
     {
       "id": "bonus-1",
-      "description": "Commit message mentions 'login' or 'feature'",
+      "description": "Currently on the main branch (switched back after making feature changes)",
       "type": "command_output_contains",
-      "command": "git log --format='%s' -1 2>/dev/null",
-      "pattern": "[Ll]ogin|[Ff]eature",
+      "command": "cd ~/dojo-workspace/challenge-03-002 && git branch --show-current 2>&1",
+      "pattern": "^(main|master)$",
+      "xpBonus": 25
+    },
+    {
+      "id": "bonus-2",
+      "description": "branch-notes.md includes an ASCII diagram or visual showing branch structure",
+      "type": "file_contains",
+      "target": "branch-notes.md",
+      "pattern": "---|-->|\\*|branch.*diagram|visual",
       "xpBonus": 25
     }
   ],
@@ -67,34 +115,37 @@
   "hints": [
     {
       "level": 1,
-      "text": "Ask Claude Code to create a new branch and switch to it.",
+      "text": "First initialize git and commit the existing files. Then think about what feature you want to add -- search? validation? favorites? Name your branch descriptively with a prefix like feature/add-search. Make changes on the branch, then switch back to main to verify isolation.",
       "xpCost": 10
     },
     {
       "level": 2,
-      "text": "Try: 'Create a branch called feature/add-login and switch to it'",
+      "text": "Step by step: (1) git init && git add files && git commit, (2) git checkout -b feature/add-search, (3) create or edit a file and commit, (4) git checkout main, (5) notice your feature changes disappeared. Then write branch-notes.md explaining branches are pointers and what HEAD means.",
       "xpCost": 25
     },
     {
       "level": 3,
-      "text": "Ask: 'Create and checkout branch feature/add-login, then add a comment to app.js and commit it'",
+      "text": "Ask Claude Code: 'Initialize git and commit the project. Then create a feature/add-search branch, add a search utility file, commit it. Switch back to main and verify the search file is not there. Then create branch-notes.md explaining that branches are pointers to commits, what HEAD is, and why branching is useful.'",
       "xpCost": 50
     }
   ],
 
   "solution": {
-    "approach": "Use Claude Code to create a branch, make changes, and commit.",
-    "example": "Create branch feature/add-login, switch to it, add a login placeholder to app.js, and commit",
+    "approach": "Initialize git, create a feature branch with good naming, make commits on it, switch back to main to verify isolation, then document your understanding of branches.",
+    "example": "Set up git, create a feature/add-search branch, add search functionality, switch back to main to see it's unchanged, then write notes about branches as pointers",
     "alternativeApproaches": [
-      "Start a new feature branch for login functionality",
-      "Branch off main for the add-login feature"
+      "Initialize the repo, branch off for a new feature, make changes, return to main, and explain what you learned about how branches work as pointers",
+      "Help me create a proper git workflow: initialize, branch, develop, switch back, and document the branching model"
     ]
   },
 
   "learningPoints": [
-    "Branches isolate feature development",
-    "Claude Code can create and switch branches",
-    "Feature branches typically follow naming conventions like feature/*"
+    "A branch is just a lightweight pointer (label) to a commit -- not a copy of files",
+    "HEAD is a special pointer that tells git which branch you're currently on",
+    "git checkout -b name (or git switch -c name) creates and switches to a new branch in one step",
+    "Branch naming conventions like feature/, fix/, docs/ communicate intent clearly",
+    "Switching branches changes your working directory to match that branch's latest commit",
+    "Branches enable parallel development, safe experimentation, and code review workflows"
   ],
 
   "nextChallenge": "03-003"

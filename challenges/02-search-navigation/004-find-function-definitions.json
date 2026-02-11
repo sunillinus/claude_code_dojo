@@ -2,42 +2,86 @@
   "id": "02-004",
   "module": "search-navigation",
   "title": "Find Function Definitions",
-  "description": "Learn to find where functions and classes are defined. Claude Code can track down definitions even when they're spread across multiple files.",
+  "description": "Learn to find where functions and classes are defined using regex patterns, then trace their complete journey from definition through exports, imports, and all call sites across a codebase.",
   "difficulty": "intermediate",
   "xpReward": 200,
-  "estimatedMinutes": 8,
-  "skills": ["definition-search", "code-navigation"],
+  "estimatedMinutes": 12,
+  "skills": ["definition-search", "code-navigation", "regex-patterns", "import-tracing"],
 
   "setup": {
     "workingDir": "~/dojo-workspace/challenge-02-004",
     "initialFiles": [
       {
         "path": "README.md",
-        "content": "# Challenge: Find Function Definitions\n\nThis project uses several utility functions. Find where they're defined!\n\n## Objectives\n1. Find where `formatCurrency` is defined\n2. Find where `validateUser` is defined\n3. Create definitions.md listing the file and line number for each\n"
+        "content": "# Challenge 02-004: Find Function Definitions\n\n## What You Will Learn\n\nFinding where a function is DEFINED (not just used) is one of the most\ncommon tasks in code navigation. This challenge teaches you the regex\npatterns that distinguish definitions from usage, and how to trace a\nfunction's complete journey through a codebase.\n\n## Definition vs Usage\n\nThe key distinction:\n- **Definition**: Where a function is CREATED (the actual code)\n- **Usage**: Where a function is CALLED or REFERENCED\n\nExample:\n```javascript\n// DEFINITION (in utils/format.js)\nfunction formatPrice(amount) {        // <-- This is the definition\n  return '$' + amount.toFixed(2);\n}\n\n// USAGE (in services/order.js)\nconst total = formatPrice(99.99);     // <-- This is usage\n```\n\nWhen searching, you need different patterns for each.\n\n## Regex Patterns for JavaScript Definitions\n\n### Function Declarations\n```\nfunction\\s+functionName      ->  function formatPrice(\n```\n\n### Arrow Functions / Const Functions\n```\nconst\\s+functionName\\s*=     ->  const formatPrice = (amount) => { ... }\n```\n\n### Class Methods\n```\nasync\\s+methodName\\(         ->  async formatPrice(amount) { ... }\nmethodName\\s*\\(              ->  formatPrice(amount) { ... }  (inside a class)\n```\n\n### Class Definitions\n```\nclass\\s+ClassName            ->  class PriceFormatter { ... }\n```\n\n### Exported Functions (ES Modules)\n```\nexport\\s+(default\\s+)?function\\s+name  -> export function formatPrice()\nexport\\s+const\\s+name                  -> export const formatPrice = ...\n```\n\n## Regex Patterns for Other Languages\n\n| Language | Function Definition | Class Definition |\n|----------|--------------------|-----------------|\n| Python | `def\\s+functionName` | `class\\s+ClassName` |\n| Go | `func\\s+functionName` | `type\\s+Name\\s+struct` |\n| Rust | `fn\\s+functionName` | `struct\\s+Name` |\n| Java | `(public|private).*functionName\\s*\\(` | `class\\s+ClassName` |\n| TypeScript | Same as JS + `interface\\s+Name` | Same as JS |\n\n## Combining Glob + Grep for Efficient Searching\n\nA two-step approach is often most efficient:\n\n**Step 1**: Use Glob to find relevant files\n```\nGlob **/*.js -> Get all JavaScript files\n```\n\n**Step 2**: Use Grep with the right pattern\n```\nGrep pattern=\"function\\s+formatPrice\" -> Find the definition\n```\n\nOr combine with the `glob` filter:\n```\nGrep pattern=\"function\\s+formatPrice\" glob=\"*.js\"\n```\n\n## Tracing a Function's Complete Journey\n\nTo fully understand a function, trace it through FOUR stages:\n\n### 1. Where is it DEFINED?\nSearch for the function definition pattern:\n```\nGrep pattern=\"function\\s+formatPrice|const\\s+formatPrice\\s*=\"\n```\n\n### 2. Where is it EXPORTED?\nSearch for the export:\n```\nGrep pattern=\"module\\.exports.*formatPrice|export.*formatPrice\"\n```\n\n### 3. Where is it IMPORTED?\nSearch for imports:\n```\nGrep pattern=\"require.*format|import.*formatPrice\"\n```\n\n### 4. Where is it CALLED?\nSearch for the function call (but this will include definitions too,\nso cross-reference with your definition search):\n```\nGrep pattern=\"formatPrice\\(\"\n```\n\n## Your Task\n\nThis project has a utility function called `calculateDiscount` that is\nused in several places. Another function called `sendEmail` also travels\nthrough the codebase.\n\nYour mission: Trace BOTH functions completely and create `function-trace.md`\nwith:\n\n1. **calculateDiscount trace**:\n   - Where it is defined (file and line)\n   - Where it is exported\n   - Which files import it\n   - Where it is called (every call site)\n\n2. **sendEmail trace**:\n   - Where it is defined (file and line)\n   - Where it is exported\n   - Which files import it\n   - Where it is called (every call site)\n\n3. **Complete call chain**: For calculateDiscount, trace the full path:\n   definition -> export -> import -> each call site with the context\n   of how it is used.\n"
+      },
+      {
+        "path": "package.json",
+        "content": "{\n  \"name\": \"shop-api\",\n  \"version\": \"1.0.0\",\n  \"main\": \"src/index.js\"\n}\n"
       },
       {
         "path": "src/index.js",
-        "content": "const { processOrder } = require('./services/orderService');\nconst { formatCurrency } = require('./utils/formatting');\n\nconst order = { total: 99.99 };\nconsole.log('Total:', formatCurrency(order.total));\n\nprocessOrder(order);\n"
+        "content": "const app = require('./app');\nconst config = require('./config');\n\napp.listen(config.port, () => {\n  console.log(`Shop API on port ${config.port}`);\n});\n"
       },
       {
-        "path": "src/services/orderService.js",
-        "content": "const { validateUser } = require('../auth/validator');\nconst { formatCurrency } = require('../utils/formatting');\nconst { sendNotification } = require('../utils/notifications');\n\nasync function processOrder(order) {\n  const user = await validateUser(order.userId);\n  if (!user) throw new Error('Invalid user');\n  \n  const formatted = formatCurrency(order.total);\n  await sendNotification(user.email, `Order total: ${formatted}`);\n  \n  return { success: true };\n}\n\nmodule.exports = { processOrder };\n"
+        "path": "src/config.js",
+        "content": "module.exports = {\n  port: 3000,\n  discountThreshold: 100,\n  maxDiscountPercent: 25\n};\n"
       },
       {
-        "path": "src/utils/formatting.js",
-        "content": "/**\n * Format a number as currency\n * @param {number} amount - The amount to format\n * @returns {string} Formatted currency string\n */\nfunction formatCurrency(amount) {\n  return '$' + amount.toFixed(2);\n}\n\nfunction formatDate(date) {\n  return date.toISOString().split('T')[0];\n}\n\nfunction formatPercent(value) {\n  return (value * 100).toFixed(1) + '%';\n}\n\nmodule.exports = { formatCurrency, formatDate, formatPercent };\n"
+        "path": "src/app.js",
+        "content": "const express = require('express');\nconst orderRoutes = require('./routes/orders');\nconst productRoutes = require('./routes/products');\n\nconst app = express();\napp.use(express.json());\napp.use('/api/orders', orderRoutes);\napp.use('/api/products', productRoutes);\n\nmodule.exports = app;\n"
+      },
+      {
+        "path": "src/utils/pricing.js",
+        "content": "const config = require('../config');\n\n/**\n * Calculate discount for an order based on total amount\n * @param {number} subtotal - The order subtotal before discount\n * @param {string} memberTier - Customer tier: 'bronze', 'silver', 'gold'\n * @returns {number} The discount amount in dollars\n */\nfunction calculateDiscount(subtotal, memberTier) {\n  if (subtotal < config.discountThreshold) return 0;\n\n  let percent = 0;\n  switch (memberTier) {\n    case 'gold': percent = 15; break;\n    case 'silver': percent = 10; break;\n    case 'bronze': percent = 5; break;\n    default: percent = 0;\n  }\n\n  const discount = subtotal * (percent / 100);\n  const maxDiscount = subtotal * (config.maxDiscountPercent / 100);\n  return Math.min(discount, maxDiscount);\n}\n\nfunction formatPrice(amount) {\n  return '$' + amount.toFixed(2);\n}\n\nfunction calculateTax(amount, rate = 0.08) {\n  return amount * rate;\n}\n\nmodule.exports = { calculateDiscount, formatPrice, calculateTax };\n"
       },
       {
         "path": "src/utils/notifications.js",
-        "content": "async function sendNotification(email, message) {\n  console.log(`Sending to ${email}: ${message}`);\n  return true;\n}\n\nasync function sendBulkNotification(emails, message) {\n  return Promise.all(emails.map(e => sendNotification(e, message)));\n}\n\nmodule.exports = { sendNotification, sendBulkNotification };\n"
+        "content": "/**\n * Send an email notification\n * @param {string} to - Recipient email address\n * @param {string} subject - Email subject line\n * @param {string} body - Email body content\n * @returns {Promise<boolean>} Whether the email was sent\n */\nasync function sendEmail(to, subject, body) {\n  console.log(`Sending email to ${to}: ${subject}`);\n  // In production, this would use a real email service\n  return true;\n}\n\nasync function sendSMS(to, message) {\n  console.log(`Sending SMS to ${to}: ${message}`);\n  return true;\n}\n\nmodule.exports = { sendEmail, sendSMS };\n"
       },
       {
-        "path": "src/auth/validator.js",
-        "content": "const { findUserById } = require('./userStore');\n\n/**\n * Validate a user exists and is active\n * @param {string} userId - The user ID to validate\n * @returns {object|null} User object or null if invalid\n */\nasync function validateUser(userId) {\n  const user = await findUserById(userId);\n  if (!user || !user.active) return null;\n  return user;\n}\n\nfunction validatePassword(password) {\n  return password && password.length >= 8;\n}\n\nmodule.exports = { validateUser, validatePassword };\n"
+        "path": "src/utils/index.js",
+        "content": "const { calculateDiscount, formatPrice, calculateTax } = require('./pricing');\nconst { sendEmail, sendSMS } = require('./notifications');\n\nmodule.exports = {\n  calculateDiscount,\n  formatPrice,\n  calculateTax,\n  sendEmail,\n  sendSMS\n};\n"
       },
       {
-        "path": "src/auth/userStore.js",
-        "content": "const users = [\n  { id: '1', email: 'alice@example.com', active: true },\n  { id: '2', email: 'bob@example.com', active: false }\n];\n\nasync function findUserById(id) {\n  return users.find(u => u.id === id) || null;\n}\n\nasync function findUserByEmail(email) {\n  return users.find(u => u.email === email) || null;\n}\n\nmodule.exports = { findUserById, findUserByEmail };\n"
+        "path": "src/services/OrderService.js",
+        "content": "const { calculateDiscount, formatPrice } = require('../utils');\nconst { sendEmail } = require('../utils');\n\nclass OrderService {\n  static async createOrder(items, customer) {\n    const subtotal = items.reduce((sum, item) => sum + item.price * item.qty, 0);\n    const discount = calculateDiscount(subtotal, customer.tier);\n    const total = subtotal - discount;\n\n    const order = {\n      id: Date.now().toString(),\n      items,\n      subtotal,\n      discount,\n      total,\n      customerId: customer.id\n    };\n\n    await sendEmail(\n      customer.email,\n      'Order Confirmation',\n      `Your order total: ${formatPrice(total)}`\n    );\n\n    return order;\n  }\n\n  static async applyPromoCode(order, promoCode) {\n    // Promo codes give an additional flat discount\n    const promoDiscount = promoCode === 'SAVE20' ? 20 : 0;\n    const memberDiscount = calculateDiscount(order.subtotal, 'bronze');\n    order.discount = memberDiscount + promoDiscount;\n    order.total = order.subtotal - order.discount;\n    return order;\n  }\n}\n\nmodule.exports = OrderService;\n"
+      },
+      {
+        "path": "src/services/CartService.js",
+        "content": "const { calculateDiscount, formatPrice } = require('../utils');\n\nclass CartService {\n  static previewTotal(items, memberTier) {\n    const subtotal = items.reduce((sum, item) => sum + item.price * item.qty, 0);\n    const discount = calculateDiscount(subtotal, memberTier);\n    const total = subtotal - discount;\n\n    return {\n      subtotal: formatPrice(subtotal),\n      discount: formatPrice(discount),\n      total: formatPrice(total)\n    };\n  }\n}\n\nmodule.exports = CartService;\n"
+      },
+      {
+        "path": "src/services/CustomerService.js",
+        "content": "const { sendEmail } = require('../utils');\n\nclass CustomerService {\n  static async welcomeNewCustomer(customer) {\n    await sendEmail(\n      customer.email,\n      'Welcome to our shop!',\n      `Hi ${customer.name}, welcome aboard!`\n    );\n    return customer;\n  }\n\n  static async notifyTierUpgrade(customer, newTier) {\n    await sendEmail(\n      customer.email,\n      'Congratulations! Tier Upgrade',\n      `You have been upgraded to ${newTier} tier!`\n    );\n    customer.tier = newTier;\n    return customer;\n  }\n}\n\nmodule.exports = CustomerService;\n"
+      },
+      {
+        "path": "src/services/ReportService.js",
+        "content": "const { calculateDiscount, formatPrice } = require('../utils');\nconst { sendEmail } = require('../utils');\n\nclass ReportService {\n  static generateDiscountReport(orders, memberTier) {\n    return orders.map(order => ({\n      orderId: order.id,\n      subtotal: order.subtotal,\n      discount: calculateDiscount(order.subtotal, memberTier),\n      formatted: formatPrice(order.subtotal)\n    }));\n  }\n\n  static async emailReport(adminEmail, reportData) {\n    const body = JSON.stringify(reportData, null, 2);\n    await sendEmail(adminEmail, 'Monthly Report', body);\n  }\n}\n\nmodule.exports = ReportService;\n"
+      },
+      {
+        "path": "src/controllers/OrderController.js",
+        "content": "const OrderService = require('../services/OrderService');\nconst CartService = require('../services/CartService');\n\nclass OrderController {\n  static async create(req, res) {\n    try {\n      const order = await OrderService.createOrder(req.body.items, req.user);\n      res.status(201).json({ data: order });\n    } catch (err) {\n      res.status(500).json({ error: err.message });\n    }\n  }\n\n  static async preview(req, res) {\n    try {\n      const preview = CartService.previewTotal(req.body.items, req.user.tier);\n      res.json({ data: preview });\n    } catch (err) {\n      res.status(500).json({ error: err.message });\n    }\n  }\n}\n\nmodule.exports = OrderController;\n"
+      },
+      {
+        "path": "src/routes/orders.js",
+        "content": "const router = require('express').Router();\nconst OrderController = require('../controllers/OrderController');\n\nrouter.post('/', OrderController.create);\nrouter.post('/preview', OrderController.preview);\n\nmodule.exports = router;\n"
+      },
+      {
+        "path": "src/routes/products.js",
+        "content": "const router = require('express').Router();\n\nconst products = [\n  { id: '1', name: 'Widget', price: 29.99 },\n  { id: '2', name: 'Gadget', price: 49.99 },\n  { id: '3', name: 'Doohickey', price: 79.99 }\n];\n\nrouter.get('/', (req, res) => res.json({ data: products }));\nrouter.get('/:id', (req, res) => {\n  const product = products.find(p => p.id === req.params.id);\n  if (!product) return res.status(404).json({ error: 'Not found' });\n  res.json({ data: product });\n});\n\nmodule.exports = router;\n"
+      },
+      {
+        "path": "tests/pricing.test.js",
+        "content": "const { calculateDiscount, formatPrice, calculateTax } = require('../src/utils/pricing');\n\ndescribe('calculateDiscount', () => {\n  test('returns 0 for amounts below threshold', () => {\n    expect(calculateDiscount(50, 'gold')).toBe(0);\n  });\n\n  test('applies gold tier discount', () => {\n    expect(calculateDiscount(200, 'gold')).toBe(30);\n  });\n\n  test('applies silver tier discount', () => {\n    expect(calculateDiscount(200, 'silver')).toBe(20);\n  });\n\n  test('applies bronze tier discount', () => {\n    expect(calculateDiscount(200, 'bronze')).toBe(10);\n  });\n\n  test('returns 0 for unknown tier', () => {\n    expect(calculateDiscount(200, 'unknown')).toBe(0);\n  });\n});\n\ndescribe('formatPrice', () => {\n  test('formats with dollar sign', () => {\n    expect(formatPrice(99.9)).toBe('$99.90');\n  });\n});\n"
+      },
+      {
+        "path": "tests/notifications.test.js",
+        "content": "const { sendEmail, sendSMS } = require('../src/utils/notifications');\n\ndescribe('sendEmail', () => {\n  test('sends email successfully', async () => {\n    const result = await sendEmail('test@example.com', 'Test', 'Hello');\n    expect(result).toBe(true);\n  });\n});\n\ndescribe('sendSMS', () => {\n  test('sends SMS successfully', async () => {\n    const result = await sendSMS('+1234567890', 'Hello');\n    expect(result).toBe(true);\n  });\n});\n"
+      },
+      {
+        "path": "tests/OrderService.test.js",
+        "content": "const OrderService = require('../src/services/OrderService');\n\ndescribe('OrderService', () => {\n  test('createOrder calculates discount', async () => {\n    const items = [{ price: 50, qty: 3 }];\n    const customer = { id: '1', email: 'test@test.com', tier: 'gold' };\n    const order = await OrderService.createOrder(items, customer);\n    expect(order.discount).toBe(22.5);\n  });\n});\n"
       }
     ],
     "cleanBefore": true
@@ -46,25 +90,49 @@
   "objectives": [
     {
       "id": "obj-1",
-      "description": "Create definitions.md",
+      "description": "Create function-trace.md documenting the function traces",
       "type": "file_exists",
-      "target": "definitions.md",
+      "target": "function-trace.md",
       "required": true
     },
     {
       "id": "obj-2",
-      "description": "Document formatCurrency location",
+      "description": "Identify where calculateDiscount is defined - must mention utils/pricing.js",
       "type": "file_contains",
-      "target": "definitions.md",
-      "pattern": "formatCurrency.*formatting\\.js|formatting\\.js.*formatCurrency",
+      "target": "function-trace.md",
+      "pattern": "calculateDiscount.*pricing\\.js|pricing\\.js.*calculateDiscount",
       "required": true
     },
     {
       "id": "obj-3",
-      "description": "Document validateUser location",
+      "description": "Identify where sendEmail is defined - must mention utils/notifications.js",
       "type": "file_contains",
-      "target": "definitions.md",
-      "pattern": "validateUser.*validator\\.js|validator\\.js.*validateUser",
+      "target": "function-trace.md",
+      "pattern": "sendEmail.*notifications\\.js|notifications\\.js.*sendEmail",
+      "required": true
+    },
+    {
+      "id": "obj-4",
+      "description": "Document files that import/use calculateDiscount - must mention OrderService, CartService, and ReportService",
+      "type": "file_contains",
+      "target": "function-trace.md",
+      "pattern": "OrderService.*CartService.*ReportService|CartService.*OrderService|ReportService.*OrderService",
+      "required": true
+    },
+    {
+      "id": "obj-5",
+      "description": "Document files that import/use sendEmail - must mention OrderService, CustomerService, and ReportService",
+      "type": "file_contains",
+      "target": "function-trace.md",
+      "pattern": "OrderService.*CustomerService|CustomerService.*ReportService|CustomerService.*OrderService",
+      "required": true
+    },
+    {
+      "id": "obj-6",
+      "description": "Document the re-export through utils/index.js",
+      "type": "file_contains",
+      "target": "function-trace.md",
+      "pattern": "utils/index\\.js|re-?export|barrel",
       "required": true
     }
   ],
@@ -72,45 +140,65 @@
   "bonusObjectives": [
     {
       "id": "bonus-1",
-      "description": "Include line numbers for definitions",
+      "description": "Include line numbers for each definition",
       "type": "file_contains",
-      "target": "definitions.md",
-      "pattern": "line\\s*[0-9]+|:[0-9]+|\\([0-9]+\\)",
-      "xpBonus": 50
+      "target": "function-trace.md",
+      "pattern": "line\\s*[0-9]+|:[0-9]+|\\bL[0-9]+",
+      "xpBonus": 25
+    },
+    {
+      "id": "bonus-2",
+      "description": "Document test files that use these functions",
+      "type": "file_contains",
+      "target": "function-trace.md",
+      "pattern": "pricing\\.test\\.js|notifications\\.test\\.js|OrderService\\.test\\.js",
+      "xpBonus": 25
+    },
+    {
+      "id": "bonus-3",
+      "description": "Document total call sites for each function",
+      "type": "file_contains",
+      "target": "function-trace.md",
+      "pattern": "[0-9]+\\s*(call|usage|reference|site|time|place)",
+      "xpBonus": 25
     }
   ],
 
   "hints": [
     {
       "level": 1,
-      "text": "Ask Claude Code to find where a specific function is defined in the codebase.",
+      "text": "To find a definition, search for the pattern that creates the function. For JavaScript, 'function calculateDiscount' finds function declarations. For arrow functions, look for 'const calculateDiscount ='. A function CALL looks like 'calculateDiscount(' without the function keyword before it.",
       "xpCost": 15
     },
     {
       "level": 2,
-      "text": "Try: 'Where is formatCurrency defined?' and 'Where is validateUser defined?'",
+      "text": "Trace the complete journey: (1) Grep for 'function calculateDiscount' to find the definition. (2) Grep for 'module.exports.*calculateDiscount' to find the export. (3) Grep for 'require.*pricing' or 'require.*utils' to find imports. (4) Grep for 'calculateDiscount(' to find all call sites. Notice that utils/index.js re-exports the function, so files may import from '../utils' instead of '../utils/pricing'.",
       "xpCost": 35
     },
     {
       "level": 3,
-      "text": "Ask: 'Find the definitions of formatCurrency and validateUser, then create definitions.md listing file paths and line numbers'",
+      "text": "Ask Claude Code: 'Trace these two functions through the codebase and create function-trace.md: (1) For calculateDiscount: Grep for \"function calculateDiscount\" to find definition in utils/pricing.js, then search for module.exports to see it is exported there AND re-exported in utils/index.js, then search for require.*utils or require.*pricing to find imports in OrderService, CartService, ReportService, and the test file. Search for calculateDiscount( to find all call sites. (2) Do the same for sendEmail - defined in utils/notifications.js, re-exported in utils/index.js, used in OrderService, CustomerService, ReportService, and tests. Include file paths, line numbers, and total call site counts.'",
       "xpCost": 75
     }
   ],
 
   "solution": {
-    "approach": "Use Claude Code to search for function definitions and document their locations.",
-    "example": "Find where formatCurrency and validateUser are defined and document in definitions.md",
+    "approach": "For each function, perform four searches: (1) Search for the definition pattern (function functionName) to find where it is created. (2) Search for module.exports containing the function name to find exports. (3) Search for require statements that would import it to find all importing files. (4) Search for the function call pattern functionName( to find all call sites. Note that utils/index.js acts as a barrel file re-exporting both functions, so most files import from '../utils' rather than the specific file.",
+    "example": "calculateDiscount: Defined in src/utils/pricing.js (line 10). Exported in pricing.js module.exports. Re-exported in src/utils/index.js. Imported and called in: OrderService.js (2 calls: createOrder and applyPromoCode), CartService.js (1 call: previewTotal), ReportService.js (1 call: generateDiscountReport), tests/pricing.test.js (5 calls in tests). sendEmail: Defined in src/utils/notifications.js (line 8). Re-exported in src/utils/index.js. Called in: OrderService.js (1 call), CustomerService.js (2 calls: welcomeNewCustomer, notifyTierUpgrade), ReportService.js (1 call: emailReport), tests/notifications.test.js (1 call).",
     "alternativeApproaches": [
-      "Search for function definitions and list them",
-      "Where are these functions implemented: formatCurrency, validateUser?"
+      "Start from the call sites and trace backwards to find the definition",
+      "Use Grep for just the function name to see all mentions, then categorize each as definition, export, import, or call",
+      "Read the utils/index.js barrel file first to understand the re-export layer, then trace outward"
     ]
   },
 
   "learningPoints": [
-    "Claude Code can find function definitions across multiple files",
-    "Following import chains helps locate the source",
-    "Definition search works for functions, classes, and variables"
+    "Function definitions use 'function name(' or 'const name =' patterns, while usage is just 'name('",
+    "Barrel files (index.js) re-export functions, creating an extra layer of indirection to trace",
+    "Searching for require or import patterns reveals the complete dependency graph",
+    "A complete function trace covers: definition -> export -> re-export -> import -> call sites",
+    "Combining Glob (find files) with Grep (find patterns) is the most efficient strategy for code navigation",
+    "Test files are often significant consumers of utility functions and should be included in traces"
   ],
 
   "nextChallenge": "02-005"

@@ -2,26 +2,46 @@
   "id": "15-001",
   "module": "background-tasks",
   "title": "Run Tasks in Background",
-  "description": "Learn to run long-running commands in the background while continuing to work.",
+  "description": "Learn how Claude Code's run_in_background parameter lets you launch long-running commands asynchronously, so you can continue working while builds, tests, or research tasks complete in the background.",
   "difficulty": "intermediate",
   "xpReward": 200,
-  "estimatedMinutes": 10,
-  "skills": ["background-execution", "async-workflows"],
+  "estimatedMinutes": 12,
+  "skills": ["background-execution", "async-workflows", "task-management"],
 
   "setup": {
     "workingDir": "~/dojo-workspace/challenge-15-001",
     "initialFiles": [
       {
         "path": "README.md",
-        "content": "# Challenge: Run Tasks in Background\n\nLearn to run long-running tasks in the background.\n\n## Objectives\n1. Start a long-running build process in the background\n2. Continue working on other tasks while it runs\n3. Check on the background task's progress\n"
+        "content": "# Challenge: Run Tasks in Background\n\nLearn how Claude Code executes commands asynchronously using\n`run_in_background`, and when this approach saves time versus blocking.\n\n---\n\n## What Does \"Background\" Mean?\n\nWhen Claude Code runs a command normally (the default), it blocks -- it\nwaits for the command to finish and reads the output before doing anything\nelse. This is called **synchronous** or **blocking** execution.\n\nWith background execution, the command is launched and Claude Code\n**immediately gets control back**. The command keeps running in its own\nprocess while Claude moves on to other work. This is **asynchronous** or\n**non-blocking** execution.\n\n```\nBlocking (default):     [Run build ~~~~~~~~ Done] [Continue work...]\nBackground:             [Launch build] [Continue work...] [Check result]\n                                       ^^^^^^^^^^^^^^^^^\n                                       This work happens WHILE build runs\n```\n\n## The `run_in_background` Parameter\n\nThe Bash tool accepts a `run_in_background` parameter. When set to\n`true`, the command launches asynchronously:\n\n```\nBash tool call:\n  command: \"npm run build\"\n  run_in_background: true\n```\n\nWhat happens when a command runs in background:\n1. The command starts executing in a separate process\n2. Claude Code receives a **task ID** and an **output file path**\n3. Claude Code continues with the next action immediately\n4. The command's stdout/stderr is written to the output file\n5. You can check on the result later when you need it\n\nThe Task tool (subagents) also supports `run_in_background` with the\nsame behavior -- the subagent runs independently while the main\nconversation continues.\n\n## Checking Results Later\n\nAfter launching a background task, you have several ways to check on it:\n\n| Method | How | Best For |\n|--------|-----|----------|\n| **Read tool** | Read the output file path that was returned | Seeing full output so far |\n| **tail via Bash** | `tail -20 /path/to/output` | Quick peek at recent output |\n| **TaskOutput tool** | Use the task ID with `block: false` | Non-blocking status check |\n| **TaskOutput (blocking)** | Use the task ID with `block: true` | Waiting for completion |\n\nThe TaskOutput tool is particularly useful because it tells you whether\nthe task is still running or has completed.\n\n## Blocking vs Non-Blocking: When to Choose Each\n\n| Scenario | Use Blocking | Use Background |\n|----------|-------------|----------------|\n| Running a 30-second test suite | Maybe | Yes -- do other work meanwhile |\n| Reading a file you need immediately | Yes | No -- you need the result now |\n| Building docs you won't read yet | No | Yes -- build while you code |\n| Installing dependencies before coding | Yes | No -- you need packages first |\n| Running lint on module A while editing module B | No | Yes -- independent tasks |\n| Creating a file in a directory | Yes | No -- instant operation |\n\nThe key question: **Does your next action depend on this command's result?**\n- If YES: use blocking (the default)\n- If NO: use background and keep working\n\n## When to Use Background Execution\n\nGood candidates for background:\n- **Build processes** -- compilation, bundling, transpilation\n- **Test suites** -- especially slow integration/e2e tests\n- **Linting/formatting** -- checking code quality while you edit\n- **Research subagents** -- exploring code while you work on something else\n- **Documentation generation** -- building docs while you code\n\nBad candidates for background:\n- **File reads you need immediately** -- you can't edit what you haven't read\n- **Directory creation before file creation** -- sequential dependency\n- **Git operations you need before the next step** -- commit before push\n\n---\n\n## Your Task\n\nThis project has three independent tasks: running tests, linting code,\nand building documentation. None of them depend on each other.\n\nYour job is to understand how background execution works and create a\n`background-guide.md` that documents the mechanism. The guide should\ndemonstrate your understanding of:\n\n1. What `run_in_background` does and how it differs from blocking\n2. How to check on a background task's status/output\n3. When background execution is appropriate vs inappropriate\n4. Practical examples using this project's tasks\n\n## Objectives\n1. Create background-guide.md documenting background execution in Claude Code\n2. Explain the run_in_background parameter and what happens when it is used\n3. Describe at least 2 methods for checking on background task results\n4. Include guidance on when to use background vs blocking execution\n5. Reference this project's tasks (tests, lint, docs) as practical examples\n"
       },
       {
         "path": "package.json",
-        "content": "{\n  \"name\": \"background-tasks\",\n  \"scripts\": {\n    \"build\": \"echo 'Starting build...' && sleep 3 && echo 'Compiling...' && sleep 2 && echo 'Build complete!'\",\n    \"lint\": \"echo 'Linting...' && sleep 1 && echo 'No errors found!'\"\n  }\n}\n"
+        "content": "{\n  \"name\": \"multi-task-project\",\n  \"version\": \"1.0.0\",\n  \"description\": \"A project with multiple independent tasks for background execution practice\",\n  \"scripts\": {\n    \"test\": \"node test/run-tests.js\",\n    \"lint\": \"node scripts/lint.js\",\n    \"docs\": \"node scripts/build-docs.js\",\n    \"build\": \"echo 'Compiling...' && sleep 3 && echo 'Bundling...' && sleep 2 && echo 'Build complete!'\"\n  }\n}\n"
       },
       {
-        "path": "src/index.js",
-        "content": "// Main application file\nconsole.log('Hello World');\n"
+        "path": "src/math.js",
+        "content": "/**\n * Add two numbers\n * @param {number} a\n * @param {number} b\n * @returns {number}\n */\nfunction add(a, b) {\n  return a + b;\n}\n\n/**\n * Subtract two numbers\n * @param {number} a\n * @param {number} b\n * @returns {number}\n */\nfunction subtract(a, b) {\n  return a - b;\n}\n\n/**\n * Multiply two numbers\n * @param {number} a\n * @param {number} b\n * @returns {number}\n */\nfunction multiply(a, b) {\n  return a * b;\n}\n\nmodule.exports = { add, subtract, multiply };\n"
+      },
+      {
+        "path": "src/strings.js",
+        "content": "/**\n * Capitalize the first letter of a string\n * @param {string} str\n * @returns {string}\n */\nfunction capitalize(str) {\n  if (!str) return '';\n  return str.charAt(0).toUpperCase() + str.slice(1);\n}\n\n/**\n * Reverse a string\n * @param {string} str\n * @returns {string}\n */\nfunction reverse(str) {\n  return str.split('').reverse().join('');\n}\n\n/**\n * Truncate a string to a given length with ellipsis\n * @param {string} str\n * @param {number} maxLength\n * @returns {string}\n */\nfunction truncate(str, maxLength) {\n  if (str.length <= maxLength) return str;\n  return str.slice(0, maxLength - 3) + '...';\n}\n\nmodule.exports = { capitalize, reverse, truncate };\n"
+      },
+      {
+        "path": "src/arrays.js",
+        "content": "/**\n * Return unique elements from an array\n * @param {Array} arr\n * @returns {Array}\n */\nfunction unique(arr) {\n  return [...new Set(arr)];\n}\n\n/**\n * Chunk an array into groups of a given size\n * @param {Array} arr\n * @param {number} size\n * @returns {Array<Array>}\n */\nfunction chunk(arr, size) {\n  const result = [];\n  for (let i = 0; i < arr.length; i += size) {\n    result.push(arr.slice(i, i + size));\n  }\n  return result;\n}\n\n/**\n * Flatten a nested array one level deep\n * @param {Array} arr\n * @returns {Array}\n */\nfunction flatten(arr) {\n  return arr.reduce((acc, item) => acc.concat(item), []);\n}\n\nmodule.exports = { unique, chunk, flatten };\n"
+      },
+      {
+        "path": "test/run-tests.js",
+        "content": "const { add, subtract, multiply } = require('../src/math');\nconst { capitalize, reverse, truncate } = require('../src/strings');\nconst { unique, chunk, flatten } = require('../src/arrays');\n\nlet passed = 0;\nlet failed = 0;\n\nfunction assert(condition, message) {\n  if (condition) {\n    passed++;\n    console.log(`  PASS: ${message}`);\n  } else {\n    failed++;\n    console.log(`  FAIL: ${message}`);\n  }\n}\n\nconsole.log('Running math tests...');\nassert(add(2, 3) === 5, 'add(2, 3) === 5');\nassert(subtract(5, 3) === 2, 'subtract(5, 3) === 2');\nassert(multiply(4, 3) === 12, 'multiply(4, 3) === 12');\n\nconsole.log('Running string tests...');\nassert(capitalize('hello') === 'Hello', 'capitalize(\"hello\") === \"Hello\"');\nassert(reverse('abc') === 'cba', 'reverse(\"abc\") === \"cba\"');\nassert(truncate('hello world', 8) === 'hello...', 'truncate with ellipsis');\n\nconsole.log('Running array tests...');\nassert(JSON.stringify(unique([1,2,2,3])) === '[1,2,3]', 'unique removes duplicates');\nassert(JSON.stringify(chunk([1,2,3,4], 2)) === '[[1,2],[3,4]]', 'chunk splits correctly');\nassert(JSON.stringify(flatten([[1,2],[3,4]])) === '[1,2,3,4]', 'flatten works');\n\nconsole.log(`\\nResults: ${passed} passed, ${failed} failed`);\nprocess.exit(failed > 0 ? 1 : 0);\n"
+      },
+      {
+        "path": "scripts/lint.js",
+        "content": "const fs = require('fs');\nconst path = require('path');\n\nconst srcDir = path.join(__dirname, '..', 'src');\nlet warnings = 0;\nlet files = 0;\n\nconsole.log('Linting source files...');\n\nconst srcFiles = fs.readdirSync(srcDir).filter(f => f.endsWith('.js'));\nsrcFiles.forEach(file => {\n  files++;\n  const content = fs.readFileSync(path.join(srcDir, file), 'utf-8');\n  const lines = content.split('\\n');\n  console.log(`  Checking ${file}...`);\n  \n  lines.forEach((line, i) => {\n    if (line.length > 100) {\n      warnings++;\n      console.log(`    Line ${i + 1}: line exceeds 100 characters`);\n    }\n    if (line.includes('var ')) {\n      warnings++;\n      console.log(`    Line ${i + 1}: use 'let' or 'const' instead of 'var'`);\n    }\n  });\n});\n\nconsole.log(`\\nLint complete: ${files} files checked, ${warnings} warnings`);\n"
+      },
+      {
+        "path": "scripts/build-docs.js",
+        "content": "const fs = require('fs');\nconst path = require('path');\n\nconst srcDir = path.join(__dirname, '..', 'src');\nconst docsDir = path.join(__dirname, '..', 'docs');\n\nif (!fs.existsSync(docsDir)) {\n  fs.mkdirSync(docsDir, { recursive: true });\n}\n\nconsole.log('Building documentation...');\n\nconst srcFiles = fs.readdirSync(srcDir).filter(f => f.endsWith('.js'));\nlet allDocs = '# API Documentation\\n\\n';\n\nsrcFiles.forEach(file => {\n  console.log(`  Processing ${file}...`);\n  const content = fs.readFileSync(path.join(srcDir, file), 'utf-8');\n  const moduleName = path.basename(file, '.js');\n  allDocs += `## ${moduleName}\\n\\n`;\n  \n  const jsdocPattern = /\\/\\*\\*([\\s\\S]*?)\\*\\/\\s*function\\s+(\\w+)/g;\n  let match;\n  while ((match = jsdocPattern.exec(content)) !== null) {\n    const [, docBlock, funcName] = match;\n    allDocs += `### ${funcName}\\n\\n`;\n    const cleanDoc = docBlock.split('\\n').map(l => l.replace(/^\\s*\\*\\s?/, '')).join('\\n').trim();\n    allDocs += cleanDoc + '\\n\\n';\n  }\n});\n\nfs.writeFileSync(path.join(docsDir, 'api.md'), allDocs);\nconsole.log(`\\nDocumentation written to docs/api.md`);\n"
       }
     ],
     "cleanBefore": true
@@ -30,31 +50,41 @@
   "objectives": [
     {
       "id": "obj-1",
-      "description": "Start build in background",
+      "description": "Create background-guide.md",
       "type": "file_exists",
-      "target": "README.md",
+      "target": "background-guide.md",
       "required": true
     },
     {
       "id": "obj-2",
-      "description": "Create a new file while build runs",
-      "type": "file_exists",
-      "target": "src/utils.js",
+      "description": "Guide explains the run_in_background parameter and how it differs from blocking execution",
+      "type": "file_contains",
+      "target": "background-guide.md",
+      "pattern": "run_in_background|non.blocking|async|background.*parameter",
       "required": true
     },
     {
       "id": "obj-3",
-      "description": "Document background task workflow",
-      "type": "file_exists",
-      "target": "workflow.md",
+      "description": "Guide describes how to check on background task results (TaskOutput, Read, tail, or output file)",
+      "type": "file_contains",
+      "target": "background-guide.md",
+      "pattern": "TaskOutput|output.*file|task.*[Ii][Dd]|tail|[Cc]heck.*result|[Cc]heck.*status|[Cc]heck.*output",
       "required": true
     },
     {
       "id": "obj-4",
-      "description": "Document explains background execution",
+      "description": "Guide includes when-to-use guidance (appropriate vs inappropriate scenarios for background)",
       "type": "file_contains",
-      "target": "workflow.md",
-      "pattern": "[Bb]ackground|[Pp]arallel|[Cc]oncurrent|[Ww]hile|[Ss]ame time",
+      "target": "background-guide.md",
+      "pattern": "[Ww]hen to use|[Ww]hen not to|[Aa]ppropriate|[Dd]epend|[Dd]oesn't need.*result|[Nn]ext step",
+      "required": true
+    },
+    {
+      "id": "obj-5",
+      "description": "Guide references practical examples from this project (tests, lint, docs, or build)",
+      "type": "file_contains",
+      "target": "background-guide.md",
+      "pattern": "test|lint|docs|build|npm run",
       "required": true
     }
   ],
@@ -62,10 +92,18 @@
   "bonusObjectives": [
     {
       "id": "bonus-1",
-      "description": "Run lint in background too",
+      "description": "Guide includes a comparison table or diagram of blocking vs background execution",
       "type": "file_contains",
-      "target": "workflow.md",
-      "pattern": "lint|multiple|both",
+      "target": "background-guide.md",
+      "pattern": "[Bb]locking.*[Bb]ackground|[Ss]ynchronous.*[Aa]synchronous|\\|.*\\|.*\\|",
+      "xpBonus": 40
+    },
+    {
+      "id": "bonus-2",
+      "description": "Guide mentions that the Task tool (subagents) also supports run_in_background",
+      "type": "file_contains",
+      "target": "background-guide.md",
+      "pattern": "[Tt]ask tool|[Ss]ub.?agent|Task.*background|background.*[Ss]ub.?agent",
       "xpBonus": 40
     }
   ],
@@ -73,34 +111,36 @@
   "hints": [
     {
       "level": 1,
-      "text": "Ask Claude to run a command in the background. Use the run_in_background parameter.",
+      "text": "Read the README carefully -- it explains the full mechanism. Your guide should cover three pillars: how background execution works (the run_in_background parameter), how to check results afterward, and when to choose background over blocking.",
       "xpCost": 15
     },
     {
       "level": 2,
-      "text": "Try: 'Run npm run build in the background, then while it's running, create src/utils.js with a helper function'",
+      "text": "For checking results, document at least 2 of these methods: (1) Read tool on the output file path, (2) tail via Bash for a quick peek, (3) TaskOutput tool with block: false for non-blocking check, (4) TaskOutput with block: true to wait for completion. Think about which project tasks (test, lint, docs) could run in background simultaneously.",
       "xpCost": 40
     },
     {
       "level": 3,
-      "text": "Ask: 'Start npm run build in the background. While it runs, create src/utils.js with a formatDate helper. Then create workflow.md explaining how background tasks let you work on multiple things concurrently.'",
+      "text": "Create background-guide.md with these sections: (1) What run_in_background does -- command launches, returns task ID and output file path, Claude continues working. (2) Checking results -- describe TaskOutput tool, Read tool on output file, tail command. (3) When to use -- background for tests/lint/docs that run independently, blocking when the next step needs the result. (4) Examples -- this project's npm run test, npm run lint, and npm run docs are all independent and can run in background simultaneously.",
       "xpCost": 80
     }
   ],
 
   "solution": {
-    "approach": "Run long tasks in background, continue with other work, check results later.",
-    "example": "Run build in background while creating other files",
+    "approach": "Study the README to understand background execution mechanics, then create a guide that documents the run_in_background parameter, methods for checking task results, and decision criteria for when to use background versus blocking execution.",
+    "example": "Create background-guide.md explaining: the parameter sets run_in_background: true on Bash, task launches and returns ID + output path, check with TaskOutput or Read, use for independent tasks like this project's test/lint/docs that don't depend on each other.",
     "alternativeApproaches": [
-      "Start multiple background tasks",
-      "Check task status periodically"
+      "Run the project's tasks in background to experience the workflow firsthand, then document what you observed",
+      "Create the guide with a focus on decision-making: a flowchart or checklist for deciding blocking vs background"
     ]
   },
 
   "learningPoints": [
-    "Background tasks run without blocking your work",
-    "Use for builds, tests, and long-running processes",
-    "Check on background tasks when needed"
+    "The run_in_background parameter on Bash and Task tools launches commands asynchronously -- you get a task ID and output file path back immediately",
+    "Background tasks are ideal for independent, long-running processes like builds, test suites, and linting",
+    "Use TaskOutput (with block: false for status check, block: true to wait) or Read the output file to check on results",
+    "The critical decision: if your next step depends on this command's result, use blocking; if not, use background",
+    "Multiple independent background tasks can run simultaneously, dramatically reducing total workflow time"
   ],
 
   "nextChallenge": "15-002"

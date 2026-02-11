@@ -2,22 +2,30 @@
   "id": "05-002",
   "module": "debugging",
   "title": "Fix Type Error",
-  "description": "Learn to identify and fix type-related bugs. Understanding data types prevents runtime errors.",
+  "description": "Learn to identify, understand, and fix type-related errors in JavaScript: TypeError, ReferenceError, and the defensive coding patterns that prevent them.",
   "difficulty": "intermediate",
   "xpReward": 225,
-  "estimatedMinutes": 10,
-  "skills": ["type-debugging", "data-validation"],
+  "estimatedMinutes": 15,
+  "skills": ["type-debugging", "defensive-coding", "stack-trace-reading"],
 
   "setup": {
     "workingDir": "~/dojo-workspace/challenge-05-002",
     "initialFiles": [
       {
         "path": "README.md",
-        "content": "# Challenge: Fix Type Error\n\nThe user formatter is crashing with 'Cannot read property of undefined'. Fix it!\n\n## Objectives\n1. Find where the type error occurs\n2. Add proper null/undefined checks\n3. Handle edge cases gracefully\n"
+        "content": "# Challenge: Fix Type Error\n\nLearn to identify, understand, and fix type-related runtime errors --\nthe most common category of JavaScript bugs.\n\n## Understanding Type Errors\n\nJavaScript is dynamically typed, which means type errors happen at\nruntime rather than compile time. The three most common type-related\nerrors are:\n\n### TypeError\n\nThrown when a value is not the type you expect:\n\n```javascript\n// Accessing a property on null or undefined\nconst user = null;\nconsole.log(user.name);  // TypeError: Cannot read properties of null\n\n// Calling something that isn't a function\nconst x = 42;\nx();  // TypeError: x is not a function\n\n// Using a string method on a number\nconst num = 123;\nnum.toUpperCase();  // TypeError: num.toUpperCase is not a function\n```\n\n### ReferenceError\n\nThrown when you reference a variable that doesn't exist:\n\n```javascript\nconsole.log(userName);  // ReferenceError: userName is not defined\n// Usually caused by: typos, forgetting to declare, or wrong scope\n```\n\n### Why These Are So Common\n\nIn JavaScript, any variable can hold any type at any time. Data from\nAPIs, user input, or function arguments might be:\n- `null` or `undefined` when you expect an object\n- A string when you expect a number\n- A promise when you expect the resolved value\n- Missing properties due to misspellings\n\n## Reading Stack Traces\n\nStack traces show the chain of function calls that led to the error.\nRead them from TOP (where the error occurred) to BOTTOM (where the\nchain started):\n\n```\nTypeError: Cannot read properties of undefined (reading 'street')\n    at formatAddress (userService.js:28:15)      <-- crash here\n    at formatUserProfile (userService.js:12:20)   <-- called from here\n    at processUsers (app.js:45:10)                <-- which was called here\n    at main (app.js:8:3)                          <-- which started here\n```\n\nThe error is on line 28 of userService.js, in the formatAddress function.\nBut the ROOT CAUSE might be that processUsers passed in incomplete data.\n\n## Common Causes and Fixes\n\n### 1. Accessing Nested Properties Without Null Checks\n\n```javascript\n// DANGEROUS: crashes if user or user.address is null/undefined\nconst city = user.address.city;\n\n// SAFE: optional chaining returns undefined instead of crashing\nconst city = user?.address?.city;\n\n// SAFE with default: provides a fallback value\nconst city = user?.address?.city ?? 'Unknown';\n```\n\n### 2. Calling a Method on the Wrong Type\n\n```javascript\n// BUG: price is a number, not a string\nconst display = price.toUpperCase();\n\n// FIX: convert to string first\nconst display = String(price).toUpperCase();\n// or: price.toString().toUpperCase()\n```\n\n### 3. Missing await Causing Promise-Instead-of-Value\n\n```javascript\n// BUG: getData returns a Promise, not the data\nconst data = getData();\nconsole.log(data.results);  // undefined! data is a Promise object\n\n// FIX: await the promise to get the actual value\nconst data = await getData();\nconsole.log(data.results);  // works!\n```\n\nThis is especially tricky because Promises don't throw when you\naccess properties on them -- you just get `undefined` silently.\n\n### 4. Misspelled Property Names\n\n```javascript\n// BUG: the API returns 'firstName', not 'firstname'\nconst name = user.firstname;  // undefined (silent bug)\n\n// FIX: match the exact property name\nconst name = user.firstName;  // correct\n```\n\n## Defensive Coding Patterns\n\nThese patterns prevent type errors before they happen:\n\n| Pattern | Syntax | Purpose |\n|---|---|---|\n| Optional chaining | `obj?.prop` | Returns undefined instead of throwing |\n| Nullish coalescing | `val ?? default` | Provides default for null/undefined |\n| Default parameters | `function f(x = 0)` | Ensures parameters have a value |\n| Type checking | `typeof x === 'string'` | Verify type before using |\n| Early return | `if (!user) return null;` | Guard against bad input |\n\n### Optional Chaining (?.)\n\n```javascript\n// Without: crashes if any part is null/undefined\nconst zip = user.address.zip;\n\n// With: safely returns undefined\nconst zip = user?.address?.zip;\n\n// Works with methods too\nconst upper = str?.toUpperCase?.();\n\n// Works with arrays\nconst first = arr?.[0];\n```\n\n### Nullish Coalescing (??)\n\n```javascript\n// ?? returns the right side ONLY for null/undefined\nconst name = user?.name ?? 'Anonymous';\nconst count = data?.count ?? 0;\n\n// Important: ?? differs from ||\n// || treats 0, '', and false as falsy\n0 || 'default'    // 'default' (probably wrong!)\n0 ?? 'default'    // 0 (correct -- 0 is a valid value)\n```\n\n### TypeScript vs Runtime\n\nTypeScript catches type errors at compile time, but JavaScript only\ncatches them at runtime. In a JS codebase, you must add defensive\nchecks manually. TypeScript would flag most of the bugs in this\nchallenge before you even ran the code.\n\n## Your Task\n\nThe file `userService.js` contains a user data processing module with\nmultiple type-related bugs. A test file demonstrates each crash.\n\n1. Run the tests to see the type errors\n2. Fix ALL type errors in `userService.js`\n3. Use defensive coding patterns (optional chaining, nullish coalescing,\n   default parameters) -- not just if/else checks\n4. Verify all tests pass\n\nThe bugs include:\n- Accessing nested properties without null checks\n- Calling a string method on a value that might be a number\n- A missing await that returns a Promise instead of a value\n- A misspelled property name\n"
       },
       {
-        "path": "userFormatter.js",
-        "content": "// User formatting utilities\n\nfunction formatUserName(user) {\n  return user.firstName.toUpperCase() + ' ' + user.lastName.toUpperCase();\n}\n\nfunction formatUserEmail(user) {\n  return user.email.toLowerCase().trim();\n}\n\nfunction formatUserAddress(user) {\n  const addr = user.address;\n  return `${addr.street}, ${addr.city}, ${addr.state} ${addr.zip}`;\n}\n\nfunction formatUserDisplay(user) {\n  return {\n    name: formatUserName(user),\n    email: formatUserEmail(user),\n    address: formatUserAddress(user)\n  };\n}\n\n// Test with incomplete data\nconst user1 = { firstName: 'John', lastName: 'Doe', email: 'john@example.com' };\nconst user2 = { firstName: 'Jane' };\nconst user3 = null;\n\nconsole.log(formatUserDisplay(user1)); // May crash\nconsole.log(formatUserDisplay(user2)); // Will crash\nconsole.log(formatUserDisplay(user3)); // Will crash\n\nmodule.exports = { formatUserName, formatUserEmail, formatUserAddress, formatUserDisplay };\n"
+        "path": "package.json",
+        "content": "{\n  \"name\": \"fix-type-error\",\n  \"version\": \"1.0.0\",\n  \"description\": \"Fix type-related errors with defensive coding patterns\",\n  \"scripts\": {\n    \"test\": \"node --test\"\n  }\n}\n"
+      },
+      {
+        "path": "userService.js",
+        "content": "// User data processing service\n// Each function has one or more type-related bugs\n\n/**\n * Formats a user's full display name.\n * Should handle missing first/last names gracefully.\n */\nfunction formatDisplayName(user) {\n  const first = user.firstName.trim();\n  const last = user.lastName.trim();\n  return `${first} ${last}`;\n}\n\n/**\n * Returns a formatted address string.\n * Should handle users without an address gracefully.\n */\nfunction formatAddress(user) {\n  const addr = user.address;\n  return `${addr.street}, ${addr.city}, ${addr.state} ${addr.zipCode}`;\n}\n\n/**\n * Formats a price for display with a dollar sign.\n * The price parameter could be a number or a string.\n */\nfunction formatPrice(price) {\n  const cleaned = price.replace('$', '').trim();\n  const num = parseFloat(cleaned);\n  return `$${num.toFixed(2)}`;\n}\n\n/**\n * Simulates fetching a user from a database.\n * Returns a promise that resolves to a user object.\n */\nasync function fetchUser(id) {\n  // Simulated async lookup\n  const users = {\n    1: { id: 1, firstName: 'Alice', lastName: 'Smith', email: 'alice@test.com' },\n    2: { id: 2, firstName: 'Bob', lastName: 'Jones', email: 'bob@test.com' }\n  };\n  return users[id] || null;\n}\n\n/**\n * Gets a user and returns their profile summary.\n * Must await the async fetchUser call.\n */\nfunction getUserProfile(id) {\n  const user = fetchUser(id);\n  if (!user) {\n    return { error: 'User not found' };\n  }\n  return {\n    displayName: user.firstName + ' ' + user.lastName,\n    contact: user.email\n  };\n}\n\n/**\n * Extracts tags from a user's profile metadata.\n * Note: the API returns 'metadata', not 'metaData'.\n */\nfunction getUserTags(user) {\n  const meta = user.metaData;\n  const tags = meta.tags;\n  return tags.join(', ');\n}\n\nmodule.exports = {\n  formatDisplayName,\n  formatAddress,\n  formatPrice,\n  fetchUser,\n  getUserProfile,\n  getUserTags\n};\n"
+      },
+      {
+        "path": "userService.test.js",
+        "content": "const { test } = require('node:test');\nconst assert = require('node:assert/strict');\nconst {\n  formatDisplayName,\n  formatAddress,\n  formatPrice,\n  getUserProfile,\n  getUserTags\n} = require('./userService');\n\n// --- formatDisplayName tests ---\ntest('formatDisplayName with complete user', () => {\n  const user = { firstName: 'Alice', lastName: 'Smith' };\n  assert.strictEqual(formatDisplayName(user), 'Alice Smith');\n});\n\ntest('formatDisplayName with null user', () => {\n  const result = formatDisplayName(null);\n  assert.strictEqual(typeof result, 'string');\n});\n\ntest('formatDisplayName with missing lastName', () => {\n  const user = { firstName: 'Alice' };\n  const result = formatDisplayName(user);\n  assert.ok(result.includes('Alice'));\n  assert.ok(!result.includes('undefined'));\n});\n\ntest('formatDisplayName with missing firstName', () => {\n  const user = { lastName: 'Smith' };\n  const result = formatDisplayName(user);\n  assert.ok(result.includes('Smith'));\n  assert.ok(!result.includes('undefined'));\n});\n\n// --- formatAddress tests ---\ntest('formatAddress with complete address', () => {\n  const user = {\n    address: { street: '123 Main St', city: 'Springfield', state: 'IL', zipCode: '62704' }\n  };\n  assert.strictEqual(formatAddress(user), '123 Main St, Springfield, IL 62704');\n});\n\ntest('formatAddress with null user', () => {\n  const result = formatAddress(null);\n  assert.strictEqual(typeof result, 'string');\n});\n\ntest('formatAddress with missing address', () => {\n  const user = { name: 'Alice' };\n  const result = formatAddress(user);\n  assert.strictEqual(typeof result, 'string');\n});\n\n// --- formatPrice tests ---\ntest('formatPrice with string price', () => {\n  assert.strictEqual(formatPrice('$19.99'), '$19.99');\n});\n\ntest('formatPrice with number price', () => {\n  assert.strictEqual(formatPrice(19.99), '$19.99');\n});\n\ntest('formatPrice with string number', () => {\n  assert.strictEqual(formatPrice('42'), '$42.00');\n});\n\n// --- getUserProfile tests ---\ntest('getUserProfile returns profile for valid user', async () => {\n  const profile = await getUserProfile(1);\n  assert.strictEqual(profile.displayName, 'Alice Smith');\n  assert.strictEqual(profile.contact, 'alice@test.com');\n});\n\ntest('getUserProfile returns error for missing user', async () => {\n  const profile = await getUserProfile(999);\n  assert.ok(profile.error);\n});\n\n// --- getUserTags tests ---\ntest('getUserTags extracts tags correctly', () => {\n  const user = { metadata: { tags: ['admin', 'active'] } };\n  assert.strictEqual(getUserTags(user), 'admin, active');\n});\n\ntest('getUserTags handles user with no metadata', () => {\n  const user = { name: 'Alice' };\n  const result = getUserTags(user);\n  assert.strictEqual(typeof result, 'string');\n});\n\ntest('getUserTags handles user with empty tags', () => {\n  const user = { metadata: { tags: [] } };\n  assert.strictEqual(getUserTags(user), '');\n});\n"
       }
     ],
     "cleanBefore": true
@@ -26,26 +34,66 @@
   "objectives": [
     {
       "id": "obj-1",
-      "description": "Add null check for user parameter",
+      "description": "formatDisplayName uses optional chaining or null checks for user and properties",
       "type": "file_contains",
-      "target": "userFormatter.js",
-      "pattern": "!user|user\\s*===?\\s*null|user\\s*\\?\\.|if.*user",
+      "target": "userService.js",
+      "pattern": "user\\?\\.firstName|user\\?\\.lastName|!user|user\\s*===?\\s*null|user\\s*==\\s*null",
       "required": true
     },
     {
       "id": "obj-2",
-      "description": "Handle missing properties (firstName, lastName, etc.)",
+      "description": "formatDisplayName uses nullish coalescing or defaults for missing names",
       "type": "file_contains",
-      "target": "userFormatter.js",
-      "pattern": "user\\.firstName\\s*\\?|\\|\\||\\?\\?|firstName.*\\||if.*firstName",
+      "target": "userService.js",
+      "pattern": "\\?\\?|\\|\\||default|'[A-Z]?'|\"[A-Z]?\"",
       "required": true
     },
     {
       "id": "obj-3",
-      "description": "Handle missing address object",
+      "description": "formatAddress handles null user and missing address with optional chaining or guards",
       "type": "file_contains",
-      "target": "userFormatter.js",
-      "pattern": "user\\.address\\s*\\?|!.*address|address.*\\?\\.|if.*address",
+      "target": "userService.js",
+      "pattern": "user\\?\\.address|!user|!addr|addr\\?\\.|address\\?\\.",
+      "required": true
+    },
+    {
+      "id": "obj-4",
+      "description": "formatPrice handles number input (converts to string or uses type check before .replace)",
+      "type": "file_contains",
+      "target": "userService.js",
+      "pattern": "String\\(price\\)|price\\.toString|typeof price|toFixed",
+      "required": true
+    },
+    {
+      "id": "obj-5",
+      "description": "getUserProfile is async and awaits fetchUser",
+      "type": "file_contains",
+      "target": "userService.js",
+      "pattern": "async\\s+function\\s+getUserProfile|await\\s+fetchUser",
+      "required": true
+    },
+    {
+      "id": "obj-6",
+      "description": "getUserTags uses correct property name 'metadata' (not 'metaData')",
+      "type": "file_contains",
+      "target": "userService.js",
+      "pattern": "user\\.metadata[^A-Z]|user\\?\\.metadata[^A-Z]",
+      "required": true
+    },
+    {
+      "id": "obj-7",
+      "description": "getUserTags handles missing metadata with optional chaining or guards",
+      "type": "file_contains",
+      "target": "userService.js",
+      "pattern": "metadata\\?\\.tags|!meta|meta\\?\\.|!user\\.metadata|user\\?\\.metadata\\?\\.tags",
+      "required": true
+    },
+    {
+      "id": "obj-8",
+      "description": "All tests pass",
+      "type": "command_output_contains",
+      "command": "cd ~/dojo-workspace/challenge-05-002 && npm test 2>&1",
+      "pattern": "tests passed|pass.*\\d|# pass",
       "required": true
     }
   ],
@@ -53,45 +101,56 @@
   "bonusObjectives": [
     {
       "id": "bonus-1",
-      "description": "Return sensible defaults instead of crashing",
+      "description": "Uses nullish coalescing (??) for default values instead of || (which treats 0 and '' as falsy)",
       "type": "file_contains",
-      "target": "userFormatter.js",
-      "pattern": "Unknown|N/A|''|\"\"",
+      "target": "userService.js",
+      "pattern": "\\?\\?",
       "xpBonus": 50
+    },
+    {
+      "id": "bonus-2",
+      "description": "formatDisplayName returns clean output (trims extra spaces when names are missing)",
+      "type": "file_contains",
+      "target": "userService.js",
+      "pattern": "\\.trim\\(\\)|filter|replace.*\\s",
+      "xpBonus": 25
     }
   ],
 
   "hints": [
     {
       "level": 1,
-      "text": "Ask Claude Code to find what's causing the crashes with incomplete user data.",
+      "text": "Run `npm test` to see all the type errors. Each test name tells you what scenario triggers the crash. Look at what the test passes in (null user, missing properties, number instead of string) and trace what happens in the function with that input.",
       "xpCost": 15
     },
     {
       "level": 2,
-      "text": "Try: 'This code crashes when user data is incomplete. Add null checks and handle missing fields.'",
+      "text": "There are 5 distinct type bugs: (1) formatDisplayName crashes on null user or missing names -- use optional chaining and defaults. (2) formatAddress crashes on null user or missing address. (3) formatPrice calls .replace() on a number. (4) getUserProfile doesn't await fetchUser. (5) getUserTags uses 'metaData' but the data has 'metadata'.",
       "xpCost": 45
     },
     {
       "level": 3,
-      "text": "Ask: 'Fix the type errors in userFormatter.js. Add checks for null users, missing properties (firstName, lastName, email, address), and return safe defaults.'",
+      "text": "Specific fixes: formatDisplayName: add `if (!user) return 'Anonymous'` and use `user?.firstName ?? ''`. formatAddress: guard `if (!user?.address)` and return a default. formatPrice: convert with `String(price)` before calling .replace(). getUserProfile: add `async` keyword and `await fetchUser(id)`. getUserTags: change `metaData` to `metadata` and add `user?.metadata?.tags ?? []`.",
       "xpCost": 85
     }
   ],
 
   "solution": {
-    "approach": "Add defensive checks for null/undefined at each access point.",
-    "example": "Fix the null/undefined errors in userFormatter.js with proper checks",
+    "approach": "Run tests to see each type error, identify the type mismatch in each function, apply defensive coding patterns (optional chaining, nullish coalescing, type conversion, await), verify all tests pass.",
+    "example": "Run npm test, fix all type errors in userService.js using optional chaining and nullish coalescing, then verify tests pass",
     "alternativeApproaches": [
-      "Add defensive coding to handle missing user properties",
-      "Make the formatter functions handle incomplete data"
+      "Ask Claude Code: 'Run the tests, fix all type errors in userService.js with defensive coding patterns'",
+      "Read each function and identify what inputs would cause a crash, then add guards"
     ]
   },
 
   "learningPoints": [
-    "Always validate data before accessing properties",
-    "Defensive coding prevents runtime crashes",
-    "Claude Code can identify potential null/undefined issues"
+    "TypeError occurs when you access a property or call a method on null, undefined, or the wrong type",
+    "Optional chaining (?.) safely returns undefined instead of throwing when accessing nested properties",
+    "Nullish coalescing (??) provides defaults specifically for null/undefined, unlike || which also catches 0 and empty string",
+    "Missing await on async functions returns a Promise object, which has no useful properties -- this is a silent bug that does not throw",
+    "Misspelled property names (metaData vs metadata) are silent bugs -- JavaScript returns undefined instead of throwing",
+    "Always convert types explicitly before calling type-specific methods (String(x) before .trim(), Number(x) before .toFixed())"
   ],
 
   "nextChallenge": "05-003"

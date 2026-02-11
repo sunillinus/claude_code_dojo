@@ -2,61 +2,104 @@
   "id": "03-003",
   "module": "git-basics",
   "title": "Stage and Commit Changes",
-  "description": "Learn to selectively stage files and write meaningful commit messages. Good commits tell a story.",
+  "description": "Master the staging area by learning to create focused, atomic commits. Understand why staging specific files matters, how to review changes before committing, and why Claude Code never uses git add -A.",
   "difficulty": "intermediate",
   "xpReward": 175,
-  "estimatedMinutes": 7,
-  "skills": ["git-add", "git-commit", "commit-messages"],
+  "estimatedMinutes": 12,
+  "skills": ["git-add", "git-diff", "git-reset", "atomic-commits", "commit-messages"],
 
   "setup": {
     "workingDir": "~/dojo-workspace/challenge-03-003",
     "initialFiles": [
       {
         "path": "README.md",
-        "content": "# Challenge: Stage and Commit Changes\n\nYou have multiple changes. Create focused commits!\n\n## Objectives\n1. Commit the bug fix (calculator.js) separately\n2. Commit the new feature (greeting.js) separately\n3. Write descriptive commit messages\n"
+        "content": "# Challenge: Stage and Commit Changes\n\nLearn to use the staging area like a pro -- creating focused, atomic\ncommits that each tell one clear story.\n\n## The Staging Area Deep Dive\n\nYou learned about the staging area in challenge 03-001. Now let's use\nit properly. The staging area is your most powerful tool for creating\nclean, meaningful commits.\n\nThink of it as a **loading dock**. You have a warehouse full of changes\n(your working directory), and you're loading a delivery truck (your next\ncommit). You carefully choose which boxes go on THIS truck, because each\ndelivery should make sense on its own.\n\n## Adding Specific Files vs. Everything\n\n### Specific files (preferred):\n```\ngit add src/auth.js src/middleware/verify.js\ngit commit -m \"Add JWT authentication middleware\"\n```\nThis is Claude Code's approach: always name the files explicitly.\n\n### Everything at once (risky):\n```\ngit add -A        # Stages ALL changes in the entire repo\ngit add .         # Stages all changes in current directory and below\n```\nDangers of `git add -A`:\n- May include `.env` files with API keys and secrets\n- May include `node_modules/` (thousands of files)\n- May include build artifacts, logs, or temp files\n- May include unrelated changes that belong in a different commit\n\nClaude Code NEVER uses `git add -A`. It always adds specific files by\nname. This is a best practice you should follow too.\n\n## Reviewing Changes Before Committing\n\n| Command | What It Shows |\n|---------|---------------|\n| `git status` | Overview: which files are modified, staged, untracked |\n| `git diff` | Line-by-line changes in UNSTAGED files |\n| `git diff --staged` | Line-by-line changes that WILL be committed |\n| `git diff HEAD` | All changes (both staged and unstaged) |\n\nAlways review with `git diff --staged` before committing. This shows\nexactly what will be in your commit.\n\n## Unstaging Files\n\nMade a mistake? Staged the wrong file?\n\n```\ngit reset HEAD filename    # Unstage a file (keep the changes)\ngit restore --staged file  # Same thing (newer syntax)\n```\n\nThis moves the file from \"staged\" back to \"modified\" -- it does NOT\nundo your changes, just removes them from the next commit.\n\n## Atomic Commits: One Logical Change Per Commit\n\nAn **atomic commit** contains exactly one logical change:\n- Fixed a bug? That's one commit.\n- Added a feature? That's another commit.\n- Updated docs? Yet another commit.\n\nWhy this matters:\n- **Easier to review**: Reviewers see one thing at a time\n- **Easier to revert**: If a bug fix causes problems, revert just that commit\n- **Easier to understand**: `git log` tells a clear story\n- **Easier to cherry-pick**: Apply specific changes to other branches\n\n### Bad: One big commit\n```\ngit add -A\ngit commit -m \"Various changes\"  # What changed? Why? Nobody knows.\n```\n\n### Good: Separate commits for separate concerns\n```\ngit add src/calculator.js test/calculator.test.js\ngit commit -m \"Fix multiply function returning sum instead of product\"\n\ngit add src/greeting.js src/index.js\ngit commit -m \"Add greeting module with hello and farewell functions\"\n```\n\n## Writing Good Commit Messages\n\nA good commit message:\n- Starts with a verb in imperative mood: \"Fix\", \"Add\", \"Update\", \"Remove\"\n- Explains WHY, not just what: \"Fix multiply bug\" > \"Change multiply\"\n- Is concise but descriptive (50 chars for subject line)\n- Can include a body for complex changes:\n\n```\nFix multiply function returning incorrect results\n\nThe multiply function was using addition (+) instead of\nmultiplication (*). This caused all product calculations\nto return sums. Updated the operator and added a test.\n```\n\n## Your Task\n\nThis project has an EXISTING git history. The initial commit contains\nthe original versions of the files. Since then, several files have been\nmodified with TWO different logical changes mixed together:\n\n### Change 1 -- Bug Fix:\n- `src/calculator.js`: The `multiply` function had a bug (used `+`\n  instead of `*`). It has been fixed.\n- `test/calculator.test.js`: A test was added to verify the fix.\n\n### Change 2 -- New Feature:\n- `src/greeting.js`: A brand new greeting module was created.\n- `src/index.js`: Updated to use the new greeting module.\n\nYour job:\n1. **Review the changes** using `git diff` to understand what changed\n2. **Make TWO separate atomic commits**:\n   - First commit: the bug fix files (calculator.js + test)\n   - Second commit: the new feature files (greeting.js + index.js)\n3. **Write descriptive commit messages** for each\n4. **Create staging-notes.md** explaining:\n   - What the staging area is and why it exists\n   - Why atomic commits matter\n   - Why Claude Code never uses `git add -A`\n\n## Tips\n- Run `git status` to see which files have changes\n- Run `git diff` to see what exactly changed in each file\n- After staging files for commit 1, run `git diff --staged` to verify\n  you're committing only what you intend\n"
       },
       {
-        "path": "calculator.js",
-        "content": "// Calculator module\nfunction add(a, b) {\n  return a + b;\n}\n\nfunction multiply(a, b) {\n  return a * b; // Fixed: was a + b\n}\n\nmodule.exports = { add, multiply };\n"
+        "path": "src/calculator.js",
+        "content": "// Calculator module\n\nfunction add(a, b) {\n  return a + b;\n}\n\nfunction subtract(a, b) {\n  return a - b;\n}\n\nfunction multiply(a, b) {\n  return a * b;  // Fixed: was incorrectly using + instead of *\n}\n\nfunction divide(a, b) {\n  if (b === 0) throw new Error('Division by zero');\n  return a / b;\n}\n\nmodule.exports = { add, subtract, multiply, divide };\n"
       },
       {
-        "path": "greeting.js",
-        "content": "// New greeting feature\nfunction greet(name) {\n  return `Hello, ${name}!`;\n}\n\nfunction farewell(name) {\n  return `Goodbye, ${name}!`;\n}\n\nmodule.exports = { greet, farewell };\n"
+        "path": "test/calculator.test.js",
+        "content": "// Calculator tests\nconst { add, subtract, multiply, divide } = require('../src/calculator');\n\nfunction assert(condition, message) {\n  if (!condition) throw new Error('FAIL: ' + message);\n  console.log('PASS: ' + message);\n}\n\n// Test add\nassert(add(2, 3) === 5, 'add(2, 3) should be 5');\nassert(add(-1, 1) === 0, 'add(-1, 1) should be 0');\n\n// Test subtract\nassert(subtract(5, 3) === 2, 'subtract(5, 3) should be 2');\n\n// Test multiply - verifies the bug fix\nassert(multiply(3, 4) === 12, 'multiply(3, 4) should be 12');\nassert(multiply(0, 5) === 0, 'multiply(0, 5) should be 0');\nassert(multiply(-2, 3) === -6, 'multiply(-2, 3) should be -6');\n\n// Test divide\nassert(divide(10, 2) === 5, 'divide(10, 2) should be 5');\n\nconsole.log('All calculator tests passed!');\n"
       },
       {
-        "path": "index.js",
-        "content": "const { add, multiply } = require('./calculator');\nconst { greet } = require('./greeting');\n\nconsole.log(greet('World'));\nconsole.log('2 * 3 =', multiply(2, 3));\n"
+        "path": "src/greeting.js",
+        "content": "// Greeting module - new feature\n\nfunction greet(name) {\n  const hour = new Date().getHours();\n  if (hour < 12) return `Good morning, ${name}!`;\n  if (hour < 18) return `Good afternoon, ${name}!`;\n  return `Good evening, ${name}!`;\n}\n\nfunction farewell(name) {\n  return `Goodbye, ${name}! See you next time.`;\n}\n\nfunction welcome(name, role) {\n  return `Welcome, ${name}! Your role is: ${role}.`;\n}\n\nmodule.exports = { greet, farewell, welcome };\n"
+      },
+      {
+        "path": "src/index.js",
+        "content": "const { add, subtract, multiply, divide } = require('./calculator');\nconst { greet, farewell } = require('./greeting');\n\n// Calculator demo\nconsole.log('=== Calculator ===');\nconsole.log('2 + 3 =', add(2, 3));\nconsole.log('10 - 4 =', subtract(10, 4));\nconsole.log('3 * 4 =', multiply(3, 4));\nconsole.log('15 / 3 =', divide(15, 3));\n\n// Greeting demo\nconsole.log('\\n=== Greetings ===');\nconsole.log(greet('Developer'));\nconsole.log(farewell('Developer'));\n"
+      },
+      {
+        "path": "package.json",
+        "content": "{\n  \"name\": \"calculator-app\",\n  \"version\": \"1.1.0\",\n  \"description\": \"Calculator with greeting feature\",\n  \"main\": \"src/index.js\",\n  \"scripts\": {\n    \"start\": \"node src/index.js\",\n    \"test\": \"node test/calculator.test.js\"\n  }\n}\n"
+      },
+      {
+        "path": "setup-history.sh",
+        "content": "#!/bin/bash\n# Run this script to set up the git history for this challenge.\n# It creates the initial commit with the \"buggy\" versions of files,\n# then leaves the fixed/new files as unstaged changes.\n\ncd ~/dojo-workspace/challenge-03-003\n\n# Initialize repo\ngit init\n\n# Create the ORIGINAL buggy calculator (multiply uses + instead of *)\ncat > src/calculator.js << 'CALCEOF'\n// Calculator module\n\nfunction add(a, b) {\n  return a + b;\n}\n\nfunction subtract(a, b) {\n  return a - b;\n}\n\nfunction multiply(a, b) {\n  return a + b;  // BUG: should be a * b\n}\n\nfunction divide(a, b) {\n  if (b === 0) throw new Error('Division by zero');\n  return a / b;\n}\n\nmodule.exports = { add, subtract, multiply, divide };\nCALCEOF\n\n# Create original index.js (no greeting import)\ncat > src/index.js << 'INDEXEOF'\nconst { add, subtract, multiply, divide } = require('./calculator');\n\n// Calculator demo\nconsole.log('=== Calculator ===');\nconsole.log('2 + 3 =', add(2, 3));\nconsole.log('10 - 4 =', subtract(10, 4));\nconsole.log('3 * 4 =', multiply(3, 4));\nconsole.log('15 / 3 =', divide(15, 3));\nINDEXEOF\n\n# Commit the original state\ngit add src/calculator.js src/index.js package.json README.md\ngit commit -m \"Initial project with calculator module\"\n\n# Now restore the FIXED versions (these will show as modifications)\n# The fixed calculator.js, new test file, new greeting.js, and updated index.js\n# are already in the workspace as initialFiles -- we just need to restore them\ncat > src/calculator.js << 'CALCEOF'\n// Calculator module\n\nfunction add(a, b) {\n  return a + b;\n}\n\nfunction subtract(a, b) {\n  return a - b;\n}\n\nfunction multiply(a, b) {\n  return a * b;  // Fixed: was incorrectly using + instead of *\n}\n\nfunction divide(a, b) {\n  if (b === 0) throw new Error('Division by zero');\n  return a / b;\n}\n\nmodule.exports = { add, subtract, multiply, divide };\nCALCEOF\n\ncat > src/index.js << 'INDEXEOF'\nconst { add, subtract, multiply, divide } = require('./calculator');\nconst { greet, farewell } = require('./greeting');\n\n// Calculator demo\nconsole.log('=== Calculator ===');\nconsole.log('2 + 3 =', add(2, 3));\nconsole.log('10 - 4 =', subtract(10, 4));\nconsole.log('3 * 4 =', multiply(3, 4));\nconsole.log('15 / 3 =', divide(15, 3));\n\n// Greeting demo\nconsole.log('\\n=== Greetings ===');\nconsole.log(greet('Developer'));\nconsole.log(farewell('Developer'));\nINDEXEOF\n\necho \"Setup complete! Run 'git status' and 'git diff' to see the changes.\"\n"
       }
     ],
     "cleanBefore": true,
     "postSetup": [
-      "cd ~/dojo-workspace/challenge-03-003 && git init && echo 'module.exports = { add: (a,b) => a+b, multiply: (a,b) => a+b };' > calculator.js && git add calculator.js index.js README.md && git commit -m 'Initial commit'"
+      "cd ~/dojo-workspace/challenge-03-003 && chmod +x setup-history.sh && bash setup-history.sh"
     ]
   },
 
   "objectives": [
     {
       "id": "obj-1",
-      "description": "Have at least 2 commits after initial",
+      "description": "Made at least 2 commits after the initial commit (3+ total)",
       "type": "command_output_contains",
-      "command": "git log --oneline 2>/dev/null | wc -l | tr -d ' '",
+      "command": "cd ~/dojo-workspace/challenge-03-003 && git log --oneline 2>&1 | wc -l | tr -d ' '",
       "pattern": "^[3-9]|^[1-9][0-9]",
       "required": true
     },
     {
       "id": "obj-2",
-      "description": "One commit mentions 'fix' or 'bug'",
+      "description": "One commit message mentions the bug fix (fix, bug, multiply)",
       "type": "command_output_contains",
-      "command": "git log --format='%s' 2>/dev/null",
-      "pattern": "[Ff]ix|[Bb]ug|[Mm]ultiply",
+      "command": "cd ~/dojo-workspace/challenge-03-003 && git log --format='%s' 2>&1",
+      "pattern": "[Ff]ix|[Bb]ug|[Mm]ultiply|[Cc]orrect",
       "required": true
     },
     {
       "id": "obj-3",
-      "description": "One commit mentions 'add' or 'feature' or 'greeting'",
+      "description": "One commit message mentions the new feature (add, feature, greeting, new)",
       "type": "command_output_contains",
-      "command": "git log --format='%s' 2>/dev/null",
-      "pattern": "[Aa]dd|[Ff]eature|[Gg]reeting|[Nn]ew",
+      "command": "cd ~/dojo-workspace/challenge-03-003 && git log --format='%s' 2>&1",
+      "pattern": "[Aa]dd|[Ff]eature|[Gg]reeting|[Nn]ew|[Ww]elcome",
+      "required": true
+    },
+    {
+      "id": "obj-4",
+      "description": "All files are committed (clean working directory)",
+      "type": "command_output_contains",
+      "command": "cd ~/dojo-workspace/challenge-03-003 && git status --porcelain 2>&1 | grep -v setup-history | wc -l | tr -d ' '",
+      "pattern": "^[01]$",
+      "required": true
+    },
+    {
+      "id": "obj-5",
+      "description": "Create staging-notes.md",
+      "type": "file_exists",
+      "target": "staging-notes.md",
+      "required": true
+    },
+    {
+      "id": "obj-6",
+      "description": "staging-notes.md explains the staging area concept",
+      "type": "file_contains",
+      "target": "staging-notes.md",
+      "pattern": "[Ss]taging|[Ll]oading dock|[Hh]olding|[Pp]repare|[Ss]elect.*commit",
+      "required": true
+    },
+    {
+      "id": "obj-7",
+      "description": "staging-notes.md discusses atomic commits",
+      "type": "file_contains",
+      "target": "staging-notes.md",
+      "pattern": "[Aa]tomic|[Ff]ocused|[Ss]eparate.*commit|one.*change|[Ll]ogical.*commit",
       "required": true
     }
   ],
@@ -64,45 +107,56 @@
   "bonusObjectives": [
     {
       "id": "bonus-1",
-      "description": "Commits are in logical order (fix before feature or vice versa)",
-      "type": "command_output_contains",
-      "command": "git log --oneline 2>/dev/null | head -3",
-      "pattern": ".",
+      "description": "staging-notes.md explains why Claude Code avoids git add -A",
+      "type": "file_contains",
+      "target": "staging-notes.md",
+      "pattern": "git add -A|git add \\.|[Ss]ecret|[Ss]pecific.*file|[Cc]laude.*add|never.*add.*(all|everything)",
       "xpBonus": 25
+    },
+    {
+      "id": "bonus-2",
+      "description": "Bug fix and feature were committed separately (not mixed together)",
+      "type": "command_output_contains",
+      "command": "cd ~/dojo-workspace/challenge-03-003 && git log --oneline --name-only 2>&1 | head -20",
+      "pattern": "calculator|greeting",
+      "xpBonus": 50
     }
   ],
 
   "hints": [
     {
       "level": 1,
-      "text": "Ask Claude Code to help you create separate commits for different changes.",
+      "text": "Start by running 'git status' and 'git diff' to understand what changed. You'll see modifications in calculator.js and index.js, plus new files greeting.js and test/calculator.test.js. Think about which files belong to the bug fix and which belong to the new feature.",
       "xpCost": 15
     },
     {
       "level": 2,
-      "text": "Try: 'Commit calculator.js with a message about fixing the multiply bug, then commit greeting.js as a new feature'",
+      "text": "The bug fix group: calculator.js (multiply fixed) and test/calculator.test.js (test added). The feature group: greeting.js (new module) and index.js (imports greeting). Stage and commit each group separately with descriptive messages. Then write staging-notes.md.",
       "xpCost": 35
     },
     {
       "level": 3,
-      "text": "Ask: 'Stage calculator.js and commit with message \"Fix multiply function bug\", then stage greeting.js and commit with message \"Add greeting feature\"'",
+      "text": "Ask Claude Code: 'Review the git diff. Stage calculator.js and test/calculator.test.js and commit with message about fixing the multiply bug. Then stage greeting.js and index.js and commit with message about adding the greeting feature. Then create staging-notes.md explaining the staging area, atomic commits, and why specific file adds are preferred over git add -A.'",
       "xpCost": 65
     }
   ],
 
   "solution": {
-    "approach": "Create focused commits by staging specific files with meaningful messages.",
-    "example": "Commit the calculator fix first, then commit the greeting feature separately",
+    "approach": "Review changes with git diff, make two separate atomic commits (bug fix files, then feature files), and document your understanding of the staging area.",
+    "example": "Review the changes, commit the calculator fix separately from the greeting feature, then document what you learned about staging and atomic commits",
     "alternativeApproaches": [
-      "Make two separate commits: one for the bug fix, one for the new feature",
-      "Stage and commit files in logical groups"
+      "Use git diff to understand changes, make a fix commit and a feature commit, then write about why selective staging matters",
+      "Help me create two focused commits: one for the bug fix and one for the new feature, then explain atomic commits in a notes file"
     ]
   },
 
   "learningPoints": [
-    "Atomic commits make history easier to understand",
-    "Claude Code can stage specific files",
-    "Good commit messages explain why, not just what"
+    "The staging area lets you craft commits by selecting exactly which changes to include",
+    "git diff shows unstaged changes; git diff --staged shows what will be committed",
+    "Atomic commits contain one logical change -- making history easy to read, review, and revert",
+    "Claude Code always adds specific files by name, never git add -A (avoids secrets, junk files)",
+    "git reset HEAD file unstages a file without losing the changes",
+    "Good commit messages start with imperative verbs and explain the why behind changes"
   ],
 
   "nextChallenge": "03-004"

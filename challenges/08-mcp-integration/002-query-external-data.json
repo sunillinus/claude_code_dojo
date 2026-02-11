@@ -2,22 +2,18 @@
   "id": "08-002",
   "module": "mcp-integration",
   "title": "Query External Data",
-  "description": "Learn to use MCP tools to query external data sources. MCP enables Claude to interact with databases, APIs, and services.",
+  "description": "Learn how MCP tools work at the tool level -- how they are named, what parameters they accept, how Claude calls them, and how to plan a research workflow that queries external data through MCP servers.",
   "difficulty": "advanced",
-  "xpReward": 350,
-  "estimatedMinutes": 18,
-  "skills": ["mcp-tools", "external-data"],
+  "xpReward": 275,
+  "estimatedMinutes": 15,
+  "skills": ["mcp-tools", "external-data", "query-planning"],
 
   "setup": {
     "workingDir": "~/dojo-workspace/challenge-08-002",
     "initialFiles": [
       {
         "path": "README.md",
-        "content": "# Challenge: Query External Data\n\nUse MCP to query external data and create a report.\n\n## Objectives\n1. Configure an MCP server that provides data access\n2. Use the MCP tools to fetch information\n3. Create a data-report.md with the fetched data\n\nNote: For this challenge, we'll simulate MCP by creating a mock data server.\n"
-      },
-      {
-        "path": "plugin.json",
-        "content": "{\n  \"name\": \"data-tools\",\n  \"version\": \"1.0.0\",\n  \"description\": \"Data query tools via MCP\"\n}\n"
+        "content": "# Challenge: Query External Data via MCP\n\nLearn how MCP tools work in practice -- naming, parameters, calling\nconventions, error handling -- and plan a data query workflow.\n\n---\n\n## How MCP Tools Appear in Claude Code\n\nOnce an MCP server is configured and running, its tools appear in\nClaude Code's tool list alongside built-in tools like Read, Write,\nand Bash. The key difference is the naming convention:\n\n```\nBuilt-in:  Read, Write, Edit, Bash, Glob, Grep\nMCP tool:  mcp__servername__toolname\n```\n\nThe double-underscore `__` separators make it clear which server\nprovides each tool. For example, with a Playwright MCP server named\n`playwright`:\n\n```\nmcp__playwright__browser_navigate\nmcp__playwright__browser_click\nmcp__playwright__browser_snapshot\nmcp__playwright__browser_type\nmcp__playwright__browser_evaluate\n```\n\nWith a GitHub MCP server named `github`:\n\n```\nmcp__github__list_issues\nmcp__github__create_pull_request\nmcp__github__get_file_contents\nmcp__github__search_repositories\n```\n\n## Tool Schemas: Parameters and Types\n\nEvery MCP tool defines a **schema** that describes what parameters it\naccepts. This schema follows JSON Schema format and tells Claude Code\nexactly how to call the tool.\n\nHere is what a typical tool schema looks like (for a database query\ntool):\n\n```json\n{\n  \"name\": \"query\",\n  \"description\": \"Execute a read-only SQL query against the database\",\n  \"inputSchema\": {\n    \"type\": \"object\",\n    \"properties\": {\n      \"sql\": {\n        \"type\": \"string\",\n        \"description\": \"The SQL query to execute\"\n      },\n      \"params\": {\n        \"type\": \"array\",\n        \"items\": { \"type\": \"string\" },\n        \"description\": \"Parameterized query values\"\n      }\n    },\n    \"required\": [\"sql\"]\n  }\n}\n```\n\nKey points about tool schemas:\n- `name` is the tool's identifier (combined with server name: `mcp__db__query`)\n- `description` helps Claude understand WHEN to use this tool\n- `inputSchema` defines parameters using JSON Schema\n- `required` lists which parameters must be provided\n- Optional parameters can have default values\n\n## How Claude Calls MCP Tools\n\nClaude Code calls MCP tools the same way it calls built-in tools.\nYou don't need special syntax -- just describe what you want:\n\n**You say:** \"Query the database to find all users who signed up\nthis month\"\n\n**Claude does:** Calls `mcp__postgres__query` with:\n```json\n{\n  \"sql\": \"SELECT * FROM users WHERE created_at >= date_trunc('month', CURRENT_DATE)\"\n}\n```\n\n**MCP server returns:** Structured data (usually JSON)\n```json\n{\n  \"rows\": [\n    { \"id\": 1, \"name\": \"Alice\", \"email\": \"alice@example.com\", \"created_at\": \"2025-05-01\" },\n    { \"id\": 2, \"name\": \"Bob\", \"email\": \"bob@example.com\", \"created_at\": \"2025-05-03\" }\n  ],\n  \"rowCount\": 2\n}\n```\n\nClaude then processes this data and presents it to you in a\nhuman-readable format.\n\n## Understanding Tool Responses\n\nMCP tools return structured data, typically in one of these formats:\n\n| Response Type | Example | When Used |\n|---------------|---------|----------|\n| JSON object | `{\"rows\": [...], \"count\": 5}` | Database queries, API responses |\n| Text content | `\"File contents here...\"` | File reads, text processing |\n| Binary reference | `{\"type\": \"image\", \"data\": \"base64...\"}` | Screenshots, file downloads |\n| Error object | `{\"error\": \"Table not found\"}` | When something goes wrong |\n\nClaude interprets these responses and integrates them into the\nconversation naturally.\n\n## Error Handling with MCP\n\nMCP tools can fail for several reasons. Understanding these failure\nmodes helps you work effectively:\n\n| Error Type | Cause | What Happens |\n|-----------|-------|-------------|\n| Server unavailable | MCP server process crashed or wasn't started | Claude reports the tool is unavailable |\n| Connection timeout | Server is slow or network issue | Claude retries or reports the timeout |\n| Invalid parameters | Wrong parameter types or missing required fields | Server returns a validation error |\n| Runtime error | Query fails, file not found, permission denied | Server returns an error message |\n| Authentication failure | Missing or expired API keys | Server returns auth error |\n\nWhen an MCP tool fails, Claude typically:\n1. Reports the error to you\n2. Suggests an alternative approach\n3. May retry with corrected parameters if it was a parameter issue\n\nGood practice: always consider what happens if an MCP tool is\nunavailable, and have a fallback plan.\n\n## The Research Workflow with MCP\n\nMCP is particularly powerful for multi-step research workflows.\nThe pattern looks like this:\n\n```\n1. Query  -->  Get initial data from MCP tool\n2. Analyze -->  Process and understand the results\n3. Refine  -->  Query again with more specific parameters\n4. Combine -->  Merge data from multiple queries or servers\n5. Synthesize -> Create actionable insights from all data\n```\n\nFor example, investigating a production issue:\n\n```\nStep 1: mcp__postgres__query  -> Get error logs from last hour\nStep 2: Analyze error patterns -> Most errors are 500s on /api/users\nStep 3: mcp__postgres__query  -> Get request details for failed calls\nStep 4: mcp__github__search   -> Find recent commits touching /api/users\nStep 5: Synthesize            -> \"The issue was introduced in commit abc123\n                                  which changed the user validation logic\"\n```\n\n## Common MCP Use Cases\n\n| Use Case | MCP Server | Example Tools |\n|----------|-----------|---------------|\n| Database queries | PostgreSQL server | `query`, `list_tables`, `describe_table` |\n| File operations | Filesystem server | `read_file`, `write_file`, `list_directory` |\n| Browser automation | Playwright server | `navigate`, `click`, `screenshot`, `type` |\n| GitHub operations | GitHub server | `list_issues`, `create_pr`, `get_file` |\n| API integration | Custom HTTP server | `get_endpoint`, `post_data` |\n\nEach server exposes tools specific to its domain, but they all\nfollow the same pattern: name, description, schema, call, response.\n\n---\n\n## Your Task\n\nCreate a detailed query plan document that demonstrates your\nunderstanding of how MCP tools work in practice.\n\n### Scenario\n\nImagine you are working on an e-commerce project. You have access to\nthree MCP servers:\n\n1. **postgres** -- A PostgreSQL MCP server connected to the app database\n   (tables: users, products, orders, reviews)\n2. **github** -- A GitHub MCP server connected to the project repo\n3. **playwright** -- A Playwright MCP server for browser testing\n\nYour manager asks: \"We've had a spike in customer complaints about\norders not being delivered. Investigate the issue using our tools.\"\n\n### Create `query-plan.md`\n\nWrite a detailed investigation plan that includes:\n\n1. **Which MCP servers and tools you would use** (with correct\n   mcp__servername__toolname naming)\n2. **Specific parameters you would pass** to each tool call\n3. **How you would process the results** at each step\n4. **Error handling** -- what if a query fails or returns no data?\n5. **A multi-step workflow** showing how queries build on each other\n\n### Also create a `.mcp.json`\n\nCreate a `.mcp.json` that would configure the three MCP servers\nfor this scenario.\n\n## Objectives\n1. Create `query-plan.md` with the investigation workflow\n2. Plan uses correct MCP tool naming (mcp__servername__toolname)\n3. Plan includes specific parameters for tool calls\n4. Plan addresses error handling for failed queries\n5. Plan shows a multi-step workflow where later queries build on earlier results\n6. Create `.mcp.json` configuring the MCP servers for this scenario\n"
       },
       {
         "path": "mock-data/users.json",
@@ -29,7 +25,7 @@
       },
       {
         "path": "mock-data/orders.json",
-        "content": "[\n  { \"id\": 1, \"userId\": 1, \"productId\": 2, \"quantity\": 2, \"status\": \"shipped\" },\n  { \"id\": 2, \"userId\": 2, \"productId\": 1, \"quantity\": 5, \"status\": \"pending\" },\n  { \"id\": 3, \"userId\": 4, \"productId\": 4, \"quantity\": 1, \"status\": \"delivered\" }\n]\n"
+        "content": "[\n  { \"id\": 1, \"userId\": 1, \"productId\": 2, \"quantity\": 2, \"status\": \"shipped\" },\n  { \"id\": 2, \"userId\": 2, \"productId\": 1, \"quantity\": 5, \"status\": \"pending\" },\n  { \"id\": 3, \"userId\": 4, \"productId\": 4, \"quantity\": 1, \"status\": \"delivered\" },\n  { \"id\": 4, \"userId\": 3, \"productId\": 3, \"quantity\": 3, \"status\": \"failed\" }\n]\n"
       }
     ],
     "cleanBefore": true
@@ -38,32 +34,56 @@
   "objectives": [
     {
       "id": "obj-1",
-      "description": "Create .mcp.json configuration",
+      "description": "Create the query-plan.md investigation workflow document",
+      "type": "file_exists",
+      "target": "query-plan.md",
+      "required": true
+    },
+    {
+      "id": "obj-2",
+      "description": "Plan uses correct MCP tool naming convention (mcp__servername__toolname)",
+      "type": "file_contains",
+      "target": "query-plan.md",
+      "pattern": "mcp__[a-z]+__[a-z_]+",
+      "required": true
+    },
+    {
+      "id": "obj-3",
+      "description": "Plan includes specific parameters for tool calls (SQL queries, search terms, etc.)",
+      "type": "file_contains",
+      "target": "query-plan.md",
+      "pattern": "SELECT|sql|param|query|WHERE|FROM",
+      "required": true
+    },
+    {
+      "id": "obj-4",
+      "description": "Plan addresses error handling (what happens when queries fail)",
+      "type": "file_contains",
+      "target": "query-plan.md",
+      "pattern": "[Ee]rror|[Ff]ail|[Ff]allback|[Uu]navailable|[Tt]imeout|[Rr]etry|[Aa]lternative",
+      "required": true
+    },
+    {
+      "id": "obj-5",
+      "description": "Plan shows a multi-step workflow where results feed into subsequent queries",
+      "type": "file_contains",
+      "target": "query-plan.md",
+      "pattern": "[Ss]tep [12345]|[Pp]hase|[Tt]hen.*query|[Nn]ext.*step|[Bb]ased on.*results|[Uu]sing.*results",
+      "required": true
+    },
+    {
+      "id": "obj-6",
+      "description": "Create the .mcp.json configuration for the scenario servers",
       "type": "file_exists",
       "target": ".mcp.json",
       "required": true
     },
     {
-      "id": "obj-2",
-      "description": "Create data-report.md",
-      "type": "file_exists",
-      "target": "data-report.md",
-      "required": true
-    },
-    {
-      "id": "obj-3",
-      "description": "Report includes user data",
+      "id": "obj-7",
+      "description": ".mcp.json configures the mcpServers",
       "type": "file_contains",
-      "target": "data-report.md",
-      "pattern": "Alice|Bob|Charlie|Diana|[Uu]ser",
-      "required": true
-    },
-    {
-      "id": "obj-4",
-      "description": "Report includes product data",
-      "type": "file_contains",
-      "target": "data-report.md",
-      "pattern": "Widget|Gadget|[Pp]roduct|stock",
+      "target": ".mcp.json",
+      "pattern": "mcpServers",
       "required": true
     }
   ],
@@ -71,53 +91,55 @@
   "bonusObjectives": [
     {
       "id": "bonus-1",
-      "description": "Report includes order analysis",
+      "description": "Plan references multiple MCP servers (postgres, github, and/or playwright)",
       "type": "file_contains",
-      "target": "data-report.md",
-      "pattern": "[Oo]rder|shipped|pending|delivered",
-      "xpBonus": 75
+      "target": "query-plan.md",
+      "pattern": "mcp__postgres|mcp__github|mcp__playwright",
+      "xpBonus": 50
     },
     {
       "id": "bonus-2",
-      "description": "Report includes insights or recommendations",
+      "description": "Plan includes a synthesis step that combines findings from multiple queries",
       "type": "file_contains",
-      "target": "data-report.md",
-      "pattern": "[Ii]nsight|[Rr]ecommend|[Ss]ummary|[Aa]nalysis",
-      "xpBonus": 75
+      "target": "query-plan.md",
+      "pattern": "[Ss]ynthesi|[Cc]ombin|[Cc]orrelat|[Cc]onclusion|[Ss]ummary|[Ff]inding",
+      "xpBonus": 50
     }
   ],
 
   "hints": [
     {
       "level": 1,
-      "text": "Read the mock-data files and use that data to create your report.",
-      "xpCost": 25
+      "text": "Think about the scenario step by step. To investigate delivery complaints, what data would you query first? The orders table is a good start. Remember that MCP tool names follow the pattern mcp__servername__toolname, and each tool call needs specific parameters like a SQL query string.",
+      "xpCost": 20
     },
     {
       "level": 2,
-      "text": "Try: 'Configure MCP access to the mock-data folder, read the data files, and create a summary report'",
-      "xpCost": 70
+      "text": "Structure your query-plan.md as numbered steps. Step 1 might query orders with 'failed' or 'pending' status. Step 2 might join with users to find affected customers. Step 3 might check GitHub for recent commits that touched order logic. For each step, write the full tool name (e.g., mcp__postgres__query) and the parameters you would pass. Include a section on what to do if a query returns empty results or the server is down.",
+      "xpCost": 55
     },
     {
       "level": 3,
-      "text": "Ask: 'Create .mcp.json for filesystem access to mock-data/. Then read users.json, products.json, and orders.json to create data-report.md with: user counts by role, products by stock status, and order statistics.'",
-      "xpCost": 130
+      "text": "In query-plan.md, write 4-5 steps: (1) mcp__postgres__query with SQL 'SELECT * FROM orders WHERE status IN (failed, pending) ORDER BY created_at DESC', (2) mcp__postgres__query to join orders with users for affected customer details, (3) mcp__github__search_commits for recent changes to order processing code, (4) optionally mcp__playwright__browser_navigate to check the order status page. Include error handling: 'If the postgres server is unavailable, fall back to checking application logs via Bash'. For .mcp.json, configure postgres (command: npx, args: [-y, @modelcontextprotocol/server-postgres, connection-string]), github, and playwright servers.",
+      "xpCost": 105
     }
   ],
 
   "solution": {
-    "approach": "Configure MCP for data access, query the data, and create an analytical report.",
-    "example": "Set up MCP, read the mock data files, and create a comprehensive data report",
+    "approach": "Create a multi-step investigation plan using MCP tools with correct naming, specific parameters, and error handling. Also configure the MCP servers in .mcp.json.",
+    "example": "Write query-plan.md with numbered investigation steps using mcp__postgres__query, mcp__github__search, etc., each with specific SQL or search parameters, plus error handling strategies",
     "alternativeApproaches": [
-      "Use MCP tools to fetch and analyze the mock data",
-      "Query the external data sources and summarize findings"
+      "Focus the plan primarily on database queries with detailed SQL",
+      "Emphasize the cross-server workflow, combining postgres data with GitHub commit history"
     ]
   },
 
   "learningPoints": [
-    "MCP tools can access external data sources",
-    "Claude can use MCP to read databases, APIs, and files",
-    "Combining data from multiple sources creates insights"
+    "MCP tools follow the naming convention mcp__servername__toolname, making it clear which server provides each tool",
+    "Each MCP tool has a JSON Schema that defines its parameters -- understanding schemas is key to using tools effectively",
+    "MCP tools return structured data that Claude processes and integrates into the conversation",
+    "Error handling is essential: MCP servers can be unavailable, queries can fail, and you should always have a fallback plan",
+    "Multi-step research workflows with MCP follow a query-analyze-refine-synthesize pattern, where each step builds on previous results"
   ],
 
   "nextChallenge": "08-003"

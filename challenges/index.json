@@ -7,7 +7,7 @@
       "name": "Fundamentals",
       "description": "Master the basics of file operations with Claude Code",
       "order": 1,
-      "unlockCondition": "always",
+      "recommendedAfter": null,
       "challenges": [
         "01-001",
         "01-002",
@@ -21,7 +21,7 @@
       "name": "Search & Navigation",
       "description": "Learn to find files and search codebases efficiently",
       "order": 2,
-      "unlockCondition": "always",
+      "recommendedAfter": null,
       "challenges": [
         "02-001",
         "02-002",
@@ -35,11 +35,7 @@
       "name": "Git Basics",
       "description": "Version control fundamentals with Claude Code",
       "order": 3,
-      "unlockCondition": {
-        "type": "challenges_completed",
-        "module": "fundamentals",
-        "count": 3
-      },
+      "recommendedAfter": "fundamentals",
       "challenges": [
         "03-001",
         "03-002",
@@ -53,10 +49,7 @@
       "name": "Code Editing",
       "description": "Modify and refactor code with precision",
       "order": 4,
-      "unlockCondition": {
-        "type": "module_completed",
-        "module": "git-basics"
-      },
+      "recommendedAfter": "git-basics",
       "challenges": [
         "04-001",
         "04-002",
@@ -70,10 +63,7 @@
       "name": "Debugging",
       "description": "Find and fix bugs efficiently",
       "order": 5,
-      "unlockCondition": {
-        "type": "module_completed",
-        "module": "code-editing"
-      },
+      "recommendedAfter": "code-editing",
       "challenges": [
         "05-001",
         "05-002",
@@ -86,10 +76,7 @@
       "name": "Testing & TDD",
       "description": "Write tests, practice test-driven development, and improve test coverage",
       "order": 6,
-      "unlockCondition": {
-        "type": "module_completed",
-        "module": "debugging"
-      },
+      "recommendedAfter": "debugging",
       "challenges": [
         "11-001",
         "11-002",
@@ -103,10 +90,7 @@
       "name": "Project Configuration",
       "description": "Configure Claude Code for your project with CLAUDE.md and settings",
       "order": 7,
-      "unlockCondition": {
-        "type": "module_completed",
-        "module": "testing-tdd"
-      },
+      "recommendedAfter": "testing-tdd",
       "challenges": [
         "10-001",
         "10-002",
@@ -120,10 +104,7 @@
       "name": "Effective Prompting",
       "description": "Learn to communicate effectively with Claude for better results",
       "order": 8,
-      "unlockCondition": {
-        "type": "module_completed",
-        "module": "project-config"
-      },
+      "recommendedAfter": "project-config",
       "challenges": [
         "12-001",
         "12-002",
@@ -136,10 +117,7 @@
       "name": "Code Generation & Scaffolding",
       "description": "Generate components, scaffold projects, and create code from specifications",
       "order": 9,
-      "unlockCondition": {
-        "type": "module_completed",
-        "module": "effective-prompting"
-      },
+      "recommendedAfter": "effective-prompting",
       "challenges": [
         "13-001",
         "13-002",
@@ -152,10 +130,7 @@
       "name": "Web Research Tools",
       "description": "Use web search and fetch to find documentation, solutions, and current information",
       "order": 10,
-      "unlockCondition": {
-        "type": "module_completed",
-        "module": "code-generation"
-      },
+      "recommendedAfter": "code-generation",
       "challenges": [
         "14-001",
         "14-002",
@@ -168,10 +143,7 @@
       "name": "Subagents",
       "description": "Master Claude Code's subagent system for complex tasks",
       "order": 11,
-      "unlockCondition": {
-        "type": "module_completed",
-        "module": "web-research"
-      },
+      "recommendedAfter": "web-research",
       "challenges": [
         "06-001",
         "06-002",
@@ -184,10 +156,7 @@
       "name": "Background Tasks & Parallelism",
       "description": "Run tasks in background, execute in parallel, and orchestrate workflows",
       "order": 12,
-      "unlockCondition": {
-        "type": "module_completed",
-        "module": "subagents"
-      },
+      "recommendedAfter": "subagents",
       "challenges": [
         "15-001",
         "15-002",
@@ -200,10 +169,7 @@
       "name": "Agentic Loops (Ralph Loop)",
       "description": "Use Ralph Loop for autonomous, iterative work on complex tasks",
       "order": 13,
-      "unlockCondition": {
-        "type": "module_completed",
-        "module": "background-tasks"
-      },
+      "recommendedAfter": "background-tasks",
       "challenges": [
         "16-001",
         "16-002",
@@ -216,10 +182,7 @@
       "name": "Skills & Hooks",
       "description": "Extend Claude Code with custom skills and automation",
       "order": 14,
-      "unlockCondition": {
-        "type": "module_completed",
-        "module": "agentic-loops"
-      },
+      "recommendedAfter": "agentic-loops",
       "challenges": [
         "07-001",
         "07-002",
@@ -232,10 +195,7 @@
       "name": "MCP Integration",
       "description": "Connect Claude Code to external tools and services",
       "order": 15,
-      "unlockCondition": {
-        "type": "module_completed",
-        "module": "skills-hooks"
-      },
+      "recommendedAfter": "skills-hooks",
       "challenges": [
         "08-001",
         "08-002",
@@ -247,10 +207,7 @@
       "name": "Plugin Development",
       "description": "Build and publish your own Claude Code plugins",
       "order": 16,
-      "unlockCondition": {
-        "type": "module_completed",
-        "module": "skills-hooks"
-      },
+      "recommendedAfter": "skills-hooks",
       "challenges": [
         "09-001",
         "09-002",
@@ -382,22 +339,22 @@
       "xpReward": 300
     },
     "06-001": {
-      "title": "Use Explore Subagent",
+      "title": "Understanding Subagents",
       "difficulty": "intermediate",
       "xpReward": 225
     },
     "06-002": {
-      "title": "Parallel Research",
+      "title": "Parallel & Background Subagents",
       "difficulty": "intermediate",
       "xpReward": 250
     },
     "06-003": {
-      "title": "Create Custom Subagent",
+      "title": "Resuming Agents & Agent Types Deep Dive",
       "difficulty": "advanced",
       "xpReward": 350
     },
     "06-004": {
-      "title": "Chain Subagents",
+      "title": "Custom Plugin Agents",
       "difficulty": "advanced",
       "xpReward": 400
     },

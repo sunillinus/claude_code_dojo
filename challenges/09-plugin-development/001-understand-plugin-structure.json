@@ -2,45 +2,45 @@
   "id": "09-001",
   "module": "plugin-development",
   "title": "Understand Plugin Structure",
-  "description": "Learn the anatomy of a Claude Code plugin. Understanding the structure is essential before building your own.",
+  "description": "Learn the anatomy of a Claude Code plugin -- the directory structure, the manifest file, component types, and how auto-discovery works. Understanding plugin structure is the foundation for everything else in this module.",
   "difficulty": "beginner",
   "xpReward": 150,
-  "estimatedMinutes": 10,
-  "skills": ["plugin-anatomy", "component-types"],
+  "estimatedMinutes": 15,
+  "skills": ["plugin-anatomy", "component-types", "auto-discovery"],
 
   "setup": {
     "workingDir": "~/dojo-workspace/challenge-09-001",
     "initialFiles": [
       {
         "path": "README.md",
-        "content": "# Challenge: Understand Plugin Structure\n\nExplore this example plugin and document its components.\n\n## Objectives\n1. Identify all plugin components (skills, hooks, agents, commands)\n2. Understand what each component does\n3. Create plugin-analysis.md documenting the structure\n"
+        "content": "# Challenge: Understand Plugin Structure\n\nLearn what a Claude Code plugin is, how it is organized, and what each\ncomponent type does.\n\n---\n\n## What Is a Plugin?\n\nA Claude Code **plugin** is a directory that extends Claude Code with\nnew capabilities. At its core, a plugin is just a folder containing a\n`plugin.json` manifest file and one or more component folders. When you\nload a plugin, Claude Code reads the manifest, scans the directory\nstructure, and automatically discovers every component inside.\n\nPlugins let you:\n- Add reusable skills (slash commands like `/review` or `/deploy`)\n- Automate workflows with hooks (code that runs on events)\n- Create specialized agents (autonomous workers for complex tasks)\n- Define commands (simple slash commands for common actions)\n- Integrate external tools via MCP (Model Context Protocol) servers\n\nWithout plugins, every Claude Code session starts from scratch. With\nplugins, you build up a library of capabilities that load automatically.\n\n## The plugin.json Manifest\n\nEvery plugin MUST have a `plugin.json` file in its root directory. This\nis the only strictly required file. It tells Claude Code the plugin's\nidentity:\n\n```json\n{\n  \"name\": \"my-plugin\",\n  \"version\": \"1.0.0\",\n  \"description\": \"What this plugin does in one sentence\"\n}\n```\n\n| Field | Required | Purpose |\n|-------|----------|----------|\n| `name` | Yes | Unique identifier, kebab-case (e.g., `code-quality`) |\n| `version` | Yes | Semantic version (major.minor.patch) |\n| `description` | Yes | Human-readable summary of the plugin |\n\nThe `name` field uses kebab-case by convention. The `version` field\nfollows semver: bump patch for fixes, minor for new features, major for\nbreaking changes.\n\n## Directory Layout\n\nA complete plugin with every component type looks like this:\n\n```\nmy-plugin/\n  plugin.json           # Manifest (REQUIRED)\n  skills/               # Skills -- reusable prompt templates\n    summarize/\n      SKILL.md          #   Invoked as /summarize\n    review/\n      SKILL.md          #   Invoked as /review\n  hooks/                # Hooks -- event automation\n    pre-commit.md       #   Runs before/after tool use\n  agents/               # Agents -- autonomous workers\n    analyzer.md         #   Specialized subagent\n  commands/             # Commands -- simple slash commands\n    quick-test.md       #   Invoked as /quick-test\n  .mcp.json             # MCP server configuration (optional)\n```\n\nClaude Code uses **auto-discovery**: it finds components by scanning\nthe directory structure. You do not need to register components in\nplugin.json. If a file is in the right place with the right name,\nClaude Code picks it up.\n\n## The Five Component Types\n\n### 1. Skills (`skills/<name>/SKILL.md`)\nSkills are reusable prompt templates that become slash commands. Each\nskill lives in its own folder under `skills/` and contains a `SKILL.md`\nfile with YAML frontmatter (description, allowed tools, arguments) and\na markdown body (the prompt instructions).\n\n- Discovered by: folder name under `skills/`\n- Invoked as: `/<folder-name>` (e.g., `/summarize`)\n- Use case: any repeatable task you want as a one-word command\n\n### 2. Hooks (`hooks/<name>.md`)\nHooks are event-driven automations. They run automatically when specific\nevents occur, such as before or after a tool is used. Hooks can block\nactions, log activity, or enforce rules.\n\n- Discovered by: `.md` files in `hooks/`\n- Triggered by: events like `PreToolUse`, `PostToolUse`\n- Use case: enforcing policies, logging, automated checks\n\n### 3. Agents (`agents/<name>.md`)\nAgents are specialized autonomous workers defined as markdown files.\nThey have a description and a list of allowed tools. Claude Code can\nspawn them as subagents for complex tasks.\n\n- Discovered by: `.md` files in `agents/`\n- Invoked by: Claude Code internally when a task matches the agent\n- Use case: deep analysis, multi-step research, specialized work\n\n### 4. Commands (`commands/<name>.md`)\nCommands are simple slash commands. They are similar to skills but\ntypically lighter weight -- often just instructions without complex\nfrontmatter.\n\n- Discovered by: `.md` files in `commands/`\n- Invoked as: `/<filename>` (e.g., `/quick-test`)\n- Use case: simple actions like running tests or generating reports\n\n### 5. MCP Servers (`.mcp.json`)\nMCP (Model Context Protocol) servers give Claude access to external\ntools -- databases, APIs, file systems, and more. The `.mcp.json` file\nat the plugin root configures which servers to connect to.\n\n- Discovered by: `.mcp.json` in plugin root\n- Use case: integrating external tools and data sources\n\n## The ${CLAUDE_PLUGIN_ROOT} Variable\n\nInside hooks and scripts, the variable `${CLAUDE_PLUGIN_ROOT}` resolves\nto the absolute path of the plugin's root directory. This is critical\nfor referencing files within the plugin without hardcoding paths:\n\n```\ncommand: node ${CLAUDE_PLUGIN_ROOT}/scripts/validate.js\n```\n\nAlways use `${CLAUDE_PLUGIN_ROOT}` instead of absolute paths. This\nensures the plugin works regardless of where it is installed.\n\n## How Plugins Are Loaded\n\nThere are two ways to load a plugin:\n\n**For a single session (temporary):**\n```bash\nclaude --plugin-dir /path/to/my-plugin\n```\n\n**Permanently (persists across sessions):**\n```bash\nclaude config add plugins /path/to/my-plugin\n```\n\nOnce loaded, all discovered components become available immediately.\nSkills appear as slash commands, hooks activate on their events, and\nagents are available for delegation.\n\n---\n\n## Your Task\n\nThis workspace contains a complete example plugin called\n`productivity-tools`. Explore it thoroughly, understand each component,\nand create a `structure-analysis.md` file documenting your findings.\n\nYour analysis should cover:\n1. The plugin manifest (what metadata it defines)\n2. Each skill (name, what it does, how it is invoked)\n3. Each hook (name, what event it listens to, what it does)\n4. Each agent (name, what it specializes in, what tools it uses)\n5. Each command (name, what action it performs)\n6. How auto-discovery finds each component (directory/file conventions)\n\n## Objectives\n1. Create `structure-analysis.md` documenting all plugin components\n2. Document the skills (summarize, explain) and how they are discovered\n3. Document the hooks (log-writes, protect-main) and their event types\n4. Document the agent (reviewer) and its purpose\n5. Document the command (quick-test) and how it differs from skills\n"
       },
       {
-        "path": "plugin.json",
-        "content": "{\n  \"name\": \"productivity-tools\",\n  \"version\": \"1.0.0\",\n  \"description\": \"A collection of developer productivity tools\",\n  \"author\": {\n    \"name\": \"DevTools Team\"\n  }\n}\n"
+        "path": "productivity-tools/plugin.json",
+        "content": "{\n  \"name\": \"productivity-tools\",\n  \"version\": \"1.0.0\",\n  \"description\": \"A collection of developer productivity tools for code review, explanation, and workflow automation\"\n}\n"
       },
       {
-        "path": "skills/summarize/SKILL.md",
-        "content": "---\nname: summarize\ndescription: Summarize code, documents, or conversations concisely\nuser-invocable: true\n---\n\nYou are a summarization expert. When invoked:\n\n1. Analyze the content provided or the current context\n2. Extract the key points and main ideas\n3. Present a concise summary in bullet points\n4. Keep the summary under 10 bullet points\n\nFocus on actionable insights and important details.\n"
+        "path": "productivity-tools/skills/summarize/SKILL.md",
+        "content": "---\ndescription: Summarize code, documents, or conversations concisely\nallowedTools: Read, Glob, Grep\n---\n\nYou are a summarization expert. When invoked:\n\n1. Analyze the content provided or the current context\n2. Extract the key points and main ideas\n3. Present a concise summary in bullet points\n4. Keep the summary under 10 bullet points\n\nFocus on actionable insights and important details.\n"
       },
       {
-        "path": "skills/explain/SKILL.md",
-        "content": "---\nname: explain\ndescription: Explain code or concepts in simple terms\nuser-invocable: true\nallowed-tools:\n  - Read\n  - Glob\n  - Grep\n---\n\nYou are a patient teacher. When asked to explain something:\n\n1. Start with a high-level overview\n2. Break down complex parts into simple concepts\n3. Use analogies when helpful\n4. Provide examples to illustrate points\n\nAvoid jargon unless you explain it first.\n"
+        "path": "productivity-tools/skills/explain/SKILL.md",
+        "content": "---\ndescription: Explain code or concepts in simple terms\nallowedTools: Read, Glob, Grep\nargs:\n  - name: topic\n    description: The code file or concept to explain\n    required: true\n---\n\nYou are a patient teacher. When asked to explain something:\n\n1. Start with a high-level overview\n2. Break down complex parts into simple concepts\n3. Use analogies when helpful\n4. Provide examples to illustrate points\n\nExplain `$ARGUMENTS` clearly. Avoid jargon unless you explain it first.\n"
       },
       {
-        "path": "hooks/log-writes.md",
-        "content": "---\ndescription: Log all file write operations\nevent: PostToolUse\ntools:\n  - Write\n  - Edit\ncommand: echo \"[$(date)] File modified: $TOOL_INPUT_FILE_PATH\" >> ~/.claude-file-log.txt\n---\n"
+        "path": "productivity-tools/hooks/log-writes.md",
+        "content": "---\ndescription: Log all file write operations to a local log file\nevent: PostToolUse\ntools:\n  - Write\n  - Edit\ncommand: echo \"[$(date)] File modified: $TOOL_INPUT_FILE_PATH\" >> ${CLAUDE_PLUGIN_ROOT}/.file-log.txt\n---\n"
       },
       {
-        "path": "hooks/protect-main.md",
-        "content": "---\ndescription: Prevent direct commits to main branch\nevent: PreToolUse\ntools:\n  - Bash\n---\n\nCheck if this bash command is attempting to commit directly to the main or master branch.\n\nIf the command contains 'git commit' and we're on main/master branch (not a feature branch), respond with:\n{\"decision\": \"block\", \"reason\": \"Direct commits to main/master are not allowed. Please create a feature branch.\"}\n\nOtherwise, respond with:\n{\"decision\": \"allow\"}\n"
+        "path": "productivity-tools/hooks/protect-main.md",
+        "content": "---\ndescription: Prevent direct commits to main branch\nevent: PreToolUse\ntools:\n  - Bash\n---\n\nCheck if this bash command is attempting to commit directly to the\nmain or master branch.\n\nIf the command contains 'git commit' and we are on main/master branch\n(not a feature branch), respond with:\n{\"decision\": \"block\", \"reason\": \"Direct commits to main/master are not allowed. Please create a feature branch.\"}\n\nOtherwise, respond with:\n{\"decision\": \"allow\"}\n"
       },
       {
-        "path": "agents/reviewer.md",
+        "path": "productivity-tools/agents/reviewer.md",
         "content": "---\ndescription: Code review specialist that analyzes code quality\nallowed-tools:\n  - Read\n  - Glob\n  - Grep\n---\n\nYou are an experienced code reviewer. Your job is to:\n\n1. Analyze code for potential bugs and issues\n2. Check for security vulnerabilities\n3. Evaluate code style and best practices\n4. Suggest improvements with specific examples\n\nBe constructive and explain the \"why\" behind each suggestion.\n"
       },
       {
-        "path": "commands/quick-test.md",
+        "path": "productivity-tools/commands/quick-test.md",
         "content": "---\ndescription: Run tests for the current project quickly\n---\n\nDetect the project type and run the appropriate test command:\n\n- Node.js: Look for package.json and run `npm test`\n- Python: Look for pytest.ini, setup.py, or pyproject.toml and run `pytest`\n- Go: Look for go.mod and run `go test ./...`\n- Rust: Look for Cargo.toml and run `cargo test`\n\nReport the test results concisely.\n"
       }
     ],
@@ -50,33 +50,41 @@
   "objectives": [
     {
       "id": "obj-1",
-      "description": "Create plugin-analysis.md",
+      "description": "Create structure-analysis.md documenting the plugin",
       "type": "file_exists",
-      "target": "plugin-analysis.md",
+      "target": "structure-analysis.md",
       "required": true
     },
     {
       "id": "obj-2",
-      "description": "Document the skills (summarize, explain)",
+      "description": "Document the skills (summarize, explain) and how they are discovered",
       "type": "file_contains",
-      "target": "plugin-analysis.md",
-      "pattern": "[Ss]kill|summarize|explain",
+      "target": "structure-analysis.md",
+      "pattern": "[Ss]kill|summarize|explain|SKILL\\.md",
       "required": true
     },
     {
       "id": "obj-3",
-      "description": "Document the hooks (log-writes, protect-main)",
+      "description": "Document the hooks (log-writes, protect-main) and their event types",
       "type": "file_contains",
-      "target": "plugin-analysis.md",
+      "target": "structure-analysis.md",
       "pattern": "[Hh]ook|log.writes|protect.main|PreToolUse|PostToolUse",
       "required": true
     },
     {
       "id": "obj-4",
-      "description": "Document the agent (reviewer)",
+      "description": "Document the agent (reviewer) and its purpose",
       "type": "file_contains",
-      "target": "plugin-analysis.md",
-      "pattern": "[Aa]gent|reviewer",
+      "target": "structure-analysis.md",
+      "pattern": "[Aa]gent|reviewer|code review",
+      "required": true
+    },
+    {
+      "id": "obj-5",
+      "description": "Document the command (quick-test) and how it is discovered",
+      "type": "file_contains",
+      "target": "structure-analysis.md",
+      "pattern": "[Cc]ommand|quick.test",
       "required": true
     }
   ],
@@ -84,55 +92,64 @@
   "bonusObjectives": [
     {
       "id": "bonus-1",
-      "description": "Document the command (quick-test)",
+      "description": "Explain auto-discovery -- how Claude Code finds components by directory convention",
       "type": "file_contains",
-      "target": "plugin-analysis.md",
-      "pattern": "[Cc]ommand|quick.test",
+      "target": "structure-analysis.md",
+      "pattern": "auto.discover|discover|convention|directory structure|scans|folder",
       "xpBonus": 25
     },
     {
       "id": "bonus-2",
-      "description": "Explain the difference between components",
+      "description": "Explain the difference between component types and when to use each",
       "type": "file_contains",
-      "target": "plugin-analysis.md",
-      "pattern": "difference|purpose|when to use|vs\\.|versus",
+      "target": "structure-analysis.md",
+      "pattern": "difference|purpose|when to use|vs\\.|versus|compared to",
       "xpBonus": 50
+    },
+    {
+      "id": "bonus-3",
+      "description": "Mention ${CLAUDE_PLUGIN_ROOT} and its role in portable plugins",
+      "type": "file_contains",
+      "target": "structure-analysis.md",
+      "pattern": "CLAUDE_PLUGIN_ROOT|plugin root|portable|relative",
+      "xpBonus": 25
     }
   ],
 
   "hints": [
     {
       "level": 1,
-      "text": "Explore each folder (skills, hooks, agents, commands) and read the files inside.",
+      "text": "Start by reading the plugin.json manifest, then explore each directory (skills/, hooks/, agents/, commands/) one at a time. Note the file naming pattern in each directory -- that pattern is how auto-discovery works.",
       "xpCost": 10
     },
     {
       "level": 2,
-      "text": "Try: 'Analyze this plugin structure and explain what each component (skills, hooks, agents, commands) does'",
+      "text": "For each component, identify: (1) its file path, (2) what type of component it is, (3) what it does based on its content, (4) how Claude Code discovers it (directory name + file name convention). Compare skills (SKILL.md in folders) vs. hooks/agents/commands (.md files directly in their folder).",
       "xpCost": 30
     },
     {
       "level": 3,
-      "text": "Ask: 'Read all the plugin files and create plugin-analysis.md documenting: the plugin.json metadata, each skill and what it does, each hook and when it triggers, the agent and its purpose, and the command.'",
+      "text": "Create structure-analysis.md with sections for each component type. Under Skills, document summarize (code summarization, invoked as /summarize) and explain (concept explanation, invoked as /explain). Under Hooks, document log-writes (PostToolUse event, logs file changes) and protect-main (PreToolUse event, blocks commits to main). Under Agents, document reviewer (code review specialist with Read/Glob/Grep tools). Under Commands, document quick-test (detects project type and runs tests). Note that skills use SKILL.md inside named folders while other components are .md files directly in their folder.",
       "xpCost": 55
     }
   ],
 
   "solution": {
-    "approach": "Explore the plugin structure and document each component type.",
-    "example": "Analyze this plugin and create a comprehensive document explaining its structure",
+    "approach": "Explore the productivity-tools directory structure, read each component file, and document your findings in structure-analysis.md organized by component type.",
+    "example": "Read all files in the productivity-tools plugin directory and create structure-analysis.md documenting each component: its type, purpose, how it is discovered, and how it works",
     "alternativeApproaches": [
-      "What does this plugin contain? Document all its parts.",
-      "Give me a breakdown of this plugin's components"
+      "Analyze this plugin structure and create a comprehensive document explaining every component",
+      "Explore the productivity-tools directory and write up what each part does and how Claude Code finds it"
     ]
   },
 
   "learningPoints": [
-    "Plugins have a plugin.json manifest with metadata",
-    "Skills are user-invocable commands (/name)",
-    "Hooks run automatically on events (PreToolUse, PostToolUse)",
-    "Agents are specialized subagents for specific tasks",
-    "Commands are simpler than skills, often without frontmatter complexity"
+    "A plugin is a directory with a plugin.json manifest and component folders -- no build step, no compilation",
+    "plugin.json is the ONLY required file; it defines the plugin's name, version, and description",
+    "Claude Code uses auto-discovery: skills in skills/<name>/SKILL.md, hooks in hooks/<name>.md, agents in agents/<name>.md, commands in commands/<name>.md",
+    "Skills are reusable prompt templates invoked as slash commands; hooks are event-driven automations; agents are autonomous workers; commands are simple slash commands",
+    "${CLAUDE_PLUGIN_ROOT} resolves to the plugin's root directory for portable path references",
+    "Plugins are loaded with 'claude --plugin-dir' (temporary) or 'claude config add plugins' (permanent)"
   ],
 
   "nextChallenge": "09-002"

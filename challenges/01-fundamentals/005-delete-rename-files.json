@@ -2,30 +2,54 @@
   "id": "01-005",
   "module": "fundamentals",
   "title": "Delete and Rename Files",
-  "description": "Learn to manage files by deleting unwanted files and renaming others. Claude Code can help you reorganize your project structure.",
+  "description": "Learn how Claude Code uses Bash commands (rm, mv) for file operations that have no dedicated tool. Understand when to use Bash versus dedicated tools, how Claude Code handles deletion safely, and how to reorganize messy project structures.",
   "difficulty": "beginner",
-  "xpReward": 125,
-  "estimatedMinutes": 5,
-  "skills": ["file-management"],
+  "xpReward": 150,
+  "estimatedMinutes": 10,
+  "skills": ["file-management", "bash-tool", "project-organization"],
 
   "setup": {
     "workingDir": "~/dojo-workspace/challenge-01-005",
     "initialFiles": [
       {
         "path": "README.md",
-        "content": "# Challenge: Delete and Rename Files\n\nYour task: Clean up this messy project structure\n\n## Objectives\n1. Delete the `temp.txt` file (it's not needed)\n2. Rename `oldname.js` to `utils.js`\n3. Keep `important.js` unchanged\n"
+        "content": "# Challenge: Delete and Rename Files\n\nLearn how Claude Code deletes, renames, and moves files using Bash\ncommands, then apply that knowledge to reorganize a messy project.\n\n---\n\n## File Operations Without Dedicated Tools\n\nClaude Code has dedicated tools for creating files (Write), reading\nfiles (Read), and editing files (Edit). But what about deleting,\nrenaming, or moving files? There are no Delete or Rename tools.\nInstead, Claude Code uses the **Bash** tool.\n\n### The Bash Tool\n\nThe Bash tool executes shell commands on your system. It is the\ngeneral-purpose tool Claude Code reaches for when no specialized\ntool exists for the operation.\n\n| Operation      | Command                        | Example                              |\n|----------------|--------------------------------|--------------------------------------|\n| Delete a file  | `rm <path>`                    | `rm temp.txt`                        |\n| Delete a dir   | `rm -rf <path>`                | `rm -rf old_builds/`                 |\n| Rename a file  | `mv <old> <new>`               | `mv oldname.js utils.js`            |\n| Move a file    | `mv <source> <dest/>`          | `mv app.js src/app.js`              |\n| Create a dir   | `mkdir -p <path>`              | `mkdir -p src/utils`                |\n| Copy a file    | `cp <source> <dest>`           | `cp config.json config.backup.json` |\n\n### Deletion Safety\n\nClaude Code treats deletion with caution:\n\n- For clearly temporary or junk files, it will proceed directly\n- For important-looking files, it may ask for confirmation before\n  deleting\n- It will **never** run `rm -rf /` or other system-destroying\n  commands\n- The Bash tool has a timeout (default 2 minutes) to prevent\n  runaway operations\n\nBest practice: Be explicit about what to delete. Instead of \"clean\nup this project\", say \"delete temp.txt and the old_builds directory\".\n\n### Renaming vs. Moving\n\nThe `mv` command does both renaming and moving -- they are the same\noperation in Unix:\n\n```bash\n# Renaming (same directory, different name)\nmv oldname.js newname.js\n\n# Moving (different directory, same name)\nmv utils.js src/utils.js\n\n# Both at once (different directory AND different name)\nmv helpers.js src/utils/helpers.js\n```\n\n### When to Use Bash vs. Dedicated Tools\n\n| Task                                   | Tool       | Why                                      |\n|----------------------------------------|------------|------------------------------------------|\n| Create a new file with content         | **Write**  | Dedicated tool, handles paths + content  |\n| Read file contents                     | **Read**   | Returns line numbers, handles PDFs, etc. |\n| Change text inside a file              | **Edit**   | Precise replacement, preserves rest      |\n| Delete a file                          | **Bash**   | No dedicated delete tool                 |\n| Rename or move a file                  | **Bash**   | No dedicated rename/move tool            |\n| Create empty directories               | **Bash**   | `mkdir -p` is the right tool             |\n| Run build/test/install commands        | **Bash**   | `npm install`, `npm test`, etc.          |\n| Check system state (list files, etc.)  | **Bash**   | `ls`, `pwd`, `which`, etc.               |\n\nThe principle: Use dedicated tools when they exist (Write, Read,\nEdit, Glob, Grep). Fall back to Bash for everything else.\n\n### Reorganizing Projects\n\nProject reorganization typically involves a combination of:\n1. **Moving** files to the correct directories\n2. **Renaming** files to follow naming conventions\n3. **Deleting** obsolete or temporary files\n4. **Creating** new directories for better organization\n5. **Editing** import paths in files that reference moved files\n\nWhen describing a reorganization to Claude Code, it helps to\nspecify the target structure:\n> \"Move all .js files from the root into src/. Rename test_utils.js\n> to testUtils.js. Delete all .tmp files. Create a config/ directory\n> and move config.json into it.\"\n\n---\n\n## Your Task\n\nThe workspace contains a messy project that needs reorganization.\nHere is the current state:\n\n```\nchallenge-01-005/\n  README.md              # This file (keep it)\n  app.js                 # Main app (should be in src/)\n  helpers.js             # Utilities (should be in src/, renamed to utils.js)\n  test_app.js            # Tests (should be in tests/, renamed to app.test.js)\n  config.json            # Config (keep in root, but fix the TODO inside)\n  notes.tmp              # Temporary file (delete)\n  debug.log              # Log file (delete)\n  backup_old.js          # Obsolete backup (delete)\n  data/raw_data.csv      # Data file (keep in data/)\n  data/temp_cache.json   # Temp cache (delete)\n```\n\nReorganize into this clean structure:\n\n```\nchallenge-01-005/\n  README.md\n  config.json            # with TODO fixed\n  data/\n    raw_data.csv\n  src/\n    app.js               # moved from root\n    utils.js             # moved from root + renamed from helpers.js\n  tests/\n    app.test.js          # moved from root + renamed from test_app.js\n```\n\n## Objectives\n1. Delete the 4 junk files (notes.tmp, debug.log, backup_old.js, data/temp_cache.json)\n2. Move and rename files into the correct structure\n3. Ensure src/ and tests/ directories exist with the right files\n"
       },
       {
-        "path": "temp.txt",
-        "content": "This is a temporary file that should be deleted.\nIt contains nothing useful.\n"
+        "path": "app.js",
+        "content": "// Main Application\nconst { formatDate, slugify } = require('./helpers');\nconst config = require('./config.json');\n\nfunction startApp() {\n  console.log(`Starting ${config.appName} v${config.version}`);\n  console.log(`Date: ${formatDate(new Date())}`);\n}\n\nfunction processInput(text) {\n  const slug = slugify(text);\n  console.log(`Processed: ${slug}`);\n  return slug;\n}\n\nmodule.exports = { startApp, processInput };\n"
       },
       {
-        "path": "oldname.js",
-        "content": "// Utility functions\nfunction formatDate(date) {\n  return date.toISOString().split('T')[0];\n}\n\nfunction capitalize(str) {\n  return str.charAt(0).toUpperCase() + str.slice(1);\n}\n\nmodule.exports = { formatDate, capitalize };\n"
+        "path": "helpers.js",
+        "content": "// Helper/Utility Functions\n\nfunction formatDate(date) {\n  const year = date.getFullYear();\n  const month = String(date.getMonth() + 1).padStart(2, '0');\n  const day = String(date.getDate()).padStart(2, '0');\n  return `${year}-${month}-${day}`;\n}\n\nfunction slugify(text) {\n  return text\n    .toLowerCase()\n    .trim()\n    .replace(/[^\\w\\s-]/g, '')\n    .replace(/[\\s_-]+/g, '-')\n    .replace(/^-+|-+$/g, '');\n}\n\nfunction capitalize(str) {\n  return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();\n}\n\nmodule.exports = { formatDate, slugify, capitalize };\n"
       },
       {
-        "path": "important.js",
-        "content": "// Important application logic - DO NOT MODIFY\nconst APP_VERSION = '1.0.0';\nmodule.exports = { APP_VERSION };\n"
+        "path": "test_app.js",
+        "content": "// Tests for the main application\nconst assert = require('assert');\nconst { processInput } = require('./app');\nconst { formatDate, slugify } = require('./helpers');\n\n// Test slugify\nassert.strictEqual(slugify('Hello World'), 'hello-world');\nassert.strictEqual(slugify('  Multiple   Spaces  '), 'multiple-spaces');\n\n// Test formatDate\nconst testDate = new Date('2024-06-15');\nassert.strictEqual(formatDate(testDate), '2024-06-15');\n\nconsole.log('All tests passed!');\n"
+      },
+      {
+        "path": "config.json",
+        "content": "{\n  \"appName\": \"MyApp\",\n  \"version\": \"0.1.0\",\n  \"port\": 3000,\n  \"debug\": true,\n  \"database\": \"TODO: add database configuration\"\n}\n"
+      },
+      {
+        "path": "notes.tmp",
+        "content": "Random notes from debugging session\n- tried fixing the bug at 3am\n- need more coffee\n- TODO: delete this file\n"
+      },
+      {
+        "path": "debug.log",
+        "content": "[2024-01-15 03:22:01] ERROR: Connection refused\n[2024-01-15 03:22:05] WARN: Retrying...\n[2024-01-15 03:22:10] INFO: Connected\n[2024-01-15 03:25:44] ERROR: Timeout\n"
+      },
+      {
+        "path": "backup_old.js",
+        "content": "// OLD VERSION - DO NOT USE\n// This was the original app.js before the rewrite\n// Keeping it just in case... but we should delete it\n\nfunction oldApp() {\n  console.log('This is the old version');\n}\n"
+      },
+      {
+        "path": "data/raw_data.csv",
+        "content": "id,name,email,signup_date\n1,Alice,alice@example.com,2024-01-10\n2,Bob,bob@example.com,2024-01-11\n3,Charlie,charlie@example.com,2024-01-12\n4,Diana,diana@example.com,2024-01-13\n"
+      },
+      {
+        "path": "data/temp_cache.json",
+        "content": "{\n  \"cached_at\": \"2024-01-15T03:22:00Z\",\n  \"data\": \"stale cache data that should be cleared\"\n}\n"
       }
     ],
     "cleanBefore": true
@@ -34,32 +58,96 @@
   "objectives": [
     {
       "id": "obj-1",
-      "description": "Delete temp.txt",
+      "description": "Delete the temporary notes file",
       "type": "file_deleted",
-      "target": "temp.txt",
+      "target": "notes.tmp",
       "required": true
     },
     {
       "id": "obj-2",
-      "description": "Create utils.js (renamed from oldname.js)",
-      "type": "file_exists",
-      "target": "utils.js",
+      "description": "Delete the debug log file",
+      "type": "file_deleted",
+      "target": "debug.log",
       "required": true
     },
     {
       "id": "obj-3",
-      "description": "utils.js should contain the utility functions",
-      "type": "file_contains",
-      "target": "utils.js",
-      "pattern": "formatDate|capitalize",
+      "description": "Delete the obsolete backup file",
+      "type": "file_deleted",
+      "target": "backup_old.js",
       "required": true
     },
     {
       "id": "obj-4",
-      "description": "important.js should still exist unchanged",
+      "description": "Delete the temporary cache file",
+      "type": "file_deleted",
+      "target": "data/temp_cache.json",
+      "required": true
+    },
+    {
+      "id": "obj-5",
+      "description": "Move app.js into the src/ directory",
+      "type": "file_exists",
+      "target": "src/app.js",
+      "required": true
+    },
+    {
+      "id": "obj-6",
+      "description": "src/app.js still contains the application code",
       "type": "file_contains",
-      "target": "important.js",
-      "pattern": "APP_VERSION",
+      "target": "src/app.js",
+      "pattern": "function startApp|function processInput",
+      "required": true
+    },
+    {
+      "id": "obj-7",
+      "description": "Move and rename helpers.js to src/utils.js",
+      "type": "file_exists",
+      "target": "src/utils.js",
+      "required": true
+    },
+    {
+      "id": "obj-8",
+      "description": "src/utils.js contains the utility functions",
+      "type": "file_contains",
+      "target": "src/utils.js",
+      "pattern": "function formatDate|function slugify",
+      "required": true
+    },
+    {
+      "id": "obj-9",
+      "description": "Move and rename test_app.js to tests/app.test.js",
+      "type": "file_exists",
+      "target": "tests/app.test.js",
+      "required": true
+    },
+    {
+      "id": "obj-10",
+      "description": "tests/app.test.js contains the test code",
+      "type": "file_contains",
+      "target": "tests/app.test.js",
+      "pattern": "assert|test",
+      "required": true
+    },
+    {
+      "id": "obj-11",
+      "description": "The original helpers.js is no longer in the root",
+      "type": "file_deleted",
+      "target": "helpers.js",
+      "required": true
+    },
+    {
+      "id": "obj-12",
+      "description": "The original app.js is no longer in the root",
+      "type": "file_deleted",
+      "target": "app.js",
+      "required": true
+    },
+    {
+      "id": "obj-13",
+      "description": "The data/raw_data.csv file is still preserved",
+      "type": "file_exists",
+      "target": "data/raw_data.csv",
       "required": true
     }
   ],
@@ -67,44 +155,64 @@
   "bonusObjectives": [
     {
       "id": "bonus-1",
-      "description": "oldname.js should no longer exist",
-      "type": "file_deleted",
-      "target": "oldname.js",
-      "xpBonus": 25
+      "description": "Update the import paths in src/app.js to reference the new location of utils.js",
+      "type": "file_contains",
+      "target": "src/app.js",
+      "pattern": "require\\(['\"]\\./utils['\"]\\)|from ['\"]\\./utils['\"]",
+      "xpBonus": 30
+    },
+    {
+      "id": "bonus-2",
+      "description": "Replace the TODO in config.json with actual database configuration",
+      "type": "file_not_contains",
+      "target": "config.json",
+      "pattern": "TODO",
+      "xpBonus": 20
+    },
+    {
+      "id": "bonus-3",
+      "description": "Update the import paths in tests/app.test.js to reference new file locations",
+      "type": "file_contains",
+      "target": "tests/app.test.js",
+      "pattern": "require\\(['\"]\\.\\./(src/app|src/utils)['\"]\\)|from ['\"]\\.\\./(src/app|src/utils)['\"]",
+      "xpBonus": 30
     }
   ],
 
   "hints": [
     {
       "level": 1,
-      "text": "You can ask Claude Code to delete or rename files. Use natural language to describe what you want.",
+      "text": "This challenge has three categories of work: (1) Delete 4 junk files, (2) Move and rename 3 source files into src/ and tests/ directories, (3) Optionally update import paths in the moved files. Think about which operations Claude Code uses Bash (rm, mv, mkdir) for.",
       "xpCost": 10
     },
     {
       "level": 2,
-      "text": "Try: 'Delete temp.txt and rename oldname.js to utils.js'",
-      "xpCost": 25
+      "text": "For the deletions: rm notes.tmp debug.log backup_old.js data/temp_cache.json. For the moves: mkdir -p src tests, then mv app.js src/app.js, mv helpers.js src/utils.js, mv test_app.js tests/app.test.js. The mv command handles both renaming and moving in one step.",
+      "xpCost": 30
     },
     {
       "level": 3,
-      "text": "Claude Code uses bash commands like 'rm' and 'mv' behind the scenes. Just describe the changes you want.",
+      "text": "Ask Claude Code: 'Reorganize this project: (1) Delete notes.tmp, debug.log, backup_old.js, and data/temp_cache.json. (2) Create src/ and tests/ directories. (3) Move app.js to src/app.js, helpers.js to src/utils.js, test_app.js to tests/app.test.js. (4) Update the import paths in src/app.js to use ./utils instead of ./helpers, and in tests/app.test.js to use ../src/app and ../src/utils. (5) Replace the TODO in config.json with actual database config.'",
       "xpCost": 50
     }
   ],
 
   "solution": {
-    "approach": "Describe the file operations you want. Claude Code will execute the appropriate commands.",
-    "example": "Delete the temp.txt file and rename oldname.js to utils.js",
+    "approach": "Use Bash commands to delete junk files (rm), create directories (mkdir -p), and move/rename source files (mv). Then optionally use Edit to update import paths in the moved files so they reference each other correctly in the new structure.",
+    "example": "Reorganize this project: delete the 4 junk files (notes.tmp, debug.log, backup_old.js, data/temp_cache.json), create src/ and tests/ directories, move app.js to src/, rename helpers.js to src/utils.js, rename test_app.js to tests/app.test.js, and update the import paths to match the new structure.",
     "alternativeApproaches": [
-      "Clean up: remove temp.txt, rename oldname.js to utils.js",
-      "Reorganize files: delete temp.txt, move oldname.js to utils.js"
+      "Handle deletions first: 'Delete notes.tmp, debug.log, backup_old.js, and data/temp_cache.json.' Then handle moves: 'Move app.js into src/, rename helpers.js to src/utils.js, rename test_app.js to tests/app.test.js.' Then fix imports separately.",
+      "Describe the target structure and let Claude Code figure out the steps: 'I want src/ to contain app.js and utils.js (renamed from helpers.js), tests/ to contain app.test.js (renamed from test_app.js), and all .tmp, .log, and backup files deleted.'"
     ]
   },
 
   "learningPoints": [
-    "Claude Code can delete files when asked",
-    "Claude Code can rename/move files to new locations",
-    "Always verify important files aren't accidentally modified"
+    "Claude Code uses the Bash tool for operations without dedicated tools: rm for deletion, mv for rename/move",
+    "The mv command handles both renaming and moving in one step -- they are the same Unix operation",
+    "Claude Code is cautious about deletion and may ask for confirmation for important-looking files",
+    "When reorganizing, remember to update import paths in files that reference moved files",
+    "Use dedicated tools (Write, Read, Edit) when they exist, Bash for everything else",
+    "Describing the target structure clearly helps Claude Code plan the right sequence of operations"
   ],
 
   "nextChallenge": "02-001"

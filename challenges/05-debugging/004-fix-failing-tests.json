@@ -2,30 +2,30 @@
   "id": "05-004",
   "module": "debugging",
   "title": "Fix Failing Tests",
-  "description": "Learn to run tests, interpret failures, and fix the underlying code. Test-driven debugging is efficient and thorough.",
+  "description": "Learn to analyze test failures systematically: read test output, determine whether the code or the test is wrong, fix the right thing, and verify with each fix.",
   "difficulty": "advanced",
   "xpReward": 300,
-  "estimatedMinutes": 15,
-  "skills": ["test-debugging", "test-interpretation"],
+  "estimatedMinutes": 20,
+  "skills": ["test-debugging", "test-interpretation", "assertion-types", "regression-analysis"],
 
   "setup": {
     "workingDir": "~/dojo-workspace/challenge-05-004",
     "initialFiles": [
       {
         "path": "README.md",
-        "content": "# Challenge: Fix Failing Tests\n\nThe tests are failing! Fix the code to make them pass.\n\n## Objectives\n1. Run the tests to see failures\n2. Fix the code (not the tests!) to make them pass\n3. All 4 tests should pass\n"
+        "content": "# Challenge: Fix Failing Tests\n\nLearn to analyze test failures, determine whether the code or the test\nis wrong, and fix the right thing.\n\n## Reading Test Output\n\nWhen a test fails, the output tells you exactly what went wrong:\n\n```\nnot ok 3 - truncate should add ellipsis when truncating\n  ---\n  actual: 'hello'\n  expected: 'he...'\n  operator: strictEqual\n  at: Test.<anonymous> (stringUtils.test.js:18:10)\n  ---\n```\n\nBreak this down:\n- **Test name**: `truncate should add ellipsis when truncating` -- what behavior is being tested\n- **actual**: `'hello'` -- what the code actually produced\n- **expected**: `'he...'` -- what the test expected\n- **operator**: `strictEqual` -- how they were compared\n- **location**: `stringUtils.test.js:18:10` -- where the assertion is\n\nThe gap between actual and expected IS the bug. Your job is to figure\nout WHY they differ.\n\n## Three Scenarios for Test Failures\n\n### Scenario 1: Code Is Wrong, Test Is Right (Most Common)\n\nThe test describes correct behavior. The code has a bug.\n\n```javascript\n// Test says: capitalize('hello') should return 'Hello'\n// Code returns: 'HELLO'\n// Verdict: The code is doing toUpperCase() on the whole string\n//          instead of just the first character. Fix the code.\n```\n\n**How to recognize**: The test expectation makes sense given the\nfunction's documented purpose.\n\n### Scenario 2: Test Is Wrong, Code Is Right (Outdated Test)\n\nThe code behavior is correct, but the test checks for old behavior\nor was written with a wrong assumption.\n\n```javascript\n// Function: formatDate returns 'Jan 15, 2024'\n// Test expects: '2024-01-15'\n// Verdict: The spec changed from ISO format to display format.\n//          The code is correct. Update the test.\n```\n\n**How to recognize**: The code's output makes more sense than\nwhat the test expects, or the test contradicts the function's docs.\n\n### Scenario 3: Both Need Updating (Spec Changed)\n\nThe requirements changed. Both the code and tests need to match\nthe new spec.\n\n**How to recognize**: Comments, docs, or nearby code indicate a\nnew expected behavior that neither code nor test implements.\n\n## Assertion Types\n\nDifferent assertions check different things:\n\n| Assertion | Checks | Use When |\n|---|---|---|\n| `strictEqual(a, b)` | `a === b` (same type and value) | Primitives: strings, numbers, booleans |\n| `deepStrictEqual(a, b)` | Deep equality (recursive) | Objects, arrays (checks contents) |\n| `notStrictEqual(a, b)` | `a !== b` | Verifying values differ |\n| `throws(fn)` | Function throws an error | Testing error handling |\n| `rejects(fn)` | Async function rejects | Testing async error handling |\n| `ok(value)` | Value is truthy | Boolean checks |\n\n### Common Assertion Mistake: strictEqual vs deepStrictEqual\n\n```javascript\n// This FAILS even though the arrays look the same:\nassert.strictEqual([1, 2], [1, 2]);  // false! different objects\n\n// This PASSES because it checks contents:\nassert.deepStrictEqual([1, 2], [1, 2]);  // true! same contents\n\n// strictEqual works for primitives:\nassert.strictEqual('hello', 'hello');  // true! same string\nassert.strictEqual(42, 42);            // true! same number\n```\n\nRule of thumb: Use `strictEqual` for strings, numbers, and booleans.\nUse `deepStrictEqual` for objects and arrays.\n\n## Strategy: Fix One Test at a Time\n\n1. Run all tests to see the full picture\n2. Pick the FIRST failing test\n3. Read the failure message: actual vs expected\n4. Decide: is the code wrong, or the test?\n5. Make the fix\n6. Re-run ALL tests (not just the one you fixed)\n7. Repeat until all pass\n\nWhy re-run all tests? Because fixing one bug might reveal another,\nor (worse) might break a previously passing test. This is called\na **regression**.\n\n## Regression Bugs\n\nA regression is when code that used to work stops working. Common causes:\n- Fixing one function breaks another that depended on the old behavior\n- Refactoring changes a return type or format\n- Adding a feature introduces an edge case bug\n\nThe test suite is your safety net. It catches regressions automatically.\nThat is the whole point of having tests.\n\n## Your Task\n\nThe project has a `taskManager.js` module with task management functions\nand `taskManager.test.js` with 10 tests. Six tests are failing.\n\nThe failures are a mix:\n- **3 tests fail because the code has bugs** (fix the code)\n- **2 tests fail because the tests are outdated** (update the tests)\n- **1 test uses the wrong assertion type** (fix the assertion)\n\nFor each failing test:\n1. Run the tests and read the failure message\n2. Look at actual vs expected\n3. Decide: fix code, fix test, or fix assertion?\n4. Make the fix\n5. Re-run and verify\n\nCreate `test-analysis.md` documenting each failing test:\n- Test name\n- Actual vs expected\n- Root cause (code bug, outdated test, or wrong assertion)\n- What you fixed and why\n"
       },
       {
         "path": "package.json",
-        "content": "{\n  \"name\": \"test-challenge\",\n  \"scripts\": {\n    \"test\": \"node --test\"\n  }\n}\n"
+        "content": "{\n  \"name\": \"fix-failing-tests\",\n  \"version\": \"1.0.0\",\n  \"description\": \"Analyze and fix failing tests in a task manager module\",\n  \"scripts\": {\n    \"test\": \"node --test\"\n  }\n}\n"
       },
       {
-        "path": "stringUtils.js",
-        "content": "// String utility functions\n\nfunction capitalize(str) {\n  return str.toUpperCase();\n}\n\nfunction reverse(str) {\n  return str.split('').reverse();\n}\n\nfunction truncate(str, maxLength) {\n  if (str.length <= maxLength) {\n    return str;\n  }\n  return str.slice(0, maxLength);\n}\n\nfunction countWords(str) {\n  return str.split(' ').length;\n}\n\nmodule.exports = { capitalize, reverse, truncate, countWords };\n"
+        "path": "taskManager.js",
+        "content": "// Task Manager Module\n// Manages a list of tasks with priorities, statuses, and tags.\n\n/**\n * Creates a new task object.\n * Returns: { id, title, priority, status, tags, createdAt }\n * - priority defaults to 'medium'\n * - status defaults to 'pending'\n * - tags defaults to empty array\n * - createdAt is set to current ISO timestamp\n */\nfunction createTask(id, title, priority = 'medium', tags = []) {\n  return {\n    id,\n    title,\n    priority,\n    status: 'pending',\n    tags,\n    createdAt: new Date().toISOString()\n  };\n}\n\n/**\n * Filters tasks by status.\n * Returns a NEW array (does not modify original).\n */\nfunction filterByStatus(tasks, status) {\n  return tasks.filter(t => t.status === status);\n}\n\n/**\n * Sorts tasks by priority.\n * Priority order: high > medium > low\n * Returns a NEW sorted array (does not modify original).\n */\nfunction sortByPriority(tasks) {\n  const order = { high: 1, medium: 2, low: 3 };\n  return tasks.sort((a, b) => order[a.priority] - order[b.priority]);\n}\n\n/**\n * Marks a task as complete.\n * Returns a NEW task object with status 'done' and a completedAt timestamp.\n * Does NOT modify the original task.\n */\nfunction completeTask(task) {\n  task.status = 'done';\n  task.completedAt = new Date().toISOString();\n  return task;\n}\n\n/**\n * Returns summary statistics for a task list.\n * Format: { total, pending, done, inProgress }\n *\n * NOTE: The spec was updated. Previously this returned\n * { total, completed, incomplete }. The new format uses\n * the three status values: pending, done, in-progress.\n */\nfunction getTaskSummary(tasks) {\n  return {\n    total: tasks.length,\n    pending: tasks.filter(t => t.status === 'pending').length,\n    done: tasks.filter(t => t.status === 'done').length,\n    inProgress: tasks.filter(t => t.status === 'in-progress').length\n  };\n}\n\n/**\n * Finds all tasks that have a specific tag.\n * Tag comparison should be case-insensitive.\n */\nfunction findByTag(tasks, tag) {\n  return tasks.filter(t => t.tags.includes(tag));\n}\n\n/**\n * Updates a task's priority.\n * Valid priorities: 'low', 'medium', 'high'\n * Throws an Error if priority is invalid.\n * Returns a NEW task object (does not modify original).\n */\nfunction updatePriority(task, newPriority) {\n  const validPriorities = ['low', 'medium', 'high'];\n  if (!validPriorities.includes(newPriority)) {\n    return { ...task, priority: 'medium' };\n  }\n  return { ...task, priority: newPriority };\n}\n\n/**\n * Removes duplicate tasks (by ID) from an array.\n * Keeps the first occurrence of each ID.\n * Returns a new array.\n */\nfunction removeDuplicates(tasks) {\n  const seen = new Set();\n  return tasks.filter(task => {\n    if (seen.has(task.id)) {\n      return true;\n    }\n    seen.add(task.id);\n    return false;\n  });\n}\n\nmodule.exports = {\n  createTask,\n  filterByStatus,\n  sortByPriority,\n  completeTask,\n  getTaskSummary,\n  findByTag,\n  updatePriority,\n  removeDuplicates\n};\n"
       },
       {
-        "path": "stringUtils.test.js",
-        "content": "const { test } = require('node:test');\nconst assert = require('node:assert');\nconst { capitalize, reverse, truncate, countWords } = require('./stringUtils');\n\ntest('capitalize should uppercase first letter only', () => {\n  assert.strictEqual(capitalize('hello'), 'Hello');\n  assert.strictEqual(capitalize('WORLD'), 'World');\n});\n\ntest('reverse should return reversed string', () => {\n  assert.strictEqual(reverse('hello'), 'olleh');\n  assert.strictEqual(reverse('abc'), 'cba');\n});\n\ntest('truncate should add ellipsis when truncating', () => {\n  assert.strictEqual(truncate('hello world', 5), 'hello...');\n  assert.strictEqual(truncate('hi', 10), 'hi');\n});\n\ntest('countWords should handle multiple spaces', () => {\n  assert.strictEqual(countWords('hello world'), 2);\n  assert.strictEqual(countWords('one  two   three'), 3);\n  assert.strictEqual(countWords(''), 0);\n});\n"
+        "path": "taskManager.test.js",
+        "content": "const { test } = require('node:test');\nconst assert = require('node:assert/strict');\nconst {\n  createTask,\n  filterByStatus,\n  sortByPriority,\n  completeTask,\n  getTaskSummary,\n  findByTag,\n  updatePriority,\n  removeDuplicates\n} = require('./taskManager');\n\n// --- Test 1: createTask (PASSES) ---\ntest('createTask creates a task with defaults', () => {\n  const task = createTask(1, 'Buy groceries');\n  assert.strictEqual(task.id, 1);\n  assert.strictEqual(task.title, 'Buy groceries');\n  assert.strictEqual(task.priority, 'medium');\n  assert.strictEqual(task.status, 'pending');\n  assert.deepStrictEqual(task.tags, []);\n  assert.ok(task.createdAt);\n});\n\n// --- Test 2: filterByStatus (PASSES) ---\ntest('filterByStatus returns only matching tasks', () => {\n  const tasks = [\n    { id: 1, status: 'pending' },\n    { id: 2, status: 'done' },\n    { id: 3, status: 'pending' },\n    { id: 4, status: 'in-progress' }\n  ];\n  const result = filterByStatus(tasks, 'pending');\n  assert.strictEqual(result.length, 2);\n  assert.strictEqual(result[0].id, 1);\n  assert.strictEqual(result[1].id, 3);\n});\n\n// --- Test 3: sortByPriority does not mutate original (FAILS - code bug) ---\ntest('sortByPriority returns new array without mutating original', () => {\n  const tasks = [\n    { id: 1, priority: 'low' },\n    { id: 2, priority: 'high' },\n    { id: 3, priority: 'medium' }\n  ];\n  const original = [...tasks];\n  const sorted = sortByPriority(tasks);\n  // The original array should not be modified\n  assert.deepStrictEqual(tasks, original);\n  // The sorted array should be in priority order\n  assert.strictEqual(sorted[0].id, 2);\n  assert.strictEqual(sorted[1].id, 3);\n  assert.strictEqual(sorted[2].id, 1);\n});\n\n// --- Test 4: completeTask does not mutate original (FAILS - code bug) ---\ntest('completeTask returns new object without mutating original', () => {\n  const task = { id: 1, title: 'Test', priority: 'high', status: 'pending', tags: [] };\n  const completed = completeTask(task);\n  // Original should be unchanged\n  assert.strictEqual(task.status, 'pending');\n  // New object should be marked done\n  assert.strictEqual(completed.status, 'done');\n  assert.ok(completed.completedAt);\n});\n\n// --- Test 5: getTaskSummary (FAILS - outdated test) ---\ntest('getTaskSummary returns correct counts', () => {\n  const tasks = [\n    { status: 'pending' },\n    { status: 'done' },\n    { status: 'pending' },\n    { status: 'in-progress' },\n    { status: 'done' }\n  ];\n  const summary = getTaskSummary(tasks);\n  // NOTE: The spec was updated from { total, completed, incomplete }\n  // to { total, pending, done, inProgress }\n  assert.strictEqual(summary.total, 5);\n  assert.strictEqual(summary.completed, 2);\n  assert.strictEqual(summary.incomplete, 3);\n});\n\n// --- Test 6: findByTag case-insensitive (FAILS - code bug) ---\ntest('findByTag finds tasks with matching tag (case-insensitive)', () => {\n  const tasks = [\n    { id: 1, tags: ['Urgent', 'work'] },\n    { id: 2, tags: ['personal'] },\n    { id: 3, tags: ['URGENT', 'home'] },\n    { id: 4, tags: ['Work', 'urgent'] }\n  ];\n  const result = findByTag(tasks, 'urgent');\n  assert.strictEqual(result.length, 3);\n});\n\n// --- Test 7: updatePriority throws on invalid (FAILS - code bug, should throw) ---\ntest('updatePriority throws Error for invalid priority', () => {\n  const task = { id: 1, title: 'Test', priority: 'medium' };\n  assert.throws(\n    () => updatePriority(task, 'critical'),\n    { message: /[Ii]nvalid priority/ }\n  );\n});\n\n// --- Test 8: updatePriority valid (PASSES) ---\ntest('updatePriority changes priority for valid value', () => {\n  const task = { id: 1, title: 'Test', priority: 'medium' };\n  const updated = updatePriority(task, 'high');\n  assert.strictEqual(updated.priority, 'high');\n  // Should not mutate original\n  assert.strictEqual(task.priority, 'medium');\n});\n\n// --- Test 9: removeDuplicates (FAILS - code bug, logic is inverted) ---\ntest('removeDuplicates keeps first occurrence of each ID', () => {\n  const tasks = [\n    { id: 1, title: 'First' },\n    { id: 2, title: 'Second' },\n    { id: 1, title: 'Duplicate of First' },\n    { id: 3, title: 'Third' },\n    { id: 2, title: 'Duplicate of Second' }\n  ];\n  const result = removeDuplicates(tasks);\n  assert.strictEqual(result.length, 3);\n  assert.strictEqual(result[0].title, 'First');\n  assert.strictEqual(result[1].title, 'Second');\n  assert.strictEqual(result[2].title, 'Third');\n});\n\n// --- Test 10: sortByPriority result check (FAILS - wrong assertion type) ---\ntest('sortByPriority returns correct order', () => {\n  const tasks = [\n    { id: 1, priority: 'medium', title: 'A' },\n    { id: 2, priority: 'high', title: 'B' },\n    { id: 3, priority: 'low', title: 'C' }\n  ];\n  const sorted = sortByPriority(tasks);\n  // BUG: strictEqual does not work for comparing arrays/objects.\n  // This will always fail because it compares references, not contents.\n  // Should use deepStrictEqual for array comparison.\n  assert.strictEqual(sorted.map(t => t.id), [2, 1, 3]);\n});\n"
       }
     ],
     "cleanBefore": true
@@ -34,34 +34,81 @@
   "objectives": [
     {
       "id": "obj-1",
-      "description": "Fix capitalize to only uppercase first letter",
+      "description": "Fix sortByPriority to not mutate the original array (use spread or slice before sort)",
       "type": "file_contains",
-      "target": "stringUtils.js",
-      "pattern": "charAt\\(0\\).*toUpperCase|\\[0\\].*toUpperCase|slice\\(1\\).*toLowerCase",
+      "target": "taskManager.js",
+      "pattern": "\\[\\.\\.\\.(tasks|t)\\]\\.sort|tasks\\.slice\\(\\)\\.sort|Array\\.from\\(tasks\\)\\.sort|structuredClone",
       "required": true
     },
     {
       "id": "obj-2",
-      "description": "Fix reverse to return string not array",
+      "description": "Fix completeTask to return a new object instead of mutating the original",
       "type": "file_contains",
-      "target": "stringUtils.js",
-      "pattern": "\\.join\\(",
+      "target": "taskManager.js",
+      "pattern": "\\{\\s*\\.\\.\\.task|Object\\.assign\\(\\{\\}|structuredClone",
       "required": true
     },
     {
       "id": "obj-3",
-      "description": "Fix truncate to add ellipsis",
+      "description": "Fix findByTag to do case-insensitive comparison (toLowerCase or toUpperCase)",
       "type": "file_contains",
-      "target": "stringUtils.js",
-      "pattern": "\\.\\.\\.|ellipsis|\\+ '\\.\\.\\.'",
+      "target": "taskManager.js",
+      "pattern": "toLowerCase|toUpperCase|[Ii]gnore[Cc]ase",
       "required": true
     },
     {
       "id": "obj-4",
-      "description": "Fix countWords to handle multiple spaces and empty strings",
+      "description": "Fix updatePriority to throw an Error for invalid priorities",
       "type": "file_contains",
-      "target": "stringUtils.js",
-      "pattern": "filter|trim|\\s+|split.*\\/",
+      "target": "taskManager.js",
+      "pattern": "throw\\s+new\\s+Error",
+      "required": true
+    },
+    {
+      "id": "obj-5",
+      "description": "Fix removeDuplicates logic (filter keeps items NOT in seen set)",
+      "type": "file_contains",
+      "target": "taskManager.js",
+      "pattern": "!seen\\.has|return false[\\s\\S]*?return true|seen\\.has\\(task\\.id\\)\\)\\s*\\{\\s*return false",
+      "required": true
+    },
+    {
+      "id": "obj-6",
+      "description": "Update the outdated getTaskSummary test to use new field names (pending, done, inProgress)",
+      "type": "file_contains",
+      "target": "taskManager.test.js",
+      "pattern": "summary\\.pending|summary\\.done|summary\\.inProgress",
+      "required": true
+    },
+    {
+      "id": "obj-7",
+      "description": "Fix test 10 to use deepStrictEqual instead of strictEqual for array comparison",
+      "type": "file_contains",
+      "target": "taskManager.test.js",
+      "pattern": "deepStrictEqual\\(sorted\\.map",
+      "required": true
+    },
+    {
+      "id": "obj-8",
+      "description": "Create test-analysis.md documenting each test failure",
+      "type": "file_exists",
+      "target": "test-analysis.md",
+      "required": true
+    },
+    {
+      "id": "obj-9",
+      "description": "test-analysis.md documents root causes (code bug, outdated test, wrong assertion)",
+      "type": "file_contains",
+      "target": "test-analysis.md",
+      "pattern": "mutate|mutating|immutable|case.insensitive|throw|outdated|assertion|deepStrictEqual|strictEqual",
+      "required": true
+    },
+    {
+      "id": "obj-10",
+      "description": "All tests pass",
+      "type": "command_output_contains",
+      "command": "cd ~/dojo-workspace/challenge-05-004 && npm test 2>&1",
+      "pattern": "tests passed|pass.*\\d|# pass",
       "required": true
     }
   ],
@@ -69,46 +116,58 @@
   "bonusObjectives": [
     {
       "id": "bonus-1",
-      "description": "All tests pass when run",
-      "type": "command_output_contains",
-      "command": "cd ~/dojo-workspace/challenge-05-004 && node --test 2>&1 | grep -E 'pass|ok' | head -1",
-      "pattern": "pass|ok",
-      "xpBonus": 75
+      "description": "test-analysis.md categorizes each failure (code bug vs outdated test vs wrong assertion)",
+      "type": "file_contains",
+      "target": "test-analysis.md",
+      "pattern": "code bug|outdated test|wrong assertion|fix code|fix test|update test",
+      "xpBonus": 50
+    },
+    {
+      "id": "bonus-2",
+      "description": "test-analysis.md documents all 6 failing tests by name",
+      "type": "file_contains",
+      "target": "test-analysis.md",
+      "pattern": "sortByPriority|completeTask|getTaskSummary|findByTag|updatePriority|removeDuplicates",
+      "xpBonus": 25
     }
   ],
 
   "hints": [
     {
       "level": 1,
-      "text": "Run the tests first to see what's failing and why.",
+      "text": "Run `npm test` and look at all 6 failures. For each one, compare actual vs expected. Then check the function's JSDoc comment -- it tells you what the function SHOULD do. If the test matches the JSDoc but the code doesn't, fix the code. If the test contradicts the JSDoc, fix the test.",
       "xpCost": 20
     },
     {
       "level": 2,
-      "text": "Try: 'Run the tests with npm test and fix the failing code in stringUtils.js'",
+      "text": "The 6 failures break down as: (1) sortByPriority mutates the original array -- use [...tasks].sort() instead of tasks.sort(). (2) completeTask mutates the input -- use { ...task, status: 'done' }. (3) getTaskSummary test uses old field names (completed/incomplete) -- update to pending/done/inProgress. (4) findByTag doesn't do case-insensitive comparison. (5) updatePriority silently defaults instead of throwing. (6) Test 10 uses strictEqual on arrays -- change to deepStrictEqual.",
       "xpCost": 60
     },
     {
       "level": 3,
-      "text": "Ask: 'Run npm test to see failures. Fix stringUtils.js: capitalize should only uppercase first letter, reverse should return a string, truncate should add ellipsis, countWords should handle multiple spaces and empty strings.'",
+      "text": "Fix code bugs: sortByPriority: `return [...tasks].sort(...)`. completeTask: `return { ...task, status: 'done', completedAt: ... }`. findByTag: compare `tag.toLowerCase()` to `t.tags.map(t => t.toLowerCase())`. updatePriority: `throw new Error('Invalid priority')`. removeDuplicates: swap true/false in the filter. Fix tests: getTaskSummary test: check summary.pending, summary.done, summary.inProgress. Test 10: change strictEqual to deepStrictEqual.",
       "xpCost": 115
     }
   ],
 
   "solution": {
-    "approach": "Run tests, interpret error messages, and fix the implementation.",
-    "example": "Run the tests and fix all the failing functions in stringUtils.js",
+    "approach": "Run all tests, categorize each failure as code bug / outdated test / wrong assertion, fix one at a time re-running after each, create test-analysis.md documenting each failure.",
+    "example": "Run npm test, analyze all 6 failures, fix 3 code bugs + 2 outdated tests + 1 wrong assertion, create test-analysis.md",
     "alternativeApproaches": [
-      "Make all tests pass by fixing the code",
-      "Debug the test failures and fix the implementations"
+      "Ask Claude Code: 'Run the tests, analyze each failure, determine if the code or test needs fixing, fix them all, and create test-analysis.md'",
+      "Read each test and its corresponding function to understand the intended behavior before running anything"
     ]
   },
 
   "learningPoints": [
-    "Test output tells you what's expected vs actual",
-    "Fix code to match specifications, not tests to match broken code",
-    "Claude Code can run tests and interpret failures"
+    "Test failures tell you exactly what went wrong: read actual vs expected carefully before diving into code",
+    "Not all test failures mean the code is wrong -- sometimes the test is outdated or uses the wrong assertion type",
+    "Array.sort() mutates the original array in JavaScript -- always use [...arr].sort() to avoid mutation",
+    "Object mutation bugs are subtle: assigning to obj.prop modifies the original, use spread { ...obj } for immutability",
+    "strictEqual compares by reference for objects and arrays -- use deepStrictEqual to compare contents",
+    "Fix one test at a time and re-run all tests after each fix to catch regressions",
+    "Documenting why each test failed (and whether you fixed code or test) builds diagnostic skill"
   ],
 
-  "nextChallenge": "11-001"
+  "nextChallenge": "06-001"
 }

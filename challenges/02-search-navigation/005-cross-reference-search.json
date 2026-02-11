@@ -2,50 +2,90 @@
   "id": "02-005",
   "module": "search-navigation",
   "title": "Cross-Reference Search",
-  "description": "Learn to find all usages of a function or variable across a codebase. This is essential for understanding impact before making changes.",
+  "description": "Learn advanced cross-referencing techniques: finding all usages of a symbol, building dependency graphs, identifying dead code (unused exports), and performing reverse lookups across a codebase.",
   "difficulty": "intermediate",
   "xpReward": 225,
-  "estimatedMinutes": 10,
-  "skills": ["reference-search", "impact-analysis"],
+  "estimatedMinutes": 15,
+  "skills": ["cross-referencing", "dependency-analysis", "dead-code-detection", "impact-analysis"],
 
   "setup": {
     "workingDir": "~/dojo-workspace/challenge-02-005",
     "initialFiles": [
       {
         "path": "README.md",
-        "content": "# Challenge: Cross-Reference Search\n\nYou need to rename the `getUserData` function. First, find all places it's used!\n\n## Objectives\n1. Find all files that use `getUserData`\n2. Find all files that use the `API_BASE_URL` constant\n3. Create impact-report.md listing all usages\n"
+        "content": "# Challenge 02-005: Cross-Reference Search\n\n## What You Will Learn\n\nThis is the capstone challenge for the Search & Navigation module. You will\ncombine everything you have learned to perform **cross-reference analysis**:\nfinding all relationships between modules, identifying unused code, and\nbuilding a complete picture of how a codebase is connected.\n\n## Cross-Referencing: The Key Skill\n\nCross-referencing means answering questions like:\n- \"Who calls this function?\" (reverse lookup)\n- \"What does this module depend on?\" (forward lookup)\n- \"Is this export used anywhere?\" (dead code detection)\n- \"What would break if I changed this?\" (impact analysis)\n\n## Finding All Usages of a Symbol\n\nTo find every usage of a function, class, or constant:\n\n```\n# Step 1: Find all files mentioning the symbol\nGrep pattern=\"symbolName\" output_mode=\"files_with_matches\"\n\n# Step 2: See the actual usage context\nGrep pattern=\"symbolName\" output_mode=\"content\" -C=2\n\n# Step 3: Count usages per file\nGrep pattern=\"symbolName\" output_mode=\"count\"\n```\n\nImportant: Distinguish between these types of mentions:\n- **Import statement**: `const { symbolName } = require(...)` - this file USES it\n- **Export statement**: `module.exports = { symbolName }` - this file PROVIDES it\n- **Call/usage**: `symbolName(args)` or `symbolName.method()` - actual usage\n- **Definition**: `function symbolName()` - where it is created\n\n## Building a Dependency Graph\n\nA dependency graph shows \"what imports what\". Build one by:\n\n1. For each file, search for its `require()` or `import` statements\n2. Map which modules it depends on\n3. Draw the relationships:\n\n```\napp.js\n  -> routes/books.js\n     -> controllers/BookController.js\n        -> services/BookService.js\n  -> routes/users.js\n     -> controllers/UserController.js\n```\n\nThe direction of arrows shows dependency: A -> B means \"A depends on B\".\n\n## Finding Dead Code (Unused Exports)\n\nDead code = exports that no other file imports. To find it:\n\n1. **List all exports**: Search each file for `module.exports` or `export`\n2. **For each exported symbol**: Search the entire codebase for imports of it\n3. **If no file imports it**: That export is dead code\n\nExample workflow:\n```\n# Find what utils.js exports\nGrep pattern=\"module.exports\" path=\"src/utils.js\" output_mode=\"content\"\n-> module.exports = { formatDate, parseDate, validateDate, convertTimezone }\n\n# Check each export\nGrep pattern=\"formatDate\" -> found in 3 files (ALIVE)\nGrep pattern=\"parseDate\" -> found in 1 file (ALIVE)\nGrep pattern=\"validateDate\" -> found only in utils.js itself (DEAD!)\nGrep pattern=\"convertTimezone\" -> found only in utils.js itself (DEAD!)\n```\n\n## Reverse Lookups: \"Who depends on this?\"\n\nTo find everything that depends on a specific module:\n\n```\n# Who imports from the config module?\nGrep pattern=\"require.*config|import.*config\" output_mode=\"content\"\n\n# Who calls the database connection?\nGrep pattern=\"db\\.connect|db\\.query\" output_mode=\"files_with_matches\"\n```\n\n## Combining Multiple Search Passes\n\nComplex analysis requires multiple searches combined:\n\n**Question**: \"What is the full impact of changing the User model?\"\n\n```\nPass 1: Who imports User model?\n  -> UserService, UserController (via service)\n\nPass 2: Who imports those files?\n  -> routes/users.js imports UserController\n  -> app.js imports routes/users.js\n\nPass 3: What tests cover User functionality?\n  -> tests/user.test.js, tests/integration.test.js\n```\n\nResult: Changing User model could affect 5+ files across 3 layers.\n\n## Your Task\n\nThis workspace contains a project management application. Some exports are\nunused (dead code), and the dependency relationships are complex.\n\nCreate `dependency-analysis.md` with:\n\n1. **Export inventory**: For each utility/helper file, list ALL exports\n2. **Usage analysis**: For each export, list which files use it\n3. **Dead code report**: Identify exports that are NEVER imported by any other file\n4. **Dependency graph**: Draw the dependency tree showing what imports what\n5. **Impact analysis**: If you were to modify the `formatDate` function,\n   which files would potentially be affected?\n"
       },
       {
-        "path": "src/config.js",
-        "content": "// Application configuration\nconst API_BASE_URL = 'https://api.example.com';\nconst TIMEOUT = 5000;\nconst MAX_RETRIES = 3;\n\nmodule.exports = { API_BASE_URL, TIMEOUT, MAX_RETRIES };\n"
+        "path": "package.json",
+        "content": "{\n  \"name\": \"project-manager\",\n  \"version\": \"1.0.0\",\n  \"main\": \"src/index.js\"\n}\n"
       },
       {
-        "path": "src/api/client.js",
-        "content": "const { API_BASE_URL, TIMEOUT } = require('../config');\n\nasync function fetchData(endpoint) {\n  const response = await fetch(`${API_BASE_URL}${endpoint}`, {\n    timeout: TIMEOUT\n  });\n  return response.json();\n}\n\nmodule.exports = { fetchData };\n"
+        "path": "src/index.js",
+        "content": "const app = require('./app');\n\napp.listen(3000, () => {\n  console.log('Project Manager API running on port 3000');\n});\n"
       },
       {
-        "path": "src/api/userApi.js",
-        "content": "const { API_BASE_URL } = require('../config');\nconst { fetchData } = require('./client');\n\nasync function getUserData(userId) {\n  return fetchData(`/users/${userId}`);\n}\n\nasync function updateUser(userId, data) {\n  const response = await fetch(`${API_BASE_URL}/users/${userId}`, {\n    method: 'PUT',\n    body: JSON.stringify(data)\n  });\n  return response.json();\n}\n\nmodule.exports = { getUserData, updateUser };\n"
+        "path": "src/app.js",
+        "content": "const express = require('express');\nconst projectRoutes = require('./routes/projects');\nconst taskRoutes = require('./routes/tasks');\nconst teamRoutes = require('./routes/teams');\n\nconst app = express();\napp.use(express.json());\napp.use('/api/projects', projectRoutes);\napp.use('/api/tasks', taskRoutes);\napp.use('/api/teams', teamRoutes);\n\nmodule.exports = app;\n"
       },
       {
-        "path": "src/services/profileService.js",
-        "content": "const { getUserData } = require('../api/userApi');\n\nasync function loadUserProfile(userId) {\n  const userData = await getUserData(userId);\n  return {\n    name: userData.name,\n    email: userData.email,\n    avatar: userData.avatar\n  };\n}\n\nmodule.exports = { loadUserProfile };\n"
+        "path": "src/utils/format.js",
+        "content": "/**\n * Format a date as YYYY-MM-DD\n */\nfunction formatDate(date) {\n  return date.toISOString().split('T')[0];\n}\n\n/**\n * Format a date as a human-readable string\n */\nfunction formatDateLong(date) {\n  return date.toLocaleDateString('en-US', {\n    year: 'numeric', month: 'long', day: 'numeric'\n  });\n}\n\n/**\n * Format a duration in milliseconds as \"Xd Yh Zm\"\n */\nfunction formatDuration(ms) {\n  const days = Math.floor(ms / 86400000);\n  const hours = Math.floor((ms % 86400000) / 3600000);\n  const minutes = Math.floor((ms % 3600000) / 60000);\n  return `${days}d ${hours}h ${minutes}m`;\n}\n\n/**\n * Format bytes as human-readable size\n */\nfunction formatBytes(bytes) {\n  const units = ['B', 'KB', 'MB', 'GB'];\n  let i = 0;\n  while (bytes >= 1024 && i < units.length - 1) {\n    bytes /= 1024;\n    i++;\n  }\n  return `${bytes.toFixed(1)} ${units[i]}`;\n}\n\n/**\n * Format a percentage value\n */\nfunction formatPercent(value) {\n  return `${(value * 100).toFixed(1)}%`;\n}\n\nmodule.exports = { formatDate, formatDateLong, formatDuration, formatBytes, formatPercent };\n"
       },
       {
-        "path": "src/services/dashboardService.js",
-        "content": "const { getUserData } = require('../api/userApi');\nconst { getOrderHistory } = require('../api/orderApi');\n\nasync function loadDashboard(userId) {\n  const user = await getUserData(userId);\n  const orders = await getOrderHistory(userId);\n  return { user, orders };\n}\n\nmodule.exports = { loadDashboard };\n"
+        "path": "src/utils/validation.js",
+        "content": "function isValidEmail(email) {\n  return /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email);\n}\n\nfunction isNotEmpty(value) {\n  return value !== null && value !== undefined && String(value).trim().length > 0;\n}\n\nfunction isValidDate(dateStr) {\n  const date = new Date(dateStr);\n  return !isNaN(date.getTime());\n}\n\nfunction isValidPriority(priority) {\n  return ['low', 'medium', 'high', 'critical'].includes(priority);\n}\n\nfunction isValidStatus(status) {\n  return ['todo', 'in-progress', 'review', 'done'].includes(status);\n}\n\nmodule.exports = { isValidEmail, isNotEmpty, isValidDate, isValidPriority, isValidStatus };\n"
       },
       {
-        "path": "src/api/orderApi.js",
-        "content": "const { API_BASE_URL } = require('../config');\n\nasync function getOrderHistory(userId) {\n  const response = await fetch(`${API_BASE_URL}/users/${userId}/orders`);\n  return response.json();\n}\n\nmodule.exports = { getOrderHistory };\n"
+        "path": "src/utils/helpers.js",
+        "content": "const { formatDate } = require('./format');\n\nfunction generateId() {\n  return Date.now().toString(36) + Math.random().toString(36).slice(2);\n}\n\nfunction slugify(text) {\n  return text.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');\n}\n\nfunction calculateDaysRemaining(deadline) {\n  const now = new Date();\n  const end = new Date(deadline);\n  const diff = end - now;\n  return Math.ceil(diff / 86400000);\n}\n\nfunction summarizeProject(project) {\n  const total = project.tasks.length;\n  const done = project.tasks.filter(t => t.status === 'done').length;\n  return {\n    name: project.name,\n    progress: `${done}/${total}`,\n    deadline: formatDate(new Date(project.deadline)),\n    daysRemaining: calculateDaysRemaining(project.deadline)\n  };\n}\n\nfunction deepClone(obj) {\n  return JSON.parse(JSON.stringify(obj));\n}\n\nfunction debounce(fn, delay) {\n  let timer;\n  return (...args) => {\n    clearTimeout(timer);\n    timer = setTimeout(() => fn(...args), delay);\n  };\n}\n\nmodule.exports = { generateId, slugify, calculateDaysRemaining, summarizeProject, deepClone, debounce };\n"
       },
       {
-        "path": "src/components/UserCard.js",
-        "content": "const { getUserData } = require('../api/userApi');\n\nclass UserCard {\n  constructor(userId) {\n    this.userId = userId;\n  }\n\n  async render() {\n    const user = await getUserData(this.userId);\n    return `<div class=\"user-card\">${user.name}</div>`;\n  }\n}\n\nmodule.exports = UserCard;\n"
+        "path": "src/routes/projects.js",
+        "content": "const router = require('express').Router();\nconst ProjectController = require('../controllers/ProjectController');\n\nrouter.get('/', ProjectController.getAll);\nrouter.get('/:id', ProjectController.getById);\nrouter.get('/:id/summary', ProjectController.getSummary);\nrouter.post('/', ProjectController.create);\nrouter.put('/:id', ProjectController.update);\nrouter.delete('/:id', ProjectController.remove);\n\nmodule.exports = router;\n"
       },
       {
-        "path": "tests/userApi.test.js",
-        "content": "const { getUserData, updateUser } = require('../src/api/userApi');\n\ndescribe('userApi', () => {\n  test('getUserData returns user', async () => {\n    const user = await getUserData('123');\n    expect(user).toBeDefined();\n  });\n});\n"
+        "path": "src/routes/tasks.js",
+        "content": "const router = require('express').Router();\nconst TaskController = require('../controllers/TaskController');\n\nrouter.get('/', TaskController.getAll);\nrouter.get('/:id', TaskController.getById);\nrouter.post('/', TaskController.create);\nrouter.put('/:id', TaskController.update);\nrouter.put('/:id/status', TaskController.updateStatus);\nrouter.delete('/:id', TaskController.remove);\n\nmodule.exports = router;\n"
+      },
+      {
+        "path": "src/routes/teams.js",
+        "content": "const router = require('express').Router();\nconst TeamController = require('../controllers/TeamController');\n\nrouter.get('/', TeamController.getAll);\nrouter.get('/:id', TeamController.getById);\nrouter.post('/', TeamController.create);\nrouter.post('/:id/members', TeamController.addMember);\n\nmodule.exports = router;\n"
+      },
+      {
+        "path": "src/controllers/ProjectController.js",
+        "content": "const ProjectService = require('../services/ProjectService');\n\nclass ProjectController {\n  static async getAll(req, res) {\n    const projects = await ProjectService.findAll();\n    res.json({ data: projects });\n  }\n\n  static async getById(req, res) {\n    const project = await ProjectService.findById(req.params.id);\n    if (!project) return res.status(404).json({ error: 'Project not found' });\n    res.json({ data: project });\n  }\n\n  static async getSummary(req, res) {\n    const summary = await ProjectService.getProjectSummary(req.params.id);\n    if (!summary) return res.status(404).json({ error: 'Project not found' });\n    res.json({ data: summary });\n  }\n\n  static async create(req, res) {\n    const project = await ProjectService.create(req.body);\n    res.status(201).json({ data: project });\n  }\n\n  static async update(req, res) {\n    const project = await ProjectService.update(req.params.id, req.body);\n    if (!project) return res.status(404).json({ error: 'Project not found' });\n    res.json({ data: project });\n  }\n\n  static async remove(req, res) {\n    await ProjectService.remove(req.params.id);\n    res.status(204).send();\n  }\n}\n\nmodule.exports = ProjectController;\n"
+      },
+      {
+        "path": "src/controllers/TaskController.js",
+        "content": "const TaskService = require('../services/TaskService');\n\nclass TaskController {\n  static async getAll(req, res) {\n    const tasks = await TaskService.findAll(req.query);\n    res.json({ data: tasks });\n  }\n\n  static async getById(req, res) {\n    const task = await TaskService.findById(req.params.id);\n    if (!task) return res.status(404).json({ error: 'Task not found' });\n    res.json({ data: task });\n  }\n\n  static async create(req, res) {\n    const task = await TaskService.create(req.body);\n    res.status(201).json({ data: task });\n  }\n\n  static async update(req, res) {\n    const task = await TaskService.update(req.params.id, req.body);\n    if (!task) return res.status(404).json({ error: 'Task not found' });\n    res.json({ data: task });\n  }\n\n  static async updateStatus(req, res) {\n    const task = await TaskService.updateStatus(req.params.id, req.body.status);\n    if (!task) return res.status(404).json({ error: 'Task not found' });\n    res.json({ data: task });\n  }\n\n  static async remove(req, res) {\n    await TaskService.remove(req.params.id);\n    res.status(204).send();\n  }\n}\n\nmodule.exports = TaskController;\n"
+      },
+      {
+        "path": "src/controllers/TeamController.js",
+        "content": "const TeamService = require('../services/TeamService');\n\nclass TeamController {\n  static async getAll(req, res) {\n    const teams = await TeamService.findAll();\n    res.json({ data: teams });\n  }\n\n  static async getById(req, res) {\n    const team = await TeamService.findById(req.params.id);\n    if (!team) return res.status(404).json({ error: 'Team not found' });\n    res.json({ data: team });\n  }\n\n  static async create(req, res) {\n    const team = await TeamService.create(req.body);\n    res.status(201).json({ data: team });\n  }\n\n  static async addMember(req, res) {\n    const team = await TeamService.addMember(req.params.id, req.body);\n    if (!team) return res.status(404).json({ error: 'Team not found' });\n    res.json({ data: team });\n  }\n}\n\nmodule.exports = TeamController;\n"
+      },
+      {
+        "path": "src/services/ProjectService.js",
+        "content": "const { generateId, summarizeProject } = require('../utils/helpers');\nconst { isNotEmpty, isValidDate } = require('../utils/validation');\nconst { formatDate } = require('../utils/format');\n\nlet projects = [];\n\nclass ProjectService {\n  static async findAll() {\n    return projects;\n  }\n\n  static async findById(id) {\n    return projects.find(p => p.id === id) || null;\n  }\n\n  static async getProjectSummary(id) {\n    const project = projects.find(p => p.id === id);\n    if (!project) return null;\n    return summarizeProject(project);\n  }\n\n  static async create(data) {\n    if (!isNotEmpty(data.name)) throw new Error('Name is required');\n    if (data.deadline && !isValidDate(data.deadline)) throw new Error('Invalid deadline');\n    const project = {\n      id: generateId(),\n      name: data.name,\n      description: data.description || '',\n      deadline: data.deadline || null,\n      createdAt: formatDate(new Date()),\n      tasks: []\n    };\n    projects.push(project);\n    return project;\n  }\n\n  static async update(id, data) {\n    const index = projects.findIndex(p => p.id === id);\n    if (index === -1) return null;\n    projects[index] = { ...projects[index], ...data };\n    return projects[index];\n  }\n\n  static async remove(id) {\n    projects = projects.filter(p => p.id !== id);\n  }\n}\n\nmodule.exports = ProjectService;\n"
+      },
+      {
+        "path": "src/services/TaskService.js",
+        "content": "const { generateId } = require('../utils/helpers');\nconst { isNotEmpty, isValidPriority, isValidStatus } = require('../utils/validation');\nconst { formatDate } = require('../utils/format');\n\nlet tasks = [];\n\nclass TaskService {\n  static async findAll(filters = {}) {\n    let result = tasks;\n    if (filters.projectId) result = result.filter(t => t.projectId === filters.projectId);\n    if (filters.status) result = result.filter(t => t.status === filters.status);\n    if (filters.priority) result = result.filter(t => t.priority === filters.priority);\n    return result;\n  }\n\n  static async findById(id) {\n    return tasks.find(t => t.id === id) || null;\n  }\n\n  static async create(data) {\n    if (!isNotEmpty(data.title)) throw new Error('Title is required');\n    if (data.priority && !isValidPriority(data.priority)) {\n      throw new Error('Invalid priority');\n    }\n    const task = {\n      id: generateId(),\n      title: data.title,\n      description: data.description || '',\n      status: 'todo',\n      priority: data.priority || 'medium',\n      projectId: data.projectId,\n      assigneeId: data.assigneeId || null,\n      createdAt: formatDate(new Date())\n    };\n    tasks.push(task);\n    return task;\n  }\n\n  static async update(id, data) {\n    const index = tasks.findIndex(t => t.id === id);\n    if (index === -1) return null;\n    tasks[index] = { ...tasks[index], ...data };\n    return tasks[index];\n  }\n\n  static async updateStatus(id, status) {\n    if (!isValidStatus(status)) throw new Error('Invalid status');\n    const index = tasks.findIndex(t => t.id === id);\n    if (index === -1) return null;\n    tasks[index].status = status;\n    return tasks[index];\n  }\n\n  static async remove(id) {\n    tasks = tasks.filter(t => t.id !== id);\n  }\n}\n\nmodule.exports = TaskService;\n"
+      },
+      {
+        "path": "src/services/TeamService.js",
+        "content": "const { generateId, slugify } = require('../utils/helpers');\nconst { isNotEmpty, isValidEmail } = require('../utils/validation');\n\nlet teams = [];\n\nclass TeamService {\n  static async findAll() {\n    return teams;\n  }\n\n  static async findById(id) {\n    return teams.find(t => t.id === id) || null;\n  }\n\n  static async create(data) {\n    if (!isNotEmpty(data.name)) throw new Error('Team name is required');\n    const team = {\n      id: generateId(),\n      name: data.name,\n      slug: slugify(data.name),\n      members: []\n    };\n    teams.push(team);\n    return team;\n  }\n\n  static async addMember(teamId, memberData) {\n    const team = teams.find(t => t.id === teamId);\n    if (!team) return null;\n    if (!isValidEmail(memberData.email)) throw new Error('Valid email required');\n    team.members.push({\n      id: generateId(),\n      name: memberData.name,\n      email: memberData.email,\n      role: memberData.role || 'member'\n    });\n    return team;\n  }\n}\n\nmodule.exports = TeamService;\n"
+      },
+      {
+        "path": "tests/projects.test.js",
+        "content": "const ProjectService = require('../src/services/ProjectService');\n\ndescribe('ProjectService', () => {\n  test('create project', async () => {\n    const project = await ProjectService.create({\n      name: 'Test Project',\n      deadline: '2025-12-31'\n    });\n    expect(project.id).toBeDefined();\n    expect(project.name).toBe('Test Project');\n  });\n});\n"
+      },
+      {
+        "path": "tests/tasks.test.js",
+        "content": "const TaskService = require('../src/services/TaskService');\n\ndescribe('TaskService', () => {\n  test('create task', async () => {\n    const task = await TaskService.create({\n      title: 'Test Task',\n      priority: 'high',\n      projectId: 'p1'\n    });\n    expect(task.id).toBeDefined();\n    expect(task.status).toBe('todo');\n  });\n});\n"
+      },
+      {
+        "path": "tests/helpers.test.js",
+        "content": "const { generateId, slugify, calculateDaysRemaining } = require('../src/utils/helpers');\n\ndescribe('helpers', () => {\n  test('generateId returns unique ids', () => {\n    const id1 = generateId();\n    const id2 = generateId();\n    expect(id1).not.toBe(id2);\n  });\n\n  test('slugify converts text', () => {\n    expect(slugify('Hello World')).toBe('hello-world');\n    expect(slugify('My Project!')).toBe('my-project');\n  });\n\n  test('calculateDaysRemaining returns number', () => {\n    const future = new Date();\n    future.setDate(future.getDate() + 10);\n    const days = calculateDaysRemaining(future.toISOString());\n    expect(days).toBe(10);\n  });\n});\n"
       }
     ],
     "cleanBefore": true
@@ -54,25 +94,49 @@
   "objectives": [
     {
       "id": "obj-1",
-      "description": "Create impact-report.md",
+      "description": "Create dependency-analysis.md with the full analysis",
       "type": "file_exists",
-      "target": "impact-report.md",
+      "target": "dependency-analysis.md",
       "required": true
     },
     {
       "id": "obj-2",
-      "description": "List files using getUserData (at least 4)",
+      "description": "List exports from utils/format.js - must mention formatDate, formatDateLong, formatDuration, formatBytes, formatPercent",
       "type": "file_contains",
-      "target": "impact-report.md",
-      "pattern": "profileService|dashboardService|UserCard|userApi\\.test",
+      "target": "dependency-analysis.md",
+      "pattern": "formatDate.*formatDateLong.*formatDuration|formatBytes.*formatPercent",
       "required": true
     },
     {
       "id": "obj-3",
-      "description": "List files using API_BASE_URL (at least 3)",
+      "description": "Identify dead exports - must identify formatDateLong and formatBytes as unused",
       "type": "file_contains",
-      "target": "impact-report.md",
-      "pattern": "client\\.js.*userApi|userApi.*orderApi|API_BASE_URL",
+      "target": "dependency-analysis.md",
+      "pattern": "formatDateLong.*(unused|dead|never|not used|no import)|formatBytes.*(unused|dead|never|not used|no import)|(unused|dead|never imported|not used).*formatDateLong",
+      "required": true
+    },
+    {
+      "id": "obj-4",
+      "description": "Identify dead exports from helpers.js - must identify deepClone and debounce as unused",
+      "type": "file_contains",
+      "target": "dependency-analysis.md",
+      "pattern": "deepClone.*(unused|dead|never|not used)|debounce.*(unused|dead|never|not used)|(unused|dead|never imported|not used).*deepClone",
+      "required": true
+    },
+    {
+      "id": "obj-5",
+      "description": "Document the dependency graph - must show services depending on utils",
+      "type": "file_contains",
+      "target": "dependency-analysis.md",
+      "pattern": "ProjectService.*helpers|TaskService.*format|TeamService.*helpers|depend",
+      "required": true
+    },
+    {
+      "id": "obj-6",
+      "description": "Document formatDate impact analysis - must mention helpers.js, ProjectService, and TaskService",
+      "type": "file_contains",
+      "target": "dependency-analysis.md",
+      "pattern": "formatDate.*(helpers|ProjectService|TaskService)|impact.*formatDate",
       "required": true
     }
   ],
@@ -80,45 +144,65 @@
   "bonusObjectives": [
     {
       "id": "bonus-1",
-      "description": "Include usage counts or summary statistics",
+      "description": "Also identify formatDuration and formatPercent as dead code in format.js",
       "type": "file_contains",
-      "target": "impact-report.md",
-      "pattern": "[0-9]+\\s*(file|usage|reference|time)|total|count",
-      "xpBonus": 50
+      "target": "dependency-analysis.md",
+      "pattern": "formatDuration.*(unused|dead|never)|formatPercent.*(unused|dead|never)",
+      "xpBonus": 25
+    },
+    {
+      "id": "bonus-2",
+      "description": "Identify that isValidDate from validation.js is only used by ProjectService",
+      "type": "file_contains",
+      "target": "dependency-analysis.md",
+      "pattern": "isValidDate.*ProjectService|ProjectService.*isValidDate",
+      "xpBonus": 25
+    },
+    {
+      "id": "bonus-3",
+      "description": "Include a visual dependency graph or tree representation",
+      "type": "file_contains",
+      "target": "dependency-analysis.md",
+      "pattern": "->|-->|=>|\\|.*-|---",
+      "xpBonus": 25
     }
   ],
 
   "hints": [
     {
       "level": 1,
-      "text": "Ask Claude Code to find all places where a function is used, not just where it's defined.",
+      "text": "Start by listing all exports. Read each utility file (utils/format.js, utils/validation.js, utils/helpers.js) and note every function in their module.exports. Then for each exported function, search the entire codebase to see if any other file references it. If a function only appears in the file that defines it, it is dead code.",
       "xpCost": 15
     },
     {
       "level": 2,
-      "text": "Try: 'Find all files that import or use getUserData' and 'Where is API_BASE_URL used?'",
+      "text": "Here is a systematic approach: (1) Read utils/format.js - exports: formatDate, formatDateLong, formatDuration, formatBytes, formatPercent. (2) For each, Grep the name across all files. formatDate appears in helpers.js, ProjectService, TaskService. formatDateLong appears only in format.js. formatDuration appears only in format.js. formatBytes appears only in format.js. formatPercent appears only in format.js. So formatDateLong, formatDuration, formatBytes, and formatPercent are dead code. (3) Repeat for validation.js and helpers.js exports.",
       "xpCost": 40
     },
     {
       "level": 3,
-      "text": "Ask: 'Search for all usages of getUserData and API_BASE_URL across the codebase. Create impact-report.md listing every file that references each one.'",
+      "text": "Ask Claude Code: 'Analyze all exports and their usage across this codebase. Create dependency-analysis.md with: (1) EXPORTS: Read utils/format.js (exports formatDate, formatDateLong, formatDuration, formatBytes, formatPercent), utils/validation.js (exports isValidEmail, isNotEmpty, isValidDate, isValidPriority, isValidStatus), and utils/helpers.js (exports generateId, slugify, calculateDaysRemaining, summarizeProject, deepClone, debounce). (2) USAGE: Grep for each exported function name to find which files use it. (3) DEAD CODE: formatDateLong, formatDuration, formatBytes, formatPercent are only in format.js (dead). deepClone and debounce are only in helpers.js (dead). calculateDaysRemaining is only used internally by summarizeProject. (4) DEPENDENCY GRAPH: Show routes -> controllers -> services -> utils chain. (5) IMPACT of changing formatDate: would affect helpers.js (summarizeProject uses it), ProjectService.js, and TaskService.js.'",
       "xpCost": 85
     }
   ],
 
   "solution": {
-    "approach": "Use cross-reference search to find all usages before refactoring.",
-    "example": "Find all usages of getUserData and API_BASE_URL, then create impact-report.md",
+    "approach": "Perform a systematic cross-reference analysis: (1) Read each utility file to catalog all exports. (2) For every exported symbol, use Grep to search the entire codebase for references. (3) Any export that appears only in its own file is dead code. (4) Build the dependency graph by searching for require/import statements in each file. (5) For impact analysis, trace formatDate through all files that import it, then trace those files to see who depends on them.",
+    "example": "Dead code found: In format.js: formatDateLong, formatDuration, formatBytes, formatPercent (4 dead exports). In helpers.js: deepClone, debounce (2 dead exports). In validation.js: all 5 exports are used by at least one service. formatDate impact: defined in format.js, imported by helpers.js (used in summarizeProject), ProjectService.js (used in create), TaskService.js (used in create). Changing formatDate would affect 3 files directly plus any files that depend on them.",
     "alternativeApproaches": [
-      "What files use getUserData? What files use API_BASE_URL? Document the impact.",
-      "Before I rename getUserData, show me all the places it's used"
+      "Start from the service files and trace backwards to see which utils they import, then check for unused ones",
+      "Use Grep count mode to quickly see how many references each function has across the codebase",
+      "Build a full import map first, then analyze it for dead ends"
     ]
   },
 
   "learningPoints": [
-    "Cross-reference search is essential before refactoring",
-    "Claude Code can find both imports and direct usages",
-    "Impact analysis prevents breaking changes"
+    "Cross-referencing combines multiple search passes to build a complete picture of code relationships",
+    "Dead code is found by checking if an export is imported by any other file in the codebase",
+    "A dependency graph shows the direction of imports: who depends on whom",
+    "Impact analysis traces a change through all its dependents to assess the blast radius",
+    "Utility files often accumulate dead code over time as features are removed but exports are not cleaned up",
+    "Searching for a symbol name across all files reveals its complete usage pattern: definition, export, import, and call sites"
   ],
 
   "nextChallenge": "03-001"

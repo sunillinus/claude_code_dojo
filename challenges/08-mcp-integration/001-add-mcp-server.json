@@ -2,22 +2,22 @@
   "id": "08-001",
   "module": "mcp-integration",
   "title": "Add an MCP Server",
-  "description": "Learn to add an MCP (Model Context Protocol) server to your Claude Code setup. MCP servers extend Claude's capabilities with external tools.",
+  "description": "Learn what the Model Context Protocol (MCP) is, how it extends Claude Code with external tools and data sources, and configure your first MCP server by creating a properly structured .mcp.json file.",
   "difficulty": "intermediate",
   "xpReward": 275,
-  "estimatedMinutes": 12,
-  "skills": ["mcp-basics", "server-configuration"],
+  "estimatedMinutes": 15,
+  "skills": ["mcp-basics", "server-configuration", "json-configuration"],
 
   "setup": {
     "workingDir": "~/dojo-workspace/challenge-08-001",
     "initialFiles": [
       {
         "path": "README.md",
-        "content": "# Challenge: Add an MCP Server\n\nConfigure an MCP server to extend Claude Code's capabilities.\n\n## Objectives\n1. Create a .mcp.json configuration file\n2. Configure the filesystem MCP server\n3. Verify the configuration is valid JSON\n"
+        "content": "# Challenge: Add an MCP Server\n\nLearn what MCP is, how it extends Claude Code, and configure your\nfirst MCP server.\n\n---\n\n## What Is MCP?\n\nMCP stands for **Model Context Protocol**. It is an open protocol that\nlets Claude Code connect to external tools and data sources. Think of\nit as a plugin system for Claude Code itself -- MCP servers give Claude\nnew abilities beyond its built-in tools.\n\nWithout MCP, Claude Code has a fixed set of tools: Read, Write, Edit,\nBash, Glob, Grep, WebFetch, WebSearch, and a few others. These are\npowerful, but they only cover general-purpose operations. What if you\nwant Claude to:\n\n- Browse a website and interact with it (click buttons, fill forms)?\n- Query a PostgreSQL database directly?\n- Manage GitHub issues and PRs without using the CLI?\n- Access a Figma design file?\n\nMCP makes all of this possible. Each MCP **server** exposes a set of\n**tools** that Claude Code can call, just like it calls its built-in\ntools. When you add an MCP server, its tools appear alongside Read,\nWrite, Edit, etc.\n\n## How MCP Tools Appear in Claude Code\n\nEvery MCP tool gets a namespaced name following this pattern:\n\n```\nmcp__<server-name>__<tool-name>\n```\n\nFor example, if you configure a server named `playwright`, its tools\nmight include:\n\n```\nmcp__playwright__browser_navigate\nmcp__playwright__browser_click\nmcp__playwright__browser_snapshot\nmcp__playwright__browser_type\n```\n\nClaude Code calls these tools exactly like built-in ones. You just ask\nClaude to do something, and if an MCP tool is the right fit, Claude\nwill use it automatically.\n\n## The .mcp.json Configuration File\n\nMCP servers are configured in a file called `.mcp.json`. This file\ntells Claude Code which servers to start and how to connect to them.\n\n### Where .mcp.json Lives\n\n| Location | Scope | Use Case |\n|----------|-------|----------|\n| Project root (`./.mcp.json`) | Project-specific | Tools needed for this project only |\n| Home directory (`~/.claude/.mcp.json`) | Global | Tools you want in every project |\n\nProject-level configuration is more common because different projects\nneed different tools.\n\n### Configuration Structure\n\nHere is the full structure of a `.mcp.json` file:\n\n```json\n{\n  \"mcpServers\": {\n    \"server-name\": {\n      \"command\": \"npx\",\n      \"args\": [\"-y\", \"@modelcontextprotocol/server-filesystem\", \"/path/to/dir\"],\n      \"env\": {\n        \"API_KEY\": \"your-key-here\"\n      }\n    }\n  }\n}\n```\n\nLet's break down each part:\n\n| Field | Required | Description |\n|-------|----------|-------------|\n| `mcpServers` | Yes | Top-level object containing all server configs |\n| Server name (key) | Yes | Identifier for this server (becomes part of tool names) |\n| `command` | Yes (for stdio) | The executable to run (e.g., `npx`, `node`, `python3`) |\n| `args` | No | Array of arguments passed to the command |\n| `env` | No | Environment variables passed to the server process |\n\n## Server Transport Types\n\nMCP servers communicate with Claude Code using one of two transport\nmechanisms:\n\n### stdio (Standard I/O) -- Most Common\n\nThe server runs as a local process on your machine. Claude Code\ncommunicates with it by writing to its stdin and reading from its\nstdout. This is the default and most common type.\n\n```json\n{\n  \"mcpServers\": {\n    \"filesystem\": {\n      \"command\": \"npx\",\n      \"args\": [\"-y\", \"@modelcontextprotocol/server-filesystem\", \"/Users/me/projects\"]\n    }\n  }\n}\n```\n\n### sse (Server-Sent Events)\n\nThe server runs remotely (or locally as a separate service) and Claude\nCode connects to it over HTTP using Server-Sent Events. This is used\nfor shared servers or cloud-hosted tools.\n\n```json\n{\n  \"mcpServers\": {\n    \"remote-db\": {\n      \"type\": \"sse\",\n      \"url\": \"https://mcp.example.com/db\"\n    }\n  }\n}\n```\n\n## Popular MCP Servers\n\nHere are some widely-used MCP servers you might encounter:\n\n| Server | Package | Purpose |\n|--------|---------|----------|\n| Filesystem | `@modelcontextprotocol/server-filesystem` | Read/write files in specified directories |\n| GitHub | `@modelcontextprotocol/server-github` | Manage repos, issues, PRs |\n| PostgreSQL | `@modelcontextprotocol/server-postgres` | Query PostgreSQL databases |\n| Playwright | `@anthropic/mcp-playwright` | Browser automation (navigate, click, screenshot) |\n| Fetch | `@modelcontextprotocol/server-fetch` | Make HTTP requests |\n\n## Security Considerations\n\nMCP servers run code on YOUR machine (for stdio) or connect to\nexternal services (for sse). This means:\n\n- **Only add servers you trust.** A malicious MCP server could read\n  your files, execute commands, or exfiltrate data.\n- **Scope file access.** The filesystem server takes a path argument\n  that limits which directories it can access. Always scope this to\n  the minimum needed.\n- **Protect API keys.** Use the `env` field for secrets rather than\n  hardcoding them in `args`. Better yet, reference environment\n  variables.\n- **Review server code** before running unfamiliar servers, especially\n  those not from the official `@modelcontextprotocol` org.\n- Claude Code prompts you for approval when an MCP tool tries to do\n  something potentially dangerous.\n\n## Multiple Servers\n\nYou can configure multiple MCP servers in a single `.mcp.json`:\n\n```json\n{\n  \"mcpServers\": {\n    \"filesystem\": {\n      \"command\": \"npx\",\n      \"args\": [\"-y\", \"@modelcontextprotocol/server-filesystem\", \"./src\"]\n    },\n    \"github\": {\n      \"command\": \"npx\",\n      \"args\": [\"-y\", \"@modelcontextprotocol/server-github\"],\n      \"env\": {\n        \"GITHUB_TOKEN\": \"ghp_xxxxxxxxxxxx\"\n      }\n    }\n  }\n}\n```\n\nEach server's tools are namespaced separately, so there are no\nnaming conflicts.\n\n---\n\n## Your Task\n\nDemonstrate your understanding of MCP by completing two deliverables:\n\n### 1. Create a `.mcp.json` Configuration File\n\nCreate a `.mcp.json` file that configures at least one MCP server.\nYour configuration should:\n- Use the correct top-level `mcpServers` structure\n- Define a server with a `command` and `args`\n- Include environment variables via the `env` field\n\n### 2. Create an `mcp-guide.md` Documentation File\n\nCreate an `mcp-guide.md` that explains MCP to someone who has never\nused it. Your guide should cover:\n- What MCP is and why it exists\n- How MCP extends Claude Code beyond its built-in tools\n- The `.mcp.json` configuration structure\n- The two server transport types (stdio vs sse)\n- Security considerations when adding MCP servers\n- How MCP tool names are formed (the namespacing pattern)\n\n## Objectives\n1. Create a valid `.mcp.json` configuration file\n2. Config uses the `mcpServers` top-level key\n3. Config defines a server with `command` and `args`\n4. Config includes an `env` field for environment variables\n5. Create `mcp-guide.md` explaining MCP concepts\n6. Guide covers what MCP is and how it extends Claude Code\n7. Guide explains the two transport types (stdio and sse)\n8. Guide addresses security considerations\n"
       },
       {
-        "path": "plugin.json",
-        "content": "{\n  \"name\": \"mcp-demo\",\n  \"version\": \"1.0.0\",\n  \"description\": \"MCP integration demo\"\n}\n"
+        "path": "project-files/app.js",
+        "content": "const express = require('express');\n\nfunction startServer(port) {\n  const app = express();\n  \n  app.get('/api/data', async (req, res) => {\n    const data = await fetchExternalData();\n    res.json(data);\n  });\n  \n  app.listen(port, () => console.log(`Server on ${port}`));\n}\n\nmodule.exports = { startServer };\n"
       }
     ],
     "cleanBefore": true
@@ -26,14 +26,14 @@
   "objectives": [
     {
       "id": "obj-1",
-      "description": "Create .mcp.json configuration",
+      "description": "Create the .mcp.json configuration file",
       "type": "file_exists",
       "target": ".mcp.json",
       "required": true
     },
     {
       "id": "obj-2",
-      "description": "Config has mcpServers key",
+      "description": "Config uses the mcpServers top-level key",
       "type": "file_contains",
       "target": ".mcp.json",
       "pattern": "mcpServers",
@@ -41,10 +41,57 @@
     },
     {
       "id": "obj-3",
-      "description": "Config defines at least one server",
+      "description": "Config defines a server with a command field",
       "type": "file_contains",
       "target": ".mcp.json",
-      "pattern": "command|type|url",
+      "pattern": "\"command\"",
+      "required": true
+    },
+    {
+      "id": "obj-4",
+      "description": "Config includes args for the server",
+      "type": "file_contains",
+      "target": ".mcp.json",
+      "pattern": "\"args\"",
+      "required": true
+    },
+    {
+      "id": "obj-5",
+      "description": "Config includes environment variables via env field",
+      "type": "file_contains",
+      "target": ".mcp.json",
+      "pattern": "\"env\"",
+      "required": true
+    },
+    {
+      "id": "obj-6",
+      "description": "Create the mcp-guide.md documentation file",
+      "type": "file_exists",
+      "target": "mcp-guide.md",
+      "required": true
+    },
+    {
+      "id": "obj-7",
+      "description": "Guide explains what MCP is and how it extends Claude Code",
+      "type": "file_contains",
+      "target": "mcp-guide.md",
+      "pattern": "[Mm]odel [Cc]ontext [Pp]rotocol|MCP.*extend|MCP.*tool|external.*tool",
+      "required": true
+    },
+    {
+      "id": "obj-8",
+      "description": "Guide covers both transport types (stdio and sse)",
+      "type": "file_contains",
+      "target": "mcp-guide.md",
+      "pattern": "stdio|[Ss]tandard [Ii]/[Oo]|stdin.*stdout",
+      "required": true
+    },
+    {
+      "id": "obj-9",
+      "description": "Guide addresses security considerations for MCP servers",
+      "type": "file_contains",
+      "target": "mcp-guide.md",
+      "pattern": "[Ss]ecur|[Tt]rust|[Mm]alicious|[Pp]ermission|[Aa]ccess control",
       "required": true
     }
   ],
@@ -52,18 +99,18 @@
   "bonusObjectives": [
     {
       "id": "bonus-1",
-      "description": "Configure filesystem server with allowed directories",
+      "description": "Config defines multiple MCP servers",
       "type": "file_contains",
       "target": ".mcp.json",
-      "pattern": "filesystem|allowedDirectories|args",
+      "pattern": "\"command\".*\"command\"|filesystem.*github|playwright.*fetch",
       "xpBonus": 50
     },
     {
       "id": "bonus-2",
-      "description": "Include environment variables configuration",
+      "description": "Guide explains the mcp__servername__toolname naming convention",
       "type": "file_contains",
-      "target": ".mcp.json",
-      "pattern": "env|environment",
+      "target": "mcp-guide.md",
+      "pattern": "mcp__.*__.*|mcp__servername__toolname|namespac",
       "xpBonus": 50
     }
   ],
@@ -71,34 +118,36 @@
   "hints": [
     {
       "level": 1,
-      "text": "MCP servers are configured in .mcp.json with the mcpServers key.",
+      "text": "Start with the .mcp.json file. The top-level key is 'mcpServers' and each server inside it needs at minimum a 'command' field. Think about what MCP server would be useful -- the filesystem server is the simplest example. For the guide, re-read the README and explain each concept in your own words.",
       "xpCost": 20
     },
     {
       "level": 2,
-      "text": "Try: 'Create a .mcp.json file that configures the filesystem MCP server'",
+      "text": "For .mcp.json: model it after the filesystem server example in the README. Use 'npx' as the command, '-y' and the package name as args, and add an 'env' field with at least one key. For mcp-guide.md: organize it with sections covering (1) what MCP is, (2) how tools are named, (3) config structure, (4) stdio vs sse, (5) security.",
       "xpCost": 55
     },
     {
       "level": 3,
-      "text": "Ask: 'Create .mcp.json with mcpServers configuration. Add a filesystem server using npx @anthropic/mcp-server-filesystem with args specifying allowed directories like the current workspace.'",
+      "text": "Create .mcp.json with: {\"mcpServers\": {\"filesystem\": {\"command\": \"npx\", \"args\": [\"-y\", \"@modelcontextprotocol/server-filesystem\", \"./project-files\"], \"env\": {\"DEBUG\": \"true\"}}}}. Then create mcp-guide.md with sections explaining: Model Context Protocol definition, how it adds tools prefixed with mcp__servername__toolname, the .mcp.json config file with command/args/env, stdio (local process) vs sse (remote HTTP), and security (only trust verified servers, scope file access, protect API keys).",
       "xpCost": 105
     }
   ],
 
   "solution": {
-    "approach": "Create a .mcp.json file with proper server configuration.",
-    "example": "Create .mcp.json configuring a filesystem MCP server",
+    "approach": "Create a .mcp.json with proper server configuration including command, args, and env fields. Then create mcp-guide.md covering MCP concepts: what it is, tool naming, config structure, transport types, and security.",
+    "example": "Create .mcp.json configuring a filesystem MCP server with env vars, then write mcp-guide.md explaining MCP fundamentals",
     "alternativeApproaches": [
-      "Add MCP server configuration for filesystem access",
-      "Set up .mcp.json with the Anthropic filesystem server"
+      "Configure a different MCP server like GitHub or Playwright instead of filesystem",
+      "Configure multiple servers in .mcp.json to demonstrate multi-server setups"
     ]
   },
 
   "learningPoints": [
-    "MCP servers are configured in .mcp.json",
-    "Each server has a name, command, and optional args/env",
-    "MCP extends Claude Code with external capabilities"
+    "MCP (Model Context Protocol) lets Claude Code connect to external tools and data sources beyond its built-in capabilities",
+    "MCP servers are configured in .mcp.json with the mcpServers top-level key, each server needing a command and optional args/env",
+    "MCP tools appear in Claude Code as mcp__servername__toolname, namespaced to avoid conflicts",
+    "Two transport types exist: stdio (local process, most common) and sse (remote HTTP via Server-Sent Events)",
+    "Security is critical: only add trusted servers, scope file access, protect API keys in env fields"
   ],
 
   "nextChallenge": "08-002"

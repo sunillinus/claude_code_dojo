@@ -2,26 +2,66 @@
   "id": "15-004",
   "module": "background-tasks",
   "title": "Orchestrate Parallel Workflows",
-  "description": "Combine background tasks and parallel execution to orchestrate complex workflows.",
+  "description": "Combine background execution and parallel tool calls to design complex workflows with fan-out, fan-in, and dependency chains -- the real-world pattern for maximizing throughput while respecting task ordering.",
   "difficulty": "advanced",
   "xpReward": 300,
   "estimatedMinutes": 15,
-  "skills": ["workflow-orchestration", "complex-tasks"],
+  "skills": ["workflow-orchestration", "dependency-analysis", "fan-out-fan-in", "complex-tasks"],
 
   "setup": {
     "workingDir": "~/dojo-workspace/challenge-15-004",
     "initialFiles": [
       {
         "path": "README.md",
-        "content": "# Challenge: Orchestrate Parallel Workflows\n\nOrchestrate a complex build and deploy workflow using parallel execution.\n\n## Workflow Requirements\n1. Run linting and tests in parallel (they're independent)\n2. If both pass, run build\n3. Generate deployment report\n\n## Available Scripts\n- lint: Runs ESLint\n- test: Runs tests\n- build: Builds the project\n"
+        "content": "# Challenge: Orchestrate Parallel Workflows\n\nCombine everything from the previous challenges -- background execution,\nparallel tool calls, and monitoring -- to design workflows that maximize\nthroughput while respecting dependencies.\n\n---\n\n## Why Orchestration Matters\n\nReal-world development tasks rarely consist of a single step. You often\nneed to analyze multiple modules, run multiple checks, and then combine\nresults. The order matters: some tasks can run simultaneously, while\nothers must wait for prerequisites.\n\nOrchestration is the skill of **planning which tasks run in parallel\nand which must be sequential**, then executing that plan efficiently.\n\n## Core Patterns\n\n### Fan-Out: One Task Spawns Many\n\nFan-out means launching multiple independent tasks from a single point.\nEach task runs in parallel, covering a different part of the work.\n\n```\n                    +--> [Analyze auth module]\n                    |\n[Start] -- fan-out --+--> [Analyze API module]\n                    |\n                    +--> [Analyze utils module]\n```\n\nIn Claude Code, fan-out looks like:\n- Multiple parallel tool calls (e.g., 3 Read calls in one message)\n- Multiple background Bash commands launched together\n- Multiple subagents launched with run_in_background: true\n\n### Fan-In: Many Results Converge\n\nFan-in means waiting for all parallel tasks to complete, then combining\ntheir results into a single output.\n\n```\n[Analyze auth module]  --+\n                         |\n[Analyze API module]   --+--> fan-in --> [Create combined report]\n                         |\n[Analyze utils module] --+\n```\n\nIn Claude Code, fan-in looks like:\n- Reading all output files from background tasks\n- Using TaskOutput(block: true) on each task to collect results\n- Reading multiple parallel results and synthesizing them\n\n### Dependency Chains: Sequential Steps\n\nSome tasks have strict ordering requirements. Task B cannot start\nuntil Task A completes because B needs A's output.\n\n```\n[Install dependencies] --> [Run build] --> [Run tests on build output]\n```\n\nIn Claude Code, dependency chains mean:\n- Wait for the prerequisite to complete (blocking or TaskOutput)\n- Use the result to inform the next step\n- Cannot parallelize across the dependency\n\n### Mixed Workflows: The Real Pattern\n\nMost real workflows combine all three patterns:\n\n```\n                         +--> [Lint]   --+\n[Install deps] -- then --+               +--> then --> [Deploy]\n                         +--> [Test]  --+\n                         |\n                         +--> [Build] --+\n```\n\nBreaking this down:\n1. **Sequential**: Install deps must complete first (everything depends on it)\n2. **Fan-out**: Lint, Test, and Build can run in parallel (independent)\n3. **Fan-in**: Wait for all three to complete\n4. **Sequential**: Deploy only after all three succeed\n\n## Designing a Workflow\n\nFollow these steps to design any orchestrated workflow:\n\n### Step 1: List All Tasks\nIdentify every task that needs to happen.\n\n### Step 2: Map Dependencies\nFor each task, ask: \"What must complete before this can start?\"\nDraw arrows from prerequisites to dependents.\n\n### Step 3: Identify Parallel Groups\nTasks with NO arrows between them can run in parallel.\nTasks connected by arrows must be sequential.\n\n### Step 4: Build the Execution Plan\nOrganize tasks into stages:\n- **Stage 1**: Tasks with no prerequisites (start immediately)\n- **Stage 2**: Tasks whose prerequisites are all in Stage 1\n- **Stage 3**: Tasks whose prerequisites are in Stage 1 or 2\n- Continue until all tasks are staged\n\n### Step 5: Define Fan-In Points\nIdentify where parallel results need to be combined.\n\n## Error Handling in Parallel Workflows\n\nWhat happens when one parallel task fails?\n\n| Strategy | Behavior | When to Use |\n|----------|----------|-------------|\n| **Fail fast** | Stop everything when first task fails | Build pipelines, CI/CD |\n| **Collect all** | Let all tasks complete, report all failures | Analysis, auditing |\n| **Retry failed** | Re-run failed tasks, keep successes | Flaky tests, network ops |\n\nIn Claude Code, you implement these by checking each task's result\n(via TaskOutput or output file) and deciding how to proceed.\n\n## Real-World Example\n\nTask: \"Analyze this 3-module project and create a combined security report.\"\n\n**Workflow plan:**\n```\nStage 1 (parallel - fan-out):\n  - Analyze auth module for security issues\n  - Analyze API module for security issues\n  - Analyze data module for security issues\n\nStage 2 (sequential - fan-in):\n  - Wait for all 3 analyses to complete\n  - Read all results\n  - Create combined security report\n```\n\nThis is faster than analyzing modules one at a time because Stage 1\nruns all three analyses simultaneously.\n\n---\n\n## Your Task\n\nThis project has three independent modules: `auth`, `api`, and `data`.\nEach module has its own source code, tests, and configuration.\n\nDesign a workflow that:\n1. Analyzes all three modules in parallel (what each module does,\n   its dependencies, and any issues you notice)\n2. Combines the findings into a single report\n\nCreate an `orchestration-plan.md` that documents your workflow design.\nThe plan should include:\n\n1. A dependency diagram showing which tasks are parallel vs sequential\n2. The fan-out phase: what independent tasks run simultaneously\n3. The fan-in phase: how results are gathered and combined\n4. The execution stages in order\n5. How you would handle a failure in one of the parallel tasks\n\nThen create a `combined-report.md` that contains the actual analysis\nof all three modules (you can do this analysis yourself or describe\nhow Claude Code would do it).\n\n## Objectives\n1. Create orchestration-plan.md with a workflow design\n2. Plan includes a dependency diagram or stage breakdown\n3. Plan describes the fan-out phase (parallel analysis of modules)\n4. Plan describes the fan-in phase (combining results)\n5. Plan addresses error handling for parallel tasks\n6. Create combined-report.md with findings from all 3 modules\n"
       },
       {
         "path": "package.json",
-        "content": "{\n  \"name\": \"parallel-workflow\",\n  \"scripts\": {\n    \"lint\": \"echo 'Linting...' && sleep 2 && echo 'Lint passed!'\",\n    \"test\": \"echo 'Testing...' && sleep 3 && echo 'All tests passed!'\",\n    \"build\": \"echo 'Building...' && sleep 2 && echo 'Build successful!'\"\n  }\n}\n"
+        "content": "{\n  \"name\": \"multi-module-project\",\n  \"version\": \"1.0.0\",\n  \"description\": \"A multi-module project for workflow orchestration practice\",\n  \"scripts\": {\n    \"test\": \"node test/run-all.js\",\n    \"test:auth\": \"node modules/auth/test.js\",\n    \"test:api\": \"node modules/api/test.js\",\n    \"test:data\": \"node modules/data/test.js\",\n    \"lint\": \"echo 'Linting all modules...' && sleep 2 && echo 'Done'\",\n    \"build\": \"echo 'Building...' && sleep 3 && echo 'Build complete'\"\n  }\n}\n"
       },
       {
-        "path": "src/index.js",
-        "content": "console.log('Application');\n"
+        "path": "modules/auth/index.js",
+        "content": "const bcrypt = require('bcrypt');\nconst jwt = require('jsonwebtoken');\nconst { validateEmail } = require('../data/validators');\n\nconst SALT_ROUNDS = 12;\nconst TOKEN_EXPIRY = '24h';\n\nasync function hashPassword(password) {\n  return bcrypt.hash(password, SALT_ROUNDS);\n}\n\nasync function verifyPassword(password, hash) {\n  return bcrypt.compare(password, hash);\n}\n\nfunction generateToken(user, secret) {\n  return jwt.sign(\n    { id: user.id, email: user.email, role: user.role },\n    secret,\n    { expiresIn: TOKEN_EXPIRY }\n  );\n}\n\nfunction verifyToken(token, secret) {\n  try {\n    return jwt.verify(token, secret);\n  } catch (err) {\n    return null;\n  }\n}\n\nasync function register(userData, db, config) {\n  if (!validateEmail(userData.email)) {\n    throw new Error('Invalid email format');\n  }\n  const existing = await db.findByEmail(userData.email);\n  if (existing) throw new Error('Email already registered');\n\n  const passwordHash = await hashPassword(userData.password);\n  return db.create({ ...userData, passwordHash });\n}\n\nasync function login(email, password, db, config) {\n  const user = await db.findByEmail(email);\n  if (!user) throw new Error('User not found');\n\n  const valid = await verifyPassword(password, user.passwordHash);\n  if (!valid) throw new Error('Invalid credentials');\n\n  const token = generateToken(user, config.jwtSecret);\n  return { token, user: { id: user.id, email: user.email } };\n}\n\nmodule.exports = {\n  hashPassword, verifyPassword, generateToken,\n  verifyToken, register, login\n};\n"
+      },
+      {
+        "path": "modules/auth/config.json",
+        "content": "{\n  \"saltRounds\": 12,\n  \"tokenExpiry\": \"24h\",\n  \"maxLoginAttempts\": 5,\n  \"lockoutDuration\": 900,\n  \"passwordMinLength\": 8,\n  \"requireSpecialChar\": true\n}\n"
+      },
+      {
+        "path": "modules/auth/test.js",
+        "content": "console.log('[Auth Tests] Running...');\nconsole.log('  PASS: hashPassword produces valid hash');\nconsole.log('  PASS: verifyPassword matches correct password');\nconsole.log('  PASS: verifyPassword rejects wrong password');\nconsole.log('  PASS: generateToken creates valid JWT');\nconsole.log('  PASS: verifyToken decodes valid token');\nconsole.log('  PASS: verifyToken returns null for invalid token');\nconsole.log('  PASS: register rejects duplicate email');\nconsole.log('  PASS: login returns token for valid credentials');\nconsole.log('[Auth Tests] 8/8 passed');\n"
+      },
+      {
+        "path": "modules/api/index.js",
+        "content": "const express = require('express');\nconst { verifyToken } = require('../auth');\nconst { findAll, findById, create, update, remove } = require('../data');\n\nfunction createRouter(config) {\n  const router = express.Router();\n\n  // Middleware: authenticate requests\n  function authenticate(req, res, next) {\n    const token = req.headers.authorization?.split(' ')[1];\n    if (!token) return res.status(401).json({ error: 'No token provided' });\n\n    const decoded = verifyToken(token, config.jwtSecret);\n    if (!decoded) return res.status(401).json({ error: 'Invalid token' });\n\n    req.user = decoded;\n    next();\n  }\n\n  // Middleware: check role\n  function requireRole(role) {\n    return (req, res, next) => {\n      if (req.user.role !== role) {\n        return res.status(403).json({ error: 'Insufficient permissions' });\n      }\n      next();\n    };\n  }\n\n  // User routes\n  router.get('/users', authenticate, async (req, res) => {\n    const users = await findAll('users');\n    res.json(users);\n  });\n\n  router.get('/users/:id', authenticate, async (req, res) => {\n    const user = await findById('users', req.params.id);\n    if (!user) return res.status(404).json({ error: 'Not found' });\n    res.json(user);\n  });\n\n  // Product routes\n  router.get('/products', async (req, res) => {\n    const products = await findAll('products');\n    res.json(products);\n  });\n\n  router.post('/products', authenticate, requireRole('admin'), async (req, res) => {\n    const product = await create('products', req.body);\n    res.status(201).json(product);\n  });\n\n  // Order routes\n  router.get('/orders', authenticate, async (req, res) => {\n    const orders = await findAll('orders', { userId: req.user.id });\n    res.json(orders);\n  });\n\n  router.post('/orders', authenticate, async (req, res) => {\n    const order = await create('orders', { ...req.body, userId: req.user.id });\n    res.status(201).json(order);\n  });\n\n  return router;\n}\n\nmodule.exports = { createRouter };\n"
+      },
+      {
+        "path": "modules/api/config.json",
+        "content": "{\n  \"port\": 3000,\n  \"host\": \"0.0.0.0\",\n  \"cors\": {\n    \"origin\": [\"http://localhost:8080\"],\n    \"methods\": [\"GET\", \"POST\", \"PUT\", \"DELETE\"]\n  },\n  \"rateLimit\": {\n    \"windowMs\": 900000,\n    \"max\": 100\n  },\n  \"pagination\": {\n    \"defaultPageSize\": 20,\n    \"maxPageSize\": 100\n  }\n}\n"
+      },
+      {
+        "path": "modules/api/test.js",
+        "content": "console.log('[API Tests] Running...');\nconsole.log('  PASS: GET /users requires authentication');\nconsole.log('  PASS: GET /users returns user list');\nconsole.log('  PASS: GET /users/:id returns single user');\nconsole.log('  PASS: GET /products is public');\nconsole.log('  PASS: POST /products requires admin role');\nconsole.log('  PASS: GET /orders scoped to current user');\nconsole.log('  PASS: POST /orders creates with user ID');\nconsole.log('[API Tests] 7/7 passed');\n"
+      },
+      {
+        "path": "modules/data/index.js",
+        "content": "const { validateSchema } = require('./validators');\n\n// Simulated database layer\nconst store = {\n  users: [],\n  products: [],\n  orders: []\n};\n\nasync function findAll(collection, filters = {}) {\n  let results = store[collection] || [];\n  for (const [key, value] of Object.entries(filters)) {\n    results = results.filter(item => item[key] === value);\n  }\n  return results;\n}\n\nasync function findById(collection, id) {\n  return (store[collection] || []).find(item => item.id === id);\n}\n\nasync function findByEmail(email) {\n  return store.users.find(u => u.email === email);\n}\n\nasync function create(collection, data) {\n  const validated = validateSchema(collection, data);\n  const id = (store[collection]?.length || 0) + 1;\n  const record = { id, ...validated, createdAt: new Date().toISOString() };\n  store[collection].push(record);\n  return record;\n}\n\nasync function update(collection, id, data) {\n  const index = store[collection].findIndex(item => item.id === id);\n  if (index === -1) throw new Error('Record not found');\n  store[collection][index] = { ...store[collection][index], ...data };\n  return store[collection][index];\n}\n\nasync function remove(collection, id) {\n  const index = store[collection].findIndex(item => item.id === id);\n  if (index === -1) throw new Error('Record not found');\n  return store[collection].splice(index, 1)[0];\n}\n\nmodule.exports = {\n  findAll, findById, findByEmail, create, update, remove\n};\n"
+      },
+      {
+        "path": "modules/data/validators.js",
+        "content": "const schemas = {\n  users: {\n    required: ['name', 'email', 'passwordHash'],\n    optional: ['role']\n  },\n  products: {\n    required: ['name', 'price'],\n    optional: ['category', 'description']\n  },\n  orders: {\n    required: ['userId', 'items'],\n    optional: ['status', 'total']\n  }\n};\n\nfunction validateEmail(email) {\n  const pattern = /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/;\n  return pattern.test(email);\n}\n\nfunction validateSchema(collection, data) {\n  const schema = schemas[collection];\n  if (!schema) throw new Error(`Unknown collection: ${collection}`);\n\n  for (const field of schema.required) {\n    if (data[field] === undefined) {\n      throw new Error(`Missing required field: ${field}`);\n    }\n  }\n\n  const allowedFields = [...schema.required, ...schema.optional];\n  const filtered = {};\n  for (const field of allowedFields) {\n    if (data[field] !== undefined) filtered[field] = data[field];\n  }\n  return filtered;\n}\n\nmodule.exports = { validateEmail, validateSchema };\n"
+      },
+      {
+        "path": "modules/data/config.json",
+        "content": "{\n  \"database\": {\n    \"host\": \"localhost\",\n    \"port\": 5432,\n    \"name\": \"app_development\",\n    \"pool\": { \"min\": 2, \"max\": 10 }\n  },\n  \"cache\": {\n    \"enabled\": true,\n    \"ttl\": 300\n  }\n}\n"
+      },
+      {
+        "path": "modules/data/test.js",
+        "content": "console.log('[Data Tests] Running...');\nconsole.log('  PASS: findAll returns all records');\nconsole.log('  PASS: findAll filters by criteria');\nconsole.log('  PASS: findById returns correct record');\nconsole.log('  PASS: create validates required fields');\nconsole.log('  PASS: create rejects missing fields');\nconsole.log('  PASS: update modifies existing record');\nconsole.log('  PASS: remove deletes record');\nconsole.log('  PASS: validateEmail accepts valid format');\nconsole.log('  PASS: validateSchema enforces required fields');\nconsole.log('[Data Tests] 9/9 passed');\n"
+      },
+      {
+        "path": "test/run-all.js",
+        "content": "console.log('Running all test suites...\\n');\nrequire('../modules/auth/test');\nconsole.log();\nrequire('../modules/api/test');\nconsole.log();\nrequire('../modules/data/test');\nconsole.log('\\n=== All 24 tests passed! ===');\n"
       }
     ],
     "cleanBefore": true
@@ -30,32 +70,56 @@
   "objectives": [
     {
       "id": "obj-1",
-      "description": "Create workflow orchestration script",
+      "description": "Create orchestration-plan.md",
       "type": "file_exists",
-      "target": "workflow.js",
+      "target": "orchestration-plan.md",
       "required": true
     },
     {
       "id": "obj-2",
-      "description": "Script runs tasks in parallel where possible",
+      "description": "Plan includes a dependency diagram or stage-by-stage breakdown",
       "type": "file_contains",
-      "target": "workflow.js",
-      "pattern": "Promise\\.all|parallel|concurrent|await.*\\[",
+      "target": "orchestration-plan.md",
+      "pattern": "[Ss]tage|[Pp]hase|[Ss]tep|-->|->|[Dd]iagram|[Dd]epend|[Bb]efore.*after|[Oo]rder",
       "required": true
     },
     {
       "id": "obj-3",
-      "description": "Generate deployment report",
-      "type": "file_exists",
-      "target": "deploy-report.md",
+      "description": "Plan describes fan-out (parallel analysis of multiple modules)",
+      "type": "file_contains",
+      "target": "orchestration-plan.md",
+      "pattern": "[Ff]an.out|[Pp]arallel.*analy|[Ss]imultaneous|[Aa]ll.*module|[Ii]ndependent.*module|auth.*api.*data|[Aa]t the same time",
       "required": true
     },
     {
       "id": "obj-4",
-      "description": "Report shows all steps",
+      "description": "Plan describes fan-in (gathering and combining results)",
       "type": "file_contains",
-      "target": "deploy-report.md",
-      "pattern": "[Ll]int|[Tt]est|[Bb]uild",
+      "target": "orchestration-plan.md",
+      "pattern": "[Ff]an.in|[Cc]ombine|[Gg]ather|[Mm]erge|[Cc]ollect.*result|[Ww]ait.*all|[Cc]onverge|[Ss]ummar|[Ss]ynthesize|combined.*report",
+      "required": true
+    },
+    {
+      "id": "obj-5",
+      "description": "Plan addresses error handling for parallel tasks",
+      "type": "file_contains",
+      "target": "orchestration-plan.md",
+      "pattern": "[Ee]rror|[Ff]ail|[Rr]etry|[Ff]all.*back|[Ss]kip|[Cc]ontinue.*despite|[Ff]ail.*fast|[Cc]ollect.*all|[Hh]andle",
+      "required": true
+    },
+    {
+      "id": "obj-6",
+      "description": "Create combined-report.md with analysis of all 3 modules",
+      "type": "file_exists",
+      "target": "combined-report.md",
+      "required": true
+    },
+    {
+      "id": "obj-7",
+      "description": "Combined report covers all 3 modules (auth, api, data)",
+      "type": "file_contains",
+      "target": "combined-report.md",
+      "pattern": "[Aa]uth.*[Aa]pi|[Aa]pi.*[Dd]ata|[Aa]uth.*[Dd]ata|[Aa]uthentication.*[Aa][Pp][Ii]|module",
       "required": true
     }
   ],
@@ -63,18 +127,18 @@
   "bonusObjectives": [
     {
       "id": "bonus-1",
-      "description": "Script handles failures gracefully",
+      "description": "Plan includes a visual dependency diagram using ASCII art or markdown",
       "type": "file_contains",
-      "target": "workflow.js",
-      "pattern": "try|catch|error|fail|Error",
-      "xpBonus": 60
+      "target": "orchestration-plan.md",
+      "pattern": "-->|->|\\+-|\\|.*\\||[Ss]tage 1.*[Ss]tage 2|```",
+      "xpBonus": 50
     },
     {
       "id": "bonus-2",
-      "description": "Report includes timing information",
+      "description": "Plan describes timing benefits of parallel vs sequential execution",
       "type": "file_contains",
-      "target": "deploy-report.md",
-      "pattern": "[Tt]ime|[Dd]uration|seconds|ms|minutes",
+      "target": "orchestration-plan.md",
+      "pattern": "[Tt]ime|[Ff]aster|[Ss]peed|[Ss]aving|[Dd]uration|[Tt]hroughput|[Ee]fficienc",
       "xpBonus": 50
     }
   ],
@@ -82,34 +146,37 @@
   "hints": [
     {
       "level": 1,
-      "text": "Think about which tasks can run simultaneously and which must wait for others.",
+      "text": "Look at the project structure: 3 modules (auth, api, data), each with source, config, and tests. Analyzing each module is independent -- perfect for fan-out. Combining the analyses into a report is the fan-in. Design your plan around these stages.",
       "xpCost": 20
     },
     {
       "level": 2,
-      "text": "Try: 'Create a workflow that runs lint and test in parallel, then build if both pass. Generate a report.'",
+      "text": "Your orchestration-plan.md should have at least these stages: Stage 1 (fan-out) -- analyze auth, api, and data modules in parallel. Stage 2 (fan-in) -- gather all analysis results and synthesize. Stage 3 -- create the combined report. For error handling, describe what happens if one module's analysis fails: do you fail everything (fail-fast) or continue with the other two (collect-all)?",
       "xpCost": 60
     },
     {
       "level": 3,
-      "text": "Ask: 'Create workflow.js that: 1) Runs npm lint and npm test in parallel using Promise.all, 2) If both succeed, runs npm build, 3) Records timing for each step. Then create deploy-report.md showing the workflow execution summary with all steps and their results.'",
+      "text": "Create orchestration-plan.md with: (1) Task list -- analyze auth module, analyze API module, analyze data module, combine into report. (2) Dependency diagram showing all 3 analyses are independent (fan-out) and the report depends on all 3 (fan-in). (3) Stage 1: parallel analysis using 3 simultaneous Read/Grep operations or background subagents. (4) Stage 2: gather results from all 3. (5) Stage 3: create combined-report.md. (6) Error strategy: collect-all, so if one module analysis fails you still report on the other two. Then actually analyze the modules and create combined-report.md covering auth (JWT, bcrypt), API (Express routes, middleware), and data (CRUD, validation).",
       "xpCost": 120
     }
   ],
 
   "solution": {
-    "approach": "Create a workflow that maximizes parallelism while respecting dependencies.",
-    "example": "Create an orchestrated CI/CD-style workflow",
+    "approach": "Analyze the 3-module project structure to identify independent tasks (analyzing each module) and dependent tasks (combining results). Design a staged workflow plan with fan-out for parallel analysis, fan-in for gathering results, and error handling strategy. Then execute the analysis and create the combined report.",
+    "example": "Create orchestration-plan.md with: Stage 1 (fan-out) -- parallel analysis of auth (JWT/bcrypt functions), api (Express routes/middleware), data (CRUD/validators); Stage 2 (fan-in) -- gather all results; Stage 3 -- create combined-report.md. Error handling: collect-all strategy. Then create combined-report.md with findings from all 3 modules.",
     "alternativeApproaches": [
-      "Use Promise.all for parallel tasks",
-      "Chain sequential tasks with async/await"
+      "Use background subagents to analyze each module in parallel, then combine the results when all complete",
+      "Design the plan first with just the dependency diagram, then ask Claude Code to execute it step by step"
     ]
   },
 
   "learningPoints": [
-    "Parallel execution speeds up independent tasks",
-    "Sequential execution ensures dependencies",
-    "Good orchestration combines both patterns"
+    "Fan-out launches multiple independent tasks in parallel -- in this case, analyzing 3 modules simultaneously",
+    "Fan-in waits for all parallel tasks to complete and combines their results into a unified output",
+    "Dependency chains define strict ordering: prerequisites must complete before dependents can start",
+    "Real workflows are mixed: some stages are parallel (fan-out), some are sequential (dependency chains), and some combine results (fan-in)",
+    "Always plan your error handling strategy for parallel tasks: fail-fast stops everything on first failure, collect-all continues and reports all results",
+    "Designing the workflow before executing it (listing tasks, mapping dependencies, identifying stages) leads to more efficient execution"
   ],
 
   "nextChallenge": "16-001"

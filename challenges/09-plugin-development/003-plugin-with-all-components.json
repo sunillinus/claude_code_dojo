@@ -2,22 +2,22 @@
   "id": "09-003",
   "module": "plugin-development",
   "title": "Plugin with All Components",
-  "description": "Learn to build a comprehensive plugin with skills, hooks, agents, and commands working together.",
+  "description": "Build a full-featured plugin that combines skills, agents, and commands working together. Learn how different component types complement each other within a cohesive plugin.",
   "difficulty": "intermediate",
   "xpReward": 325,
   "estimatedMinutes": 20,
-  "skills": ["full-plugin", "component-integration"],
+  "skills": ["full-plugin", "component-integration", "multi-component-design"],
 
   "setup": {
     "workingDir": "~/dojo-workspace/challenge-09-003",
     "initialFiles": [
       {
         "path": "README.md",
-        "content": "# Challenge: Plugin with All Components\n\nBuild a 'code-quality' plugin with all component types working together.\n\n## Objectives\n1. Create a /lint skill that runs linting\n2. Create a PreToolUse hook that warns about large file edits\n3. Create a code-analyzer agent for deep analysis\n4. Create a /quick-fix skill for common issues\n5. All components should work together cohesively\n"
+        "content": "# Challenge: Plugin with All Components\n\nBuild a plugin that uses multiple component types working together.\n\n---\n\n## Why Multiple Component Types?\n\nIn the first two challenges you learned plugin structure and built a\nminimal plugin with one skill. Real-world plugins typically combine\nmultiple component types. Each type has a distinct role:\n\n| Component | Role | Triggered By |\n|-----------|------|-------------|\n| **Skill** | Reusable prompt template | User invokes with /<name> |\n| **Agent** | Autonomous specialist worker | Claude delegates tasks to it |\n| **Command** | Simple slash command | User invokes with /<name> |\n\nThe power comes from combining them. A code-quality plugin might have:\n- A `/lint` skill that runs linting with detailed instructions\n- A `code-analyzer` agent that Claude delegates deep analysis to\n- A `/quick-fix` command for common one-step fixes\n\n## Skills: Reusable Prompt Templates\n\nSkills are the most common component type. They are full prompt\ntemplates with YAML frontmatter.\n\n**File location**: `skills/<name>/SKILL.md`\n\n```markdown\n---\ndescription: Run linting and report issues in a structured format\nallowedTools: Bash, Read, Glob\n---\n\nDetect the project's linter (ESLint, Prettier, Pylint, etc.) and run it.\n\n## Steps\n1. Identify the project type and linter configuration\n2. Run the appropriate lint command\n3. Parse the output into categories: errors, warnings, style issues\n4. Present results in a clear markdown table\n\n## Output Format\n| File | Line | Severity | Rule | Message |\n|------|------|----------|------|----------|\n```\n\nKey skill features:\n- **allowedTools** restricts what Claude can do (security/focus)\n- **args** lets users pass parameters (`/lint src/` passes `src/` as $ARGUMENTS)\n- **description** enables auto-triggering when a user's request matches\n\n## Agents: Autonomous Workers\n\nAgents are specialized subagents. When Claude encounters a task that\nmatches an agent's description, it can delegate the work to that agent.\nAgents run autonomously and return results.\n\n**File location**: `agents/<name>.md`\n\n```markdown\n---\ndescription: Deep code analysis specialist for quality and architecture\nallowed-tools:\n  - Read\n  - Glob\n  - Grep\n---\n\nYou are a code analysis specialist. When given a codebase to analyze:\n\n1. Map the architecture: entry points, modules, dependencies\n2. Identify code smells: long functions, deep nesting, duplicated logic\n3. Check for anti-patterns specific to the language/framework\n4. Assess test coverage and testing patterns\n5. Produce a detailed report with severity ratings\n\n## Report Format\n### Architecture Overview\n[high-level structure]\n\n### Issues Found\n| # | Severity | Location | Description | Recommendation |\n|---|----------|----------|-------------|----------------|\n\n### Positive Patterns\n[things done well]\n```\n\nKey agent features:\n- **allowed-tools** controls what the agent can access\n- Agents are NOT invoked by the user directly -- Claude delegates to them\n- Good for tasks requiring autonomy: research, analysis, multi-step work\n- Read-only tools make agents safe for analysis tasks\n\n### How Agents Differ from Skills\n\n| Aspect | Skill | Agent |\n|--------|-------|-------|\n| Invocation | User types /name | Claude delegates automatically |\n| Interaction | User sees output directly | Runs in background, returns results |\n| Complexity | Single-step instructions | Multi-step autonomous work |\n| Best for | Repeatable commands | Deep analysis, research tasks |\n\n## Commands: Simple Slash Commands\n\nCommands are the lightest-weight component. They are markdown files\nwith optional frontmatter -- essentially simple instructions.\n\n**File location**: `commands/<name>.md`\n\n```markdown\n---\ndescription: Fix common code quality issues automatically\n---\n\nScan the current directory for these common issues and fix them:\n\n1. Remove trailing whitespace from all source files\n2. Ensure files end with a newline\n3. Remove unused imports (if detectable)\n4. Fix inconsistent indentation (use project settings)\n\nReport what was fixed in a brief summary.\n```\n\nCommands vs. skills:\n- Commands have simpler structure (no args, minimal frontmatter)\n- Skills have richer features (allowedTools, args, auto-triggering)\n- Use commands for simple actions, skills for complex workflows\n\n## How Components Work Together\n\nIn a cohesive plugin, components complement each other:\n\n1. **User invokes `/lint`** (skill) to run linting on their code\n2. **Claude delegates** a deep analysis task to the `code-analyzer`\n   agent for thorough review\n3. **User invokes `/quick-fix`** (command) to auto-fix simple issues\n\nEach component handles what it is best at. Skills handle user-initiated\nworkflows. Agents handle complex autonomous work. Commands handle\nquick actions.\n\n## Naming Conventions\n\nUse clear, descriptive names that reflect the component's purpose:\n- Skills: action-oriented (`lint`, `review`, `deploy`)\n- Agents: role-oriented (`code-analyzer`, `security-auditor`)\n- Commands: action-oriented (`quick-fix`, `cleanup`, `format`)\n\n---\n\n## Your Task\n\nBuild a `code-quality` plugin with at least three component types\nthat work together as a cohesive toolkit. The components should be\nrelated -- all serving the theme of code quality.\n\nRequired components:\n1. **A skill** (e.g., `lint`) -- a detailed prompt for code analysis\n2. **An agent** (e.g., `code-analyzer`) -- an autonomous analysis worker\n3. **A command** (e.g., `quick-fix`) -- a simple action command\n\nAll components should:\n- Have proper frontmatter with descriptions\n- Contain meaningful instructions (not placeholder text)\n- Serve distinct but complementary purposes\n\n## Objectives\n1. Create a lint skill at skills/lint/SKILL.md\n2. Create a code-analyzer agent at agents/code-analyzer.md\n3. Create a quick-fix command at commands/quick-fix.md\n4. All components should have descriptions in their frontmatter\n"
       },
       {
         "path": "plugin.json",
-        "content": "{\n  \"name\": \"code-quality\",\n  \"version\": \"1.0.0\",\n  \"description\": \"Code quality tools for better code\",\n  \"author\": {\n    \"name\": \"Quality Team\"\n  }\n}\n"
+        "content": "{\n  \"name\": \"code-quality\",\n  \"version\": \"1.0.0\",\n  \"description\": \"Code quality tools for linting, analysis, and automated fixes\"\n}\n"
       }
     ],
     "cleanBefore": true
@@ -26,31 +26,47 @@
   "objectives": [
     {
       "id": "obj-1",
-      "description": "Create a lint skill",
+      "description": "Create a lint skill at skills/lint/SKILL.md",
       "type": "file_exists",
       "target": "skills/lint/SKILL.md",
       "required": true
     },
     {
       "id": "obj-2",
-      "description": "Create a PreToolUse hook",
+      "description": "Lint skill has frontmatter with a description",
       "type": "file_contains",
-      "target": "hooks/warn-large-edits.md",
-      "pattern": "PreToolUse|event:",
+      "target": "skills/lint/SKILL.md",
+      "pattern": "description:",
       "required": true
     },
     {
       "id": "obj-3",
-      "description": "Create a code-analyzer agent",
+      "description": "Create a code-analyzer agent at agents/code-analyzer.md",
       "type": "file_exists",
       "target": "agents/code-analyzer.md",
       "required": true
     },
     {
       "id": "obj-4",
-      "description": "Create a quick-fix skill",
+      "description": "Agent has frontmatter with a description",
+      "type": "file_contains",
+      "target": "agents/code-analyzer.md",
+      "pattern": "description:",
+      "required": true
+    },
+    {
+      "id": "obj-5",
+      "description": "Create a quick-fix command at commands/quick-fix.md",
       "type": "file_exists",
-      "target": "skills/quick-fix/SKILL.md",
+      "target": "commands/quick-fix.md",
+      "required": true
+    },
+    {
+      "id": "obj-6",
+      "description": "Command has frontmatter with a description",
+      "type": "file_contains",
+      "target": "commands/quick-fix.md",
+      "pattern": "description:",
       "required": true
     }
   ],
@@ -58,62 +74,72 @@
   "bonusObjectives": [
     {
       "id": "bonus-1",
-      "description": "Skill has tool restrictions",
+      "description": "Lint skill has allowedTools to restrict tool access",
       "type": "file_contains",
       "target": "skills/lint/SKILL.md",
-      "pattern": "allowed-tools:",
-      "xpBonus": 50
+      "pattern": "allowedTools:",
+      "xpBonus": 40
     },
     {
       "id": "bonus-2",
-      "description": "Hook uses prompt-based decision making",
-      "type": "file_contains",
-      "target": "hooks/warn-large-edits.md",
-      "pattern": "decision|block|allow|warn",
-      "xpBonus": 50
-    },
-    {
-      "id": "bonus-3",
-      "description": "Agent has specific allowed-tools",
+      "description": "Agent has allowed-tools for safe read-only analysis",
       "type": "file_contains",
       "target": "agents/code-analyzer.md",
       "pattern": "allowed-tools:",
+      "xpBonus": 40
+    },
+    {
+      "id": "bonus-3",
+      "description": "Plugin has an additional skill beyond lint",
+      "type": "command_output_contains",
+      "command": "find ~/dojo-workspace/challenge-09-003/skills -name 'SKILL.md' 2>/dev/null | wc -l | tr -d ' '",
+      "pattern": "[2-9]",
       "xpBonus": 50
+    },
+    {
+      "id": "bonus-4",
+      "description": "Components contain structured output format sections",
+      "type": "command_output_contains",
+      "command": "cat ~/dojo-workspace/challenge-09-003/skills/lint/SKILL.md ~/dojo-workspace/challenge-09-003/agents/code-analyzer.md 2>/dev/null",
+      "pattern": "[Oo]utput [Ff]ormat|[Rr]eport [Ff]ormat|[Ff]ormat:",
+      "xpBonus": 40
     }
   ],
 
   "hints": [
     {
       "level": 1,
-      "text": "Each component type has a specific purpose: skills for commands, hooks for automation, agents for specialized tasks, commands for simple actions.",
+      "text": "You need three files in three different directories: skills/lint/SKILL.md, agents/code-analyzer.md, and commands/quick-fix.md. Each needs YAML frontmatter with at least a 'description' field. Think about what each component is best at: skills for user-initiated workflows, agents for autonomous analysis, commands for quick actions.",
       "xpCost": 25
     },
     {
       "level": 2,
-      "text": "Try: 'Add a lint skill, a hook that warns on large edits, an analyzer agent, and a quick-fix command to the code-quality plugin'",
+      "text": "For the lint skill, include allowedTools (Bash, Read, Glob) and instructions to detect the project linter and run it. For the code-analyzer agent, include allowed-tools (Read, Glob, Grep) and instructions for deep code analysis. For the quick-fix command, write instructions to fix common issues like trailing whitespace and missing newlines. Each should have a different focus while serving the code quality theme.",
       "xpCost": 65
     },
     {
       "level": 3,
-      "text": "Ask: 'Build out the code-quality plugin: 1) skills/lint/SKILL.md - runs eslint/prettier with allowed-tools [Bash, Read] 2) hooks/warn-large-edits.md - PreToolUse hook on Edit that warns if editing >100 lines 3) agents/code-analyzer.md - deep code analysis with Read, Grep, Glob tools 4) skills/quick-fix/SKILL.md - user-invocable skill that fixes common issues like trailing whitespace'",
+      "text": "Create skills/lint/SKILL.md with frontmatter (description: 'Run linting and report issues', allowedTools: Bash, Read, Glob) and body instructions to detect linter, run it, and format results. Create agents/code-analyzer.md with frontmatter (description: 'Deep code analysis specialist', allowed-tools: Read, Glob, Grep) and body instructions to analyze architecture, find code smells, and produce a report. Create commands/quick-fix.md with frontmatter (description: 'Fix common code quality issues') and body instructions to fix whitespace, newlines, and formatting.",
       "xpCost": 120
     }
   ],
 
   "solution": {
-    "approach": "Create all four component types with clear purposes and proper configuration.",
-    "example": "Build a complete code-quality plugin with lint skill, edit warning hook, analyzer agent, and quick-fix command",
+    "approach": "Create three components -- a lint skill with tool restrictions, a code-analyzer agent with read-only tools, and a quick-fix command for simple fixes -- all serving the code quality theme.",
+    "example": "Build a code-quality plugin with a lint skill, code-analyzer agent, and quick-fix command, each with proper frontmatter and meaningful instructions",
     "alternativeApproaches": [
-      "Add all component types to create a comprehensive plugin",
-      "Create a plugin where each component handles a different aspect of code quality"
+      "Add all component types to create a comprehensive code quality toolkit",
+      "Create a plugin where each component handles a different aspect of code quality: linting, analysis, and automated fixes"
     ]
   },
 
   "learningPoints": [
-    "Different components serve different purposes",
-    "Skills are user-invoked, hooks are automatic, agents are for complex tasks",
-    "Components can work together in a cohesive plugin",
-    "Tool restrictions make components safer and more focused"
+    "Skills are best for user-initiated workflows with detailed instructions and tool restrictions",
+    "Agents are autonomous workers that Claude delegates to -- good for complex analysis tasks",
+    "Commands are lightweight slash commands for simple, quick actions",
+    "A cohesive plugin combines component types so each handles what it does best",
+    "allowedTools (skills) and allowed-tools (agents) restrict tool access for safety and focus",
+    "Components should have complementary purposes -- avoid duplicating the same functionality in different component types"
   ],
 
   "nextChallenge": "09-004"

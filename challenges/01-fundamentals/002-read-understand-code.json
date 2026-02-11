@@ -2,22 +2,46 @@
   "id": "01-002",
   "module": "fundamentals",
   "title": "Read and Understand Code",
-  "description": "Learn to read files and understand code using Claude Code. Ask questions about code, get explanations, and build your understanding of any codebase.",
+  "description": "Learn how Claude Code uses the Read tool to examine files. Understand line-numbered output, offset/limit parameters for large files, and how Read supports images, PDFs, and notebooks. Practice by analyzing a multi-file Express API.",
   "difficulty": "beginner",
-  "xpReward": 100,
-  "estimatedMinutes": 5,
-  "skills": ["file-reading", "code-understanding"],
+  "xpReward": 125,
+  "estimatedMinutes": 12,
+  "skills": ["file-reading", "code-understanding", "read-tool"],
 
   "setup": {
     "workingDir": "~/dojo-workspace/challenge-01-002",
     "initialFiles": [
       {
         "path": "README.md",
-        "content": "# Challenge: Read and Understand Code\n\nYour task: Understand the mystery function in `mystery.js`\n\n## Objectives\n1. Read the `mystery.js` file\n2. Create a file explaining what the function does\n"
+        "content": "# Challenge: Read and Understand Code\n\nLearn how Claude Code reads files, then prove you can analyze a\nmulti-file codebase by creating a detailed analysis document.\n\n---\n\n## How Claude Code Reads Files\n\nWhen you ask Claude Code to look at a file, it uses the **Read** tool.\nUnderstanding how Read works helps you ask better questions about code\nand work more efficiently with large files.\n\n### The Read Tool\n\nThe Read tool takes one required parameter and two optional ones:\n\n| Parameter   | Required | Description                                          |\n|-------------|----------|------------------------------------------------------|\n| `file_path` | Yes      | **Absolute** path to the file                        |\n| `offset`    | No       | Line number to start reading from (1-based)          |\n| `limit`     | No       | Maximum number of lines to return                    |\n\n### Line-Numbered Output\n\nRead returns file contents in `cat -n` format, with line numbers\nprefixed to every line. For example, reading a 3-line file produces:\n\n```\n     1  const express = require('express');\n     2  const app = express();\n     3  app.listen(3000);\n```\n\nThe line numbers are crucial when Claude Code needs to make edits\nlater (Challenge 01-003), because the Edit tool requires knowing\nexactly which text to replace.\n\n### Handling Large Files\n\nBy default, Read returns up to 2000 lines from the start of a file.\nLines longer than 2000 characters are truncated. For large files,\nyou can use `offset` and `limit`:\n\n- `offset: 100, limit: 50` -- read lines 100-149\n- `offset: 500` -- read from line 500 to line 2499 (default limit)\n\nThis is important when working with files that have thousands of\nlines. You can say things like:\n- \"Read lines 200-250 of server.js\"\n- \"Show me the end of the log file\"\n- \"Read the imports section at the top of app.js\"\n\n### Beyond Code: Images, PDFs, and Notebooks\n\nThe Read tool is not limited to text files:\n\n| File Type       | Behavior                                                |\n|-----------------|---------------------------------------------------------|\n| **Images**      | Displayed visually (Claude Code is multimodal)          |\n| **PDFs**        | Text extracted; use `pages` parameter for large PDFs    |\n|                 | (e.g., `pages: \"1-5\"` -- max 20 pages per request)     |\n| **Notebooks**   | All cells returned with outputs (code + text + visuals) |\n\n### Read Before Edit (Critical Rule)\n\nClaude Code **must** Read a file before it can Edit that file. If\nClaude Code tries to Edit a file it has not Read, the Edit tool will\nfail. This is a safety mechanism: you cannot make accurate text\nreplacements without first seeing the current content.\n\nThis means when you ask Claude Code to \"fix the bug in server.js\",\nit will automatically:\n1. Read server.js (to see current content)\n2. Analyze the code\n3. Edit server.js (to apply the fix)\n\n---\n\n## Your Task\n\nThis workspace contains a small Express API with multiple files.\nYour job is to **read all the source files** and create a file\ncalled `analysis.md` that answers specific questions about the code.\n\nYour analysis.md must cover:\n\n1. **Functions inventory** -- List every exported function across\n   all source files, with a one-line description of what each does.\n\n2. **Route map** -- List every API route (method + path) and which\n   handler function serves it.\n\n3. **Dependencies** -- List every external package (npm module)\n   the project imports (not local files).\n\n4. **Architecture summary** -- In 2-3 sentences, describe how the\n   files are organized and how data flows through the application.\n\nThis exercise proves you can read and comprehend code, not just\nidentify file names.\n\n## Objectives\n1. Create `analysis.md` in the workspace root\n2. List the exported functions from the source files\n3. Document the API routes\n4. Identify external dependencies\n"
       },
       {
-        "path": "mystery.js",
-        "content": "function mystery(arr) {\n  if (arr.length <= 1) return arr;\n  const pivot = arr[Math.floor(arr.length / 2)];\n  const left = arr.filter(x => x < pivot);\n  const middle = arr.filter(x => x === pivot);\n  const right = arr.filter(x => x > pivot);\n  return [...mystery(left), ...middle, ...mystery(right)];\n}\n\nmodule.exports = { mystery };\n"
+        "path": "src/app.js",
+        "content": "const express = require('express');\nconst cors = require('cors');\nconst { createRouter } = require('./routes');\nconst { connectDb } = require('./db');\nconst { requestLogger } = require('./middleware');\n\nfunction createApp(config) {\n  const app = express();\n  app.use(cors());\n  app.use(express.json());\n  app.use(requestLogger);\n\n  const db = connectDb(config.databaseUrl);\n  const router = createRouter(db);\n  app.use('/api', router);\n\n  return app;\n}\n\nfunction startServer(app, port) {\n  return new Promise((resolve) => {\n    const server = app.listen(port, () => {\n      console.log(`Server running on port ${port}`);\n      resolve(server);\n    });\n  });\n}\n\nmodule.exports = { createApp, startServer };\n"
+      },
+      {
+        "path": "src/routes.js",
+        "content": "const express = require('express');\nconst { getAllUsers, getUserById, createUser } = require('./handlers/users');\nconst { getAllTasks, createTask, updateTask, deleteTask } = require('./handlers/tasks');\nconst { authenticate } = require('./middleware');\n\nfunction createRouter(db) {\n  const router = express.Router();\n\n  // Public routes\n  router.get('/health', (req, res) => res.json({ status: 'ok' }));\n\n  // User routes (public)\n  router.get('/users', getAllUsers(db));\n  router.get('/users/:id', getUserById(db));\n  router.post('/users', createUser(db));\n\n  // Task routes (authenticated)\n  router.get('/tasks', authenticate, getAllTasks(db));\n  router.post('/tasks', authenticate, createTask(db));\n  router.put('/tasks/:id', authenticate, updateTask(db));\n  router.delete('/tasks/:id', authenticate, deleteTask(db));\n\n  return router;\n}\n\nmodule.exports = { createRouter };\n"
+      },
+      {
+        "path": "src/handlers/users.js",
+        "content": "const { hashPassword } = require('../utils');\n\nfunction getAllUsers(db) {\n  return async (req, res) => {\n    try {\n      const users = await db.query('SELECT id, name, email FROM users');\n      res.json(users);\n    } catch (err) {\n      res.status(500).json({ error: 'Failed to fetch users' });\n    }\n  };\n}\n\nfunction getUserById(db) {\n  return async (req, res) => {\n    try {\n      const user = await db.query('SELECT id, name, email FROM users WHERE id = $1', [req.params.id]);\n      if (!user) return res.status(404).json({ error: 'User not found' });\n      res.json(user);\n    } catch (err) {\n      res.status(500).json({ error: 'Failed to fetch user' });\n    }\n  };\n}\n\nfunction createUser(db) {\n  return async (req, res) => {\n    try {\n      const { name, email, password } = req.body;\n      const hashed = await hashPassword(password);\n      const user = await db.query(\n        'INSERT INTO users (name, email, password) VALUES ($1, $2, $3) RETURNING id, name, email',\n        [name, email, hashed]\n      );\n      res.status(201).json(user);\n    } catch (err) {\n      res.status(500).json({ error: 'Failed to create user' });\n    }\n  };\n}\n\nmodule.exports = { getAllUsers, getUserById, createUser };\n"
+      },
+      {
+        "path": "src/handlers/tasks.js",
+        "content": "function getAllTasks(db) {\n  return async (req, res) => {\n    try {\n      const tasks = await db.query('SELECT * FROM tasks WHERE user_id = $1', [req.user.id]);\n      res.json(tasks);\n    } catch (err) {\n      res.status(500).json({ error: 'Failed to fetch tasks' });\n    }\n  };\n}\n\nfunction createTask(db) {\n  return async (req, res) => {\n    try {\n      const { title, description } = req.body;\n      const task = await db.query(\n        'INSERT INTO tasks (title, description, user_id) VALUES ($1, $2, $3) RETURNING *',\n        [title, description, req.user.id]\n      );\n      res.status(201).json(task);\n    } catch (err) {\n      res.status(500).json({ error: 'Failed to create task' });\n    }\n  };\n}\n\nfunction updateTask(db) {\n  return async (req, res) => {\n    try {\n      const { title, description, completed } = req.body;\n      const task = await db.query(\n        'UPDATE tasks SET title = $1, description = $2, completed = $3 WHERE id = $4 AND user_id = $5 RETURNING *',\n        [title, description, completed, req.params.id, req.user.id]\n      );\n      if (!task) return res.status(404).json({ error: 'Task not found' });\n      res.json(task);\n    } catch (err) {\n      res.status(500).json({ error: 'Failed to update task' });\n    }\n  };\n}\n\nfunction deleteTask(db) {\n  return async (req, res) => {\n    try {\n      await db.query('DELETE FROM tasks WHERE id = $1 AND user_id = $2', [req.params.id, req.user.id]);\n      res.status(204).end();\n    } catch (err) {\n      res.status(500).json({ error: 'Failed to delete task' });\n    }\n  };\n}\n\nmodule.exports = { getAllTasks, createTask, updateTask, deleteTask };\n"
+      },
+      {
+        "path": "src/middleware.js",
+        "content": "const jwt = require('jsonwebtoken');\n\nfunction authenticate(req, res, next) {\n  const authHeader = req.headers.authorization;\n  if (!authHeader || !authHeader.startsWith('Bearer ')) {\n    return res.status(401).json({ error: 'Authentication required' });\n  }\n  try {\n    const token = authHeader.split(' ')[1];\n    req.user = jwt.verify(token, process.env.JWT_SECRET);\n    next();\n  } catch (err) {\n    res.status(401).json({ error: 'Invalid or expired token' });\n  }\n}\n\nfunction requestLogger(req, res, next) {\n  const start = Date.now();\n  res.on('finish', () => {\n    const duration = Date.now() - start;\n    console.log(`${req.method} ${req.path} ${res.statusCode} ${duration}ms`);\n  });\n  next();\n}\n\nmodule.exports = { authenticate, requestLogger };\n"
+      },
+      {
+        "path": "src/db.js",
+        "content": "function connectDb(url) {\n  console.log(`Connecting to database: ${url}`);\n  return {\n    query: async (sql, params = []) => {\n      // Simulated database query\n      console.log(`SQL: ${sql}`, params);\n      return [];\n    },\n    close: async () => {\n      console.log('Database connection closed');\n    }\n  };\n}\n\nmodule.exports = { connectDb };\n"
+      },
+      {
+        "path": "src/utils.js",
+        "content": "const crypto = require('crypto');\n\nfunction hashPassword(password) {\n  return new Promise((resolve, reject) => {\n    const salt = crypto.randomBytes(16).toString('hex');\n    crypto.pbkdf2(password, salt, 100000, 64, 'sha512', (err, derivedKey) => {\n      if (err) reject(err);\n      resolve(`${salt}:${derivedKey.toString('hex')}`);\n    });\n  });\n}\n\nfunction verifyPassword(password, stored) {\n  return new Promise((resolve, reject) => {\n    const [salt, hash] = stored.split(':');\n    crypto.pbkdf2(password, salt, 100000, 64, 'sha512', (err, derivedKey) => {\n      if (err) reject(err);\n      resolve(derivedKey.toString('hex') === hash);\n    });\n  });\n}\n\nfunction generateToken(payload, secret, expiresIn = '24h') {\n  // Simplified token generation for demonstration\n  const header = Buffer.from(JSON.stringify({ alg: 'HS256' })).toString('base64');\n  const body = Buffer.from(JSON.stringify({ ...payload, exp: Date.now() + 86400000 })).toString('base64');\n  return `${header}.${body}.signature`;\n}\n\nmodule.exports = { hashPassword, verifyPassword, generateToken };\n"
       }
     ],
     "cleanBefore": true
@@ -26,17 +50,57 @@
   "objectives": [
     {
       "id": "obj-1",
-      "description": "Create a file named `explanation.md` explaining the mystery function",
+      "description": "Create an `analysis.md` file in the workspace root",
       "type": "file_exists",
-      "target": "explanation.md",
+      "target": "analysis.md",
       "required": true
     },
     {
       "id": "obj-2",
-      "description": "The explanation should mention 'sort' or 'quicksort'",
+      "description": "Analysis mentions the `createApp` function (from app.js)",
       "type": "file_contains",
-      "target": "explanation.md",
-      "pattern": "[Ss]ort|[Qq]uicksort",
+      "target": "analysis.md",
+      "pattern": "createApp",
+      "required": true
+    },
+    {
+      "id": "obj-3",
+      "description": "Analysis mentions the `authenticate` function (from middleware.js)",
+      "type": "file_contains",
+      "target": "analysis.md",
+      "pattern": "authenticate",
+      "required": true
+    },
+    {
+      "id": "obj-4",
+      "description": "Analysis mentions the `hashPassword` function (from utils.js)",
+      "type": "file_contains",
+      "target": "analysis.md",
+      "pattern": "hashPassword",
+      "required": true
+    },
+    {
+      "id": "obj-5",
+      "description": "Analysis documents at least one API route with its HTTP method",
+      "type": "file_contains",
+      "target": "analysis.md",
+      "pattern": "(GET|POST|PUT|DELETE)\\s+.*/api/",
+      "required": true
+    },
+    {
+      "id": "obj-6",
+      "description": "Analysis identifies `express` as an external dependency",
+      "type": "file_contains",
+      "target": "analysis.md",
+      "pattern": "[Ee]xpress",
+      "required": true
+    },
+    {
+      "id": "obj-7",
+      "description": "Analysis identifies `jsonwebtoken` or `jwt` as an external dependency",
+      "type": "file_contains",
+      "target": "analysis.md",
+      "pattern": "jsonwebtoken|jwt",
       "required": true
     }
   ],
@@ -44,45 +108,64 @@
   "bonusObjectives": [
     {
       "id": "bonus-1",
-      "description": "Mention the time complexity (O(n log n))",
+      "description": "Analysis identifies `cors` as an external dependency",
       "type": "file_contains",
-      "target": "explanation.md",
-      "pattern": "O\\(n\\s*log\\s*n\\)|n log n",
-      "xpBonus": 25
+      "target": "analysis.md",
+      "pattern": "[Cc]ors",
+      "xpBonus": 15
+    },
+    {
+      "id": "bonus-2",
+      "description": "Analysis includes an architecture summary describing data flow",
+      "type": "file_contains",
+      "target": "analysis.md",
+      "pattern": "[Aa]rchitecture|[Dd]ata flow|[Oo]rganiz",
+      "xpBonus": 20
+    },
+    {
+      "id": "bonus-3",
+      "description": "Analysis mentions all 8 API routes",
+      "type": "file_contains",
+      "target": "analysis.md",
+      "pattern": "/api/tasks/:id",
+      "xpBonus": 15
     }
   ],
 
   "hints": [
     {
       "level": 1,
-      "text": "Ask Claude Code to read the mystery.js file and explain what it does.",
+      "text": "Start by reading all the source files in the src/ directory. Look at the imports at the top of each file to understand dependencies, and look at module.exports at the bottom to find exported functions.",
       "xpCost": 10
     },
     {
       "level": 2,
-      "text": "Look at the recursive pattern and how the array is being divided. What sorting algorithm uses a pivot?",
-      "xpCost": 25
+      "text": "The project has these key files: app.js (server setup), routes.js (API routes), handlers/users.js and handlers/tasks.js (request handlers), middleware.js (auth + logging), db.js (database), and utils.js (crypto utilities). Read routes.js carefully for the complete route map.",
+      "xpCost": 30
     },
     {
       "level": 3,
-      "text": "This is the QuickSort algorithm. Ask Claude Code to create explanation.md describing it as a sorting function.",
+      "text": "Ask Claude Code: 'Read all files in src/ and create analysis.md with: 1) A list of every exported function and what it does, 2) A table of API routes (method, path, handler), 3) External npm dependencies (express, cors, jsonwebtoken, crypto), 4) A summary of the architecture.' The routes are: GET /api/health, GET/POST /api/users, GET /api/users/:id, GET/POST /api/tasks, PUT/DELETE /api/tasks/:id.",
       "xpCost": 50
     }
   ],
 
   "solution": {
-    "approach": "Ask Claude Code to read and explain the code, then create a documentation file.",
-    "example": "Read mystery.js and explain what the function does. Then create explanation.md with your findings.",
+    "approach": "Read each source file in the src/ directory, then synthesize your understanding into a structured analysis document covering functions, routes, dependencies, and architecture.",
+    "example": "Read all the files in src/ and create analysis.md that lists every exported function with descriptions, maps out all API routes with their HTTP methods, identifies external npm packages, and summarizes the application architecture.",
     "alternativeApproaches": [
-      "What does the mystery function in mystery.js do? Create a markdown file explaining it.",
-      "Analyze mystery.js and document the algorithm it implements"
+      "Read files one at a time, taking notes, then compile findings into analysis.md.",
+      "Ask Claude Code to explain the project structure first, then create the analysis based on the explanation."
     ]
   },
 
   "learningPoints": [
-    "Claude Code can read and explain any code file",
-    "You can ask questions about code to understand it better",
-    "Claude Code can identify common algorithms and patterns"
+    "The Read tool returns file contents with line numbers in cat -n format",
+    "Read requires absolute paths, just like the Write tool",
+    "For large files, use offset and limit parameters to read specific sections",
+    "Read handles images (visual display), PDFs (pages parameter), and Jupyter notebooks",
+    "Claude Code must always Read a file before it can Edit that file",
+    "Reading multiple files helps you understand how a codebase fits together"
   ],
 
   "nextChallenge": "01-003"
