@@ -22,6 +22,7 @@ Parse the user's input to determine which command they want:
 - **progress** - Display your stats, XP, level, and streak
 - **dashboard** - Open the web dashboard for visual progress
 - **list [module]** - List available challenges, optionally filtered by module
+- **quiz [module]** - Take a quiz to test your Claude Code knowledge
 - **reset** - Reset all progress (requires confirmation)
 
 ## Session State
@@ -56,6 +57,8 @@ COMMANDS
   /dojo progress          Display your stats, XP, level, and streak
   /dojo dashboard         Open the visual web dashboard
   /dojo list [module]     List challenges (optionally by module)
+  /dojo quiz              Diagnostic quiz (15 questions, 1 per module)
+  /dojo quiz <module>     Module quiz (5 questions for one topic)
   /dojo reset             Reset all progress (requires confirmation)
 
 QUICK START
@@ -93,11 +96,19 @@ MODULES (70 challenges across 16 modules)
   🔌 MCP Integration   (3)   External tools
   📦 Plugin Dev        (5)   Build plugins
 
+QUIZ MODE
+─────────
+  Take quizzes to test your Claude Code knowledge!
+  • /dojo quiz         Full diagnostic (1 question per module)
+  • /dojo quiz <name>  Deep dive into one module (5 questions)
+  Score 100% on a module quiz to earn the Quiz Ace badge!
+
 TIPS
 ────
   • Complete challenges without hints for bonus XP (+25%)
   • Maintain a daily streak for streak bonuses (up to +25%)
   • Use /dojo dashboard for a visual progress view
+  • Run /dojo quiz to find which modules to study
 ```
 
 ### /dojo start [query]
@@ -181,6 +192,178 @@ Show challenges with status indicators:
 2. Open browser to http://localhost:3847
 3. Dashboard reads progress.json and displays visual stats
 
+### /dojo quiz [module]
+
+The quiz system tests Claude Code knowledge with multiple-choice questions.
+
+**Two modes:**
+- **Diagnostic** (`/dojo quiz` with no argument): 15 questions, 1 randomly selected from each module (git-basics excluded). Identifies strengths and weaknesses across all Claude Code topics.
+- **Module quiz** (`/dojo quiz <module>`): 5 questions for a specific module. Deeper assessment. Supports fuzzy module name matching (same logic as `/dojo start`).
+
+**Steps:**
+
+1. **Load questions**: Read `quizzes/questions.json` from the plugin root directory (use `${CLAUDE_PLUGIN_ROOT}/quizzes/questions.json` or the relative path from the dojo project).
+
+2. **Select questions**:
+   - Diagnostic mode: Pick 1 random question from each of the 15 modules (all modules except git-basics).
+   - Module mode: Use all 5 questions for the matched module.
+
+3. **Present questions** as formatted text:
+
+For diagnostic mode:
+```
+╔══════════════════════════════════════════════════════════╗
+║              CLAUDE CODE DOJO - DIAGNOSTIC QUIZ          ║
+║           Test your Claude Code knowledge!                ║
+╠══════════════════════════════════════════════════════════╣
+
+Q1. [Fundamentals] What tool does Claude Code use to create
+    new files?
+    A) Edit tool
+    B) Write tool
+    C) Bash echo command
+    D) Create tool
+    E) Touch tool
+
+Q2. [Search & Nav] Which tool finds files by name patterns?
+    A) Grep tool
+    B) Bash find command
+    C) Glob tool
+    D) Read tool
+    E) Search tool
+
+... (15 questions total)
+
+╚══════════════════════════════════════════════════════════╝
+
+Type your answers as a single string (e.g., "BCADEBCADEBCADEB"):
+```
+
+For module mode:
+```
+╔══════════════════════════════════════════════════════════╗
+║         CLAUDE CODE DOJO - MODULE QUIZ                   ║
+║         Topic: Fundamentals                               ║
+╠══════════════════════════════════════════════════════════╣
+
+Q1. What tool does Claude Code use to create new files?
+    A) Edit tool
+    B) Write tool
+    C) Bash echo command
+    D) Create tool
+    E) Touch tool
+
+... (5 questions total)
+
+╚══════════════════════════════════════════════════════════╝
+
+Type your answers as a single string (e.g., "BCADE"):
+```
+
+4. **Wait for user response**: The user types a compact answer string like "BACDEBACDEBACDE" (one letter per question, A-E). Accept both upper and lower case.
+
+5. **Grade the quiz**: Compare each answer letter to the correct answer from the question data. Track which questions were correct/incorrect.
+
+6. **Display results**:
+
+For diagnostic mode:
+```
+╔══════════════════════════════════════════════════════════╗
+║                    QUIZ RESULTS                          ║
+╠══════════════════════════════════════════════════════════╣
+║  Score: 10/15 (67%)                                      ║
+╠══════════════════════════════════════════════════════════╣
+
+MODULE RESULTS:
+  ✅ Fundamentals          ✅ Search & Nav
+  ❌ Code Editing          ✅ Debugging
+  ✅ Testing & TDD         ❌ Project Config
+  ✅ Prompting             ✅ Code Generation
+  ✅ Web Research          ❌ Subagents
+  ✅ Background Tasks      ❌ Agentic Loops
+  ✅ Skills & Hooks        ❌ MCP Integration
+  ✅ Plugin Dev
+
+WRONG ANSWERS:
+  Q3. [Code Editing] You answered A, correct is C
+      → The Edit tool uses old_string/new_string replacement,
+        not line numbers. It requires reading the file first.
+  ... (show explanation for each wrong answer)
+
+RECOMMENDED MODULES:
+  Start with these to fill knowledge gaps:
+  1. Code Editing (Module 04)
+  2. Project Config (Module 10)
+  ... (list all failed modules with their module directory numbers)
+```
+
+For module mode:
+```
+╔══════════════════════════════════════════════════════════╗
+║                    QUIZ RESULTS                          ║
+║              Module: Fundamentals                        ║
+╠══════════════════════════════════════════════════════════╣
+║  Score: 4/5 (80%)                                        ║
+╠══════════════════════════════════════════════════════════╣
+
+  Q1. ✅  Q2. ✅  Q3. ❌  Q4. ✅  Q5. ✅
+
+WRONG ANSWERS:
+  Q3. You answered A, correct is C
+      → [explanation from question data]
+
+XP EARNED: +30 XP
+```
+
+7. **Before/after comparison**: Read progress.json for previous quiz attempts. If a previous attempt exists for the same quiz type, show improvement:
+```
+IMPROVEMENT: 10/15 → 13/15 (+3) since your last attempt!
+```
+Or if score decreased:
+```
+Previous score: 13/15 → Current: 10/15 (-3). Keep studying!
+```
+
+8. **Save results to progress.json**: Add results under the `quizzes` key.
+
+For diagnostic quiz, append to `quizzes.diagnostic` array:
+```json
+{
+  "takenAt": "<ISO timestamp>",
+  "answers": { "fundamentals": "B", "search-navigation": "C", ... },
+  "scores": { "fundamentals": true, "search-navigation": true, ... },
+  "totalCorrect": 10,
+  "totalQuestions": 15,
+  "questionsUsed": { "fundamentals": "fund-2", "search-navigation": "search-4", ... }
+}
+```
+
+For module quiz, append to `quizzes.modules.<moduleId>` array:
+```json
+{
+  "takenAt": "<ISO timestamp>",
+  "correct": 4,
+  "total": 5,
+  "answers": ["B", "C", "A", "D", "B"],
+  "results": [true, true, false, true, true]
+}
+```
+
+Initialize `quizzes` key if it doesn't exist: `{ "diagnostic": [], "modules": {} }`.
+
+9. **XP for module quizzes** (diagnostic quizzes award no XP):
+   - 5/5 correct: +50 XP
+   - 4/5 correct: +30 XP
+   - 3/5 correct: +15 XP
+   - Below 3/5: No XP (encourage studying)
+
+   Apply XP using the same level progression formula as challenges. Update xp.total, recalculate level and toNextLevel.
+
+10. **Badge: quiz-ace**: If a module quiz scores 5/5 (100%), check if the user already has the `quiz-ace` badge. If not, award it and announce:
+```
+🏆 NEW BADGE: Quiz Ace - Score 100% on a module quiz!
+```
+
 ## Progress Schema
 
 When initializing progress.json:
@@ -221,6 +404,10 @@ When initializing progress.json:
   },
   "skills": {},
   "badges": [],
+  "quizzes": {
+    "diagnostic": [],
+    "modules": {}
+  },
   "stats": {
     "totalChallengesCompleted": 0,
     "totalTimeSpent": 0,

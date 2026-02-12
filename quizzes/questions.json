@@ -1,0 +1,1076 @@
+{
+  "version": "1.3.0",
+  "description": "Claude Code Dojo Quiz Questions - Test your Claude Code knowledge",
+  "totalQuestions": 75,
+  "modulesIncluded": 15,
+  "modulesExcluded": [
+    "git-basics"
+  ],
+  "modules": {
+    "fundamentals": {
+      "name": "Fundamentals",
+      "moduleDir": "01-fundamentals",
+      "questions": [
+        {
+          "id": "fund-1",
+          "question": "Claude Code has dedicated Read, Write, and Edit tools but also has a Bash tool that can run cat, echo, and sed. Why does Claude Code restrict itself from using Bash for file operations?",
+          "options": {
+            "A": "Dedicated tools give users visibility to review and approve each operation, which Bash obscures",
+            "B": "Bash commands can corrupt file encodings that dedicated tools preserve",
+            "C": "Bash commands are significantly slower than the dedicated tools",
+            "D": "Bash file operations don't work inside sandboxed environments",
+            "E": "Bash file operations bypass Claude Code's internal audit log, which dedicated tools write to for session replay"
+          },
+          "correct": "A",
+          "explanation": "Claude Code's dedicated tools give users visibility into exactly what's being read, written, or changed. Bash commands bundle operations opaquely, making it harder for users to review and approve actions. This is a core Claude Code design principle."
+        },
+        {
+          "id": "fund-2",
+          "question": "Claude Code's Edit tool will fail if you haven't Read the file first. What problem does this Read-first requirement actually prevent?",
+          "options": {
+            "A": "It prevents accidentally editing files that are currently locked by another process",
+            "B": "It prevents Claude Code from guessing at file contents and making incorrect string replacements",
+            "C": "It prevents editing files that exceed the maximum size limit",
+            "D": "It prevents race conditions when multiple Claude Code sessions edit the same file",
+            "E": "It prevents Edit from consuming excessive tokens by forcing a cached snapshot of the file into the context window"
+          },
+          "correct": "B",
+          "explanation": "Edit uses exact string matching \u2014 old_string must perfectly match the file. Without reading first, Claude Code would guess what's in the file, leading to failed edits or worse \u2014 incorrect replacements. The Read-first rule ensures Claude Code works with actual file contents."
+        },
+        {
+          "id": "fund-3",
+          "question": "You ask Claude Code to add a config section to an existing 200-line YAML file. It uses Write instead of Edit, replacing the entire file. What's the most likely consequence?",
+          "options": {
+            "A": "The YAML will have invalid syntax because Write doesn't validate YAML",
+            "B": "The file will be identical \u2014 Write and Edit produce the same result for text files",
+            "C": "The file permissions and ownership will change",
+            "D": "Write will truncate the file if it exceeds the 100-line output buffer limit",
+            "E": "Claude Code may accidentally alter or lose existing content it reconstructed from memory"
+          },
+          "correct": "E",
+          "explanation": "Write replaces the entire file. If Claude Code reconstructs 200 lines from memory, it may subtly alter whitespace, ordering, comments, or values. Edit targets only the specific section, leaving everything else byte-for-byte untouched."
+        },
+        {
+          "id": "fund-4",
+          "question": "Claude Code's Read tool can handle more than just text files. Which capability is accurately described?",
+          "options": {
+            "A": "Read can display images visually because Claude Code is multimodal, and can parse PDFs page-by-page",
+            "B": "Read converts images to text descriptions using OCR before displaying them",
+            "C": "Read can execute Jupyter notebooks and return only the final cell output",
+            "D": "Read streams video files frame-by-frame for visual analysis",
+            "E": "Read automatically decompiles binary executables into readable pseudocode for analysis"
+          },
+          "correct": "A",
+          "explanation": "The Read tool handles multiple file types natively. Images are presented visually (Claude is multimodal). PDFs require a pages parameter for large files (max 20 pages per request). Jupyter notebooks return all cells with code, text, and visualizations."
+        },
+        {
+          "id": "fund-5",
+          "question": "You need Claude Code to create 5 new files for a feature. What's the critical consideration beyond just using Write for each?",
+          "options": {
+            "A": "You must create all 5 files in a single Write call to ensure atomicity",
+            "B": "You should create them in alphabetical order so Claude Code can track dependencies",
+            "C": "Cross-file references (imports/exports) must be consistent \u2014 import paths must match actual filenames across all files",
+            "D": "You need to run a build step between each file creation to validate syntax",
+            "E": "Write creates files in a staging area first, requiring a Bash commit step to finalize them on disk"
+          },
+          "correct": "C",
+          "explanation": "Write is called once per file. The key insight is that cross-file references must be consistent \u2014 import paths must match actual filenames, exports must match what other files import. Describing the complete structure upfront helps Claude Code plan consistent references."
+        }
+      ]
+    },
+    "search-navigation": {
+      "name": "Search & Navigation",
+      "moduleDir": "02-search-navigation",
+      "questions": [
+        {
+          "id": "search-1",
+          "question": "Claude Code recommends a 'three-tool strategy' for understanding unfamiliar codebases. What is the correct sequence?",
+          "options": {
+            "A": "Read entry point -> Grep for imports -> Read each imported file",
+            "B": "Bash ls to list files -> Bash cat to read them -> Bash grep to search",
+            "C": "Glob to map file structure -> Grep to find patterns in contents -> Read to understand key files",
+            "D": "WebSearch for documentation -> Read README -> Grep for keywords",
+            "E": "Read package.json -> Glob for source files -> Grep for entry point references"
+          },
+          "correct": "C",
+          "explanation": "The three-tool strategy is Glob -> Grep -> Read. Glob maps the structure (e.g., **/*.js), Grep finds patterns in those files, Read dives deep into key files. Option A skips the mapping step. Option B uses Bash instead of dedicated tools."
+        },
+        {
+          "id": "search-2",
+          "question": "You're searching a Go codebase for 'interface{}' using Claude Code's Grep but get zero results despite knowing the pattern exists. What's wrong?",
+          "options": {
+            "A": "Grep doesn't support Go files \u2014 you need to set type: 'go' first",
+            "B": "The curly braces are being interpreted as regex quantifiers \u2014 you need to escape them as 'interface\\{\\}'",
+            "C": "Grep only searches text files and Go binaries are excluded",
+            "D": "You need to use multiline: true because interface{} spans multiple lines in Go",
+            "E": "Grep's default case-sensitive mode treats 'interface' as a reserved keyword and requires the -i flag to match it in source code"
+          },
+          "correct": "B",
+          "explanation": "Claude Code's Grep uses ripgrep which interprets curly braces as regex quantifiers. To search for literal braces (common in Go's interface{}), escape them: 'interface\\{\\}'. This is a documented Grep gotcha."
+        },
+        {
+          "id": "search-3",
+          "question": "Grep returns 500+ matches. You only need the first 10 results from TypeScript files. Which Grep parameters solve this?",
+          "options": {
+            "A": "Set max_results: 10 and file_type: 'typescript'",
+            "B": "Set limit: 10 and extension: '.ts'",
+            "C": "Pipe through Bash: rg pattern | head -10",
+            "D": "Set head_limit: 10 and glob: '*.ts'",
+            "E": "Set output_mode: 'truncated' and type: 'ts' to auto-limit large result sets"
+          },
+          "correct": "D",
+          "explanation": "Grep's head_limit parameter limits output (like piping to head), and glob filters by filename pattern. These are the actual Grep parameter names. Using Bash with rg should never be done when the Grep tool is available."
+        },
+        {
+          "id": "search-4",
+          "question": "You need to find where a JavaScript function is DEFINED, not just called. Which Grep pattern distinguishes definitions from call sites?",
+          "options": {
+            "A": "Search for 'functionName(' \u2014 only definitions have parentheses immediately after the name",
+            "B": "Search for 'export functionName' \u2014 definitions are always exported",
+            "C": "Search for 'functionName' with output_mode: 'definitions'",
+            "D": "Use the type: 'js' parameter which automatically filters to definition sites only",
+            "E": "Search for 'function\\s+functionName' or 'const\\s+functionName\\s*=' to match declaration patterns"
+          },
+          "correct": "E",
+          "explanation": "Definition patterns like 'function\\s+name' and 'const\\s+name\\s*=' specifically match declarations. Searching 'name(' (A) matches both definitions AND call sites. There's no 'definitions' output mode (C) or automatic definition filtering (D) in Grep."
+        },
+        {
+          "id": "search-5",
+          "question": "When should Claude Code use a Task tool with Explore agent instead of calling Glob/Grep directly?",
+          "options": {
+            "A": "When the search requires multiple rounds of exploration across many files, to avoid flooding the main context",
+            "B": "Only for codebases larger than 10,000 files where direct tools time out",
+            "C": "Never \u2014 the Explore agent just calls the same Glob/Grep tools, so it's redundant",
+            "D": "Always \u2014 Explore agents have access to more powerful search tools than the main conversation",
+            "E": "When you need to search across multiple git branches simultaneously, which direct tools cannot do"
+          },
+          "correct": "A",
+          "explanation": "Direct Glob/Grep is faster for simple, targeted searches. But for open-ended exploration requiring multiple rounds (different patterns, cross-referencing results), an Explore agent prevents flooding the main context window with intermediate results."
+        }
+      ]
+    },
+    "code-editing": {
+      "name": "Code Editing",
+      "moduleDir": "04-code-editing",
+      "questions": [
+        {
+          "id": "edit-1",
+          "question": "Claude Code's Edit tool fails with 'old_string not unique'. The string 'return null;' appears 3 times in the file. What's the best fix?",
+          "options": {
+            "A": "Use replace_all: true to change all three simultaneously",
+            "B": "Switch to Bash with sed and a line number to target the specific occurrence",
+            "C": "Delete the file with Bash rm and recreate it with Write",
+            "D": "Include more surrounding context in old_string (like the function name above it) to make it uniquely match one occurrence",
+            "E": "Pass a line_number parameter to Edit so it only matches the occurrence on that specific line"
+          },
+          "correct": "D",
+          "explanation": "Expanding old_string with surrounding context makes it match exactly one location. replace_all would change ALL three (wrong if only one needs changing). Bash sed should never be used when Edit is available."
+        },
+        {
+          "id": "edit-2",
+          "question": "You're renaming a variable from 'items' to 'cartItems' throughout a file, but 'items' also appears in comments and string literals you don't want to change. What's the safest approach?",
+          "options": {
+            "A": "Individual Edit calls targeting each variable usage with enough surrounding context to avoid hitting comments and strings",
+            "B": "Edit with replace_all: true \u2014 it will correctly skip comments and strings automatically",
+            "C": "Use Grep to find all occurrences first, then Edit with a regex pattern to match only variable references",
+            "D": "Rewrite the entire file with Write, manually fixing each occurrence in the new content",
+            "E": "Use Edit with scope: 'code-only' to restrict replacements to executable code regions and skip comments and strings"
+          },
+          "correct": "A",
+          "explanation": "Individual Edit calls with surrounding context let you change each variable reference precisely. replace_all does NOT skip comments or strings \u2014 it blindly replaces all occurrences. Edit doesn't support regex patterns."
+        },
+        {
+          "id": "edit-3",
+          "question": "Claude Code reads a file and sees '    const data = fetch(url);' with 4-space indentation. The Edit old_string uses a tab character instead. What happens?",
+          "options": {
+            "A": "Edit auto-normalizes whitespace and succeeds \u2014 tabs and spaces are treated equivalently",
+            "B": "Edit replaces the nearest approximate match and logs a whitespace warning",
+            "C": "Edit succeeds but converts the file's indentation to tabs going forward",
+            "D": "Edit detects the mismatch and prompts the user to choose between tabs and spaces before proceeding",
+            "E": "Edit fails because old_string must exactly match the file content \u2014 tabs and spaces are different characters"
+          },
+          "correct": "E",
+          "explanation": "Edit requires exact character matching. A tab is not the same as spaces. When copying from Read output, you must preserve the exact indentation. This is a common Claude Code pitfall. Edit does not auto-normalize (A), approximate match (B), convert indentation (C), or prompt interactively (D)."
+        },
+        {
+          "id": "edit-4",
+          "question": "You need to extract a utility function from a 300-line file into a new module. What's the correct Claude Code sequence?",
+          "options": {
+            "A": "Read both files, then use a single Edit call with a multi-file target to move the code",
+            "B": "Write the new file with the function, then Edit the original to remove the function and add an import, then Edit consumers to update their imports",
+            "C": "Use Bash mv to move the function's lines to a new file, then Edit the imports",
+            "D": "Copy the original file with Bash cp, then Edit both copies to their final form",
+            "E": "Use the Refactor tool with mode: 'extract-module' to handle the extraction, import rewiring, and consumer updates atomically"
+          },
+          "correct": "B",
+          "explanation": "Extraction follows: Write new module -> Edit original to remove function + add import -> Edit consumers. This uses targeted edits to preserve all unchanged code. Edit doesn't support multi-file targets."
+        },
+        {
+          "id": "edit-5",
+          "question": "After a multi-file refactor changing import paths, what's Claude Code's standard verification workflow?",
+          "options": {
+            "A": "Read every modified file back to visually confirm the changes look correct",
+            "B": "Use WebSearch to find documentation on the correct import syntax",
+            "C": "Grep for old import paths to catch any missed references, then run tests via Bash to verify it works",
+            "D": "Run git diff via Bash to review all changes at once",
+            "E": "Run the project's linter via Bash to detect any broken import references automatically"
+          },
+          "correct": "C",
+          "explanation": "Grep for old import paths catches any references Claude Code missed updating. Then running tests verifies the refactor works end-to-end. This Grep-then-test pattern is the standard Claude Code verification workflow."
+        }
+      ]
+    },
+    "debugging": {
+      "name": "Debugging",
+      "moduleDir": "05-debugging",
+      "questions": [
+        {
+          "id": "debug-1",
+          "question": "A user reports 'the app is broken'. What is Claude Code's correct debugging workflow?",
+          "options": {
+            "A": "Read the main entry file and look for obvious issues, then suggest fixes based on code review",
+            "B": "Bash to reproduce the error -> Read the file/line from stack trace -> Grep for the symbol -> Edit to fix",
+            "C": "WebSearch the error message to find known solutions, then apply the most upvoted fix",
+            "D": "Ask the user for the exact error message and steps to reproduce before taking any action",
+            "E": "Run the linter via Bash first to catch syntax errors, then Read any files with reported warnings"
+          },
+          "correct": "B",
+          "explanation": "Claude Code's debugging workflow chains tools: Bash (reproduce) -> Read (examine stack trace) -> Grep (understand symbol usage) -> Edit (targeted fix). Each tool informs the next step."
+        },
+        {
+          "id": "debug-2",
+          "question": "Claude Code encounters a stack trace pointing to line 47 of a 500-line file. How should it focus on the relevant code without reading the entire file?",
+          "options": {
+            "A": "Use Bash with 'sed -n 40,60p' to print the relevant section",
+            "B": "Use Grep with a line range filter to extract only lines 40-60",
+            "C": "Read the whole file \u2014 Claude Code needs full context to understand the bug",
+            "D": "Use Grep with the error message as the pattern and -C 10 for context lines around each match",
+            "E": "Use Read with offset: 40 and limit: 20 to get lines 40-60 around the error"
+          },
+          "correct": "E",
+          "explanation": "Read's offset and limit parameters let Claude Code focus on the relevant section. This preserves context window space. Grep doesn't have line range filters (B), and Bash sed (A) should be avoided when Read is available."
+        },
+        {
+          "id": "debug-3",
+          "question": "Claude Code gets 'ReferenceError: formatPrice is not defined'. It Greps and finds formatPrice defined in utils/pricing.js, but the error is in services/order.js. What should it investigate next?",
+          "options": {
+            "A": "Check if utils/pricing.js has a syntax error preventing it from loading",
+            "B": "Verify that formatPrice is properly exported from utils/pricing.js AND imported in services/order.js",
+            "C": "Check if there's a circular dependency between the two files",
+            "D": "Run npm install in case a missing dependency is preventing the module from loading",
+            "E": "Check if formatPrice is defined inside a conditional block or closure that limits its scope to certain runtime paths"
+          },
+          "correct": "B",
+          "explanation": "When a function exists but isn't found at the call site, the issue is usually the import chain. Claude Code should Grep for require/import patterns to check if the function is exported AND imported correctly."
+        },
+        {
+          "id": "debug-4",
+          "question": "After fixing a bug with Edit, what must Claude Code do before considering the task complete?",
+          "options": {
+            "A": "Read the modified file to confirm the Edit was applied correctly",
+            "B": "Commit the change with git so the fix isn't lost",
+            "C": "Run the test suite via Bash to verify the fix works AND doesn't break other tests",
+            "D": "Ask the user to review the change and confirm it looks correct",
+            "E": "Run the project's type checker via Bash to ensure no new type errors were introduced by the fix"
+          },
+          "correct": "C",
+          "explanation": "Running tests via Bash is essential after any fix. It verifies the specific bug is fixed AND catches regressions. Claude Code should never consider a debugging task complete without running tests."
+        },
+        {
+          "id": "debug-5",
+          "question": "A test keeps failing after Claude Code's fix attempt. Which approach is specifically AGAINST Claude Code's operating principles?",
+          "options": {
+            "A": "Reading the test file to understand what it actually expects",
+            "B": "Using Grep to search for similar patterns in other test files that pass",
+            "C": "Trying an alternative approach to the fix based on new understanding",
+            "D": "Retrying the same fix repeatedly, hoping the test environment is flaky",
+            "E": "Increasing the test timeout in case the fix introduced a performance regression"
+          },
+          "correct": "D",
+          "explanation": "Claude Code explicitly avoids brute-forcing. If an action fails, it should NOT retry the same approach. Instead, it should investigate root causes, try alternatives, or ask the user for guidance."
+        }
+      ]
+    },
+    "testing-tdd": {
+      "name": "Testing & TDD",
+      "moduleDir": "11-testing-tdd",
+      "questions": [
+        {
+          "id": "test-1",
+          "question": "Claude Code needs to run a project's test suite. Which tool does it use?",
+          "options": {
+            "A": "The Task tool with a test-runner subagent type",
+            "B": "The Read tool to parse test files and evaluate assertions",
+            "C": "The Bash tool to execute commands like 'node --test' or 'npm test'",
+            "D": "A dedicated Test tool that integrates with common test frameworks",
+            "E": "The Evaluate tool which executes test files in an isolated sandbox and returns pass/fail results"
+          },
+          "correct": "C",
+          "explanation": "Claude Code uses the Bash tool to execute test commands. There is no dedicated Test tool or test-runner subagent type. Tests are just shell commands."
+        },
+        {
+          "id": "test-2",
+          "question": "How does Claude Code run Node.js tests without installing Jest, Mocha, or other external frameworks?",
+          "options": {
+            "A": "It reads the test file and evaluates each assertion manually using the Read tool",
+            "B": "It generates a minimal test harness script and runs it with 'node test-harness.js'",
+            "C": "Node.js can't run tests without a framework \u2014 Claude Code always installs Jest first",
+            "D": "It wraps test files in a lightweight assertion shim that Claude Code bundles internally",
+            "E": "It uses 'node --test <file>' which invokes Node.js's built-in test runner"
+          },
+          "correct": "E",
+          "explanation": "Node.js has a built-in test runner invoked with 'node --test <file>'. This works with the node:test and node:assert modules. No external framework needed."
+        },
+        {
+          "id": "test-3",
+          "question": "Claude Code has just written a fix for a failing test. What's the correct next step?",
+          "options": {
+            "A": "Read the modified source file to visually confirm the change looks correct",
+            "B": "Move on to the next task \u2014 the fix addresses the reported issue",
+            "C": "Ask the user to verify the fix manually",
+            "D": "Run the full test suite via Bash to verify the fix works AND check for regressions",
+            "E": "Run only the previously failing test in isolation to confirm it passes before running the full suite"
+          },
+          "correct": "D",
+          "explanation": "Always run the full test suite after making changes. This verifies both that the specific fix works AND that nothing else broke. Claude Code should never skip this verification step."
+        },
+        {
+          "id": "test-4",
+          "question": "Claude Code needs to create a brand new test file. Which tool should it use?",
+          "options": {
+            "A": "Edit tool to scaffold the test structure into an empty file",
+            "B": "Write tool to create the new test file with its full content",
+            "C": "Bash with echo/heredoc to write the file and immediately run it",
+            "D": "Task tool with a code-generation agent to produce the test",
+            "E": "The Scaffold tool with template: 'test' to generate a framework-appropriate test skeleton"
+          },
+          "correct": "B",
+          "explanation": "The Write tool creates new files. Bash echo should be avoided for file creation when Write is available. Edit can only modify existing files. There is no Scaffold tool in Claude Code. Dedicated tools are always preferred."
+        },
+        {
+          "id": "test-5",
+          "question": "In TDD with Claude Code, what's the correct sequence of operations?",
+          "options": {
+            "A": "Write code with Write tool -> Write test file -> Run tests with Bash -> Fix failures",
+            "B": "Read existing code -> Write test and code simultaneously -> Run tests",
+            "C": "Use a Task agent to generate tests automatically from the source code",
+            "D": "Write a failing test first -> Run it with Bash to confirm it fails -> Write code to make it pass -> Run tests again",
+            "E": "Generate a test plan document first -> Get user approval -> Then write tests and code together"
+          },
+          "correct": "D",
+          "explanation": "TDD follows Red-Green-Refactor: Write a failing test (Red), write code to make it pass (Green), then refactor. Claude Code supports this with Write/Edit for files and Bash to run tests at each stage."
+        }
+      ]
+    },
+    "project-config": {
+      "name": "Project Configuration",
+      "moduleDir": "10-project-config",
+      "questions": [
+        {
+          "id": "config-1",
+          "question": "Where does Claude Code discover CLAUDE.md files?",
+          "options": {
+            "A": "In the current directory, every parent directory up to the git root, plus the home directory",
+            "B": "In a .claude/ configuration directory alongside settings.json",
+            "C": "Only at the git repository root \u2014 one CLAUDE.md per project",
+            "D": "Wherever the user specifies via a --config flag or CLAUDE_CONFIG environment variable",
+            "E": "In any directory listed in the CLAUDE_PATH environment variable, searched in order"
+          },
+          "correct": "A",
+          "explanation": "Claude Code walks up from the current directory to the git root, and also checks ~/.claude/. This allows project-wide, subfolder-specific, and personal global instructions to coexist."
+        },
+        {
+          "id": "config-2",
+          "question": "What is the primary purpose of a CLAUDE.md file?",
+          "options": {
+            "A": "To configure which AI model Claude Code uses and its temperature settings",
+            "B": "To provide project-specific instructions, conventions, and context that Claude Code follows",
+            "C": "To log a history of Claude Code sessions and their outcomes for the project",
+            "D": "To define environment variables and API endpoints Claude Code should use",
+            "E": "To declare tool permissions and sandbox configuration for the project"
+          },
+          "correct": "B",
+          "explanation": "CLAUDE.md provides instructions that override default behavior. It typically includes coding conventions, build commands, architecture notes, and project-specific guidelines."
+        },
+        {
+          "id": "config-3",
+          "question": "Where does Claude Code store its permission settings (which tools are auto-allowed, etc.) for a project?",
+          "options": {
+            "A": "In .claude/settings.json (committable for team) and .claude/settings.local.json (personal)",
+            "B": "In the CLAUDE.md file under a 'permissions' section",
+            "C": "In a claude.config.js file at the project root",
+            "D": "In package.json under a 'claude' key, similar to eslintConfig or prettier",
+            "E": "In .claude/permissions.json with a separate allowlist and denylist for each tool type"
+          },
+          "correct": "A",
+          "explanation": "Permission settings are stored in .claude/settings.json (shareable, committable) and .claude/settings.local.json (personal, git-ignored). This separation allows team-wide defaults with personal overrides."
+        },
+        {
+          "id": "config-4",
+          "question": "When multiple CLAUDE.md files exist (home directory, git root, subdirectory), which takes highest priority?",
+          "options": {
+            "A": "The one in the home directory, since it represents global user preferences",
+            "B": "The one at the git root, since it represents the canonical project configuration",
+            "C": "They're merged equally \u2014 conflicts produce an error requiring manual resolution",
+            "D": "The one closest to the current working directory overrides those further up",
+            "E": "They are loaded in alphabetical order by directory name, with later entries taking precedence"
+          },
+          "correct": "D",
+          "explanation": "CLAUDE.md files closer to the working directory take higher priority. A CLAUDE.md in a subdirectory can override instructions from parent directories, allowing subfolder-specific configurations."
+        },
+        {
+          "id": "config-5",
+          "question": "Which of these should NEVER appear in a CLAUDE.md file?",
+          "options": {
+            "A": "Build commands like 'npm run build' and 'pytest'",
+            "B": "Coding conventions like 'use camelCase for variables'",
+            "C": "Inline shell scripts that auto-execute when CLAUDE.md is loaded by Claude Code",
+            "D": "Architecture descriptions like 'this project uses a layered MVC pattern'",
+            "E": "API keys, database passwords, or authentication tokens"
+          },
+          "correct": "E",
+          "explanation": "CLAUDE.md is typically committed to version control. Secrets, API keys, and credentials must never go in it. Use environment variables or .env files for sensitive data. CLAUDE.md does not auto-execute shell scripts (C) \u2014 it's a static instructions file, so that concern doesn't apply."
+        }
+      ]
+    },
+    "effective-prompting": {
+      "name": "Effective Prompting",
+      "moduleDir": "12-effective-prompting",
+      "questions": [
+        {
+          "id": "prompt-1",
+          "question": "Which prompt will get the best results from Claude Code for debugging?",
+          "options": {
+            "A": "\"The login form submits but returns a 401. Check src/auth/login.js and the route in src/routes/auth.js\"",
+            "B": "\"Fix the authentication bug\"",
+            "C": "\"Something is wrong with login, look at the code and figure it out\"",
+            "D": "\"Debug the authentication system \u2014 check all files in src/auth/ and src/routes/\"",
+            "E": "\"Run the test suite for authentication and auto-fix any failures Claude Code finds\""
+          },
+          "correct": "A",
+          "explanation": "Specific prompts with symptoms (401 error), locations (exact files), and context get dramatically better results. Option D is too broad. Options B and C lack actionable details."
+        },
+        {
+          "id": "prompt-2",
+          "question": "You need Claude Code to build a complex feature touching 8 files. What's the most effective approach?",
+          "options": {
+            "A": "Write one detailed prompt describing everything, so Claude Code has full context in a single message",
+            "B": "Give Claude Code the final desired outcome and let it determine the steps autonomously",
+            "C": "Break it into focused, sequential steps \u2014 verify each one before moving to the next",
+            "D": "Describe the feature and ask Claude Code to create a plan, then tell it to execute the entire plan",
+            "E": "Use parallel subagents \u2014 one per file \u2014 so all 8 files are generated simultaneously for speed"
+          },
+          "correct": "C",
+          "explanation": "Sequential steps produce better results. Each step gets full attention, you can verify intermediate results, and errors don't compound. Options A and D risk misunderstandings propagating through 8 files."
+        },
+        {
+          "id": "prompt-3",
+          "question": "What is a 'constraint-based prompt' and why is it effective with Claude Code?",
+          "options": {
+            "A": "A prompt that limits the number of tokens Claude Code can use in its response",
+            "B": "A prompt that restricts Claude Code to using only specific tools for the task",
+            "C": "A prompt with a time limit that forces Claude Code to work faster",
+            "D": "A prompt that sets a maximum file count so Claude Code doesn't modify too many files at once",
+            "E": "A prompt specifying boundaries like 'don't modify the API interface' or 'no new dependencies', preventing unwanted changes"
+          },
+          "correct": "E",
+          "explanation": "Constraint-based prompts specify what NOT to do ('keep backward compatibility', 'use only standard library'). These prevent Claude Code from over-engineering or making changes outside the requested scope."
+        },
+        {
+          "id": "prompt-4",
+          "question": "When asking Claude Code to implement a feature, what additional context produces the most consistent results?",
+          "options": {
+            "A": "A link to the relevant documentation for the framework being used",
+            "B": "Examples of similar patterns already in the codebase (e.g., 'follow the pattern in src/routes/users.js')",
+            "C": "A detailed technical specification with UML diagrams",
+            "D": "The git log showing how similar features were implemented in previous commits",
+            "E": "A list of all project dependencies and their version numbers so Claude Code picks compatible APIs"
+          },
+          "correct": "B",
+          "explanation": "Pointing Claude Code to existing patterns ensures consistency \u2014 it can Read the example and replicate conventions. External docs (A) are useful but don't capture project-specific patterns."
+        },
+        {
+          "id": "prompt-5",
+          "question": "Why should you ask Claude Code to explain its approach before implementing a complex change?",
+          "options": {
+            "A": "Claude Code produces higher quality code when it plans first due to chain-of-thought reasoning",
+            "B": "It reduces token usage because planning is cheaper than generating code",
+            "C": "You can catch misunderstandings before code is written, avoiding expensive rework",
+            "D": "Claude Code requires explicit planning permission before modifying more than 3 files",
+            "E": "It forces Claude Code to read all relevant files first, improving context for the implementation"
+          },
+          "correct": "C",
+          "explanation": "Catching misalignment early is much cheaper than rewriting code. If Claude Code misunderstands the requirement, you want to know before it edits 8 files, not after."
+        }
+      ]
+    },
+    "code-generation": {
+      "name": "Code Generation",
+      "moduleDir": "13-code-generation",
+      "questions": [
+        {
+          "id": "codegen-1",
+          "question": "How does Claude Code ensure generated code matches your project's conventions?",
+          "options": {
+            "A": "It applies the conventions from CLAUDE.md only, without needing to read any source files",
+            "B": "It runs the project's linter after generating code and fixes any violations automatically",
+            "C": "It applies standard industry conventions (Airbnb style guide, Google style, etc.) by default",
+            "D": "It asks you which style guide to follow before generating any code",
+            "E": "It reads existing code and CLAUDE.md to learn the project's patterns, then generates matching code"
+          },
+          "correct": "E",
+          "explanation": "Claude Code reads existing files and CLAUDE.md together to understand naming conventions, file structure, import patterns, etc. CLAUDE.md alone (A) isn't sufficient \u2014 Claude Code also needs to see actual code examples. It doesn't auto-run linters or default to standard style guides."
+        },
+        {
+          "id": "codegen-2",
+          "question": "When generating a new module with multiple files, what should Claude Code do first?",
+          "options": {
+            "A": "Create the directory structure with Bash mkdir -p, then generate files into it",
+            "B": "Generate all files from its training knowledge of best practices for that framework",
+            "C": "Ask the user for a template or boilerplate to start from",
+            "D": "Read existing similar modules to understand the established pattern, then generate matching files",
+            "E": "Check the project's CLAUDE.md for a module generation template before creating any files"
+          },
+          "correct": "D",
+          "explanation": "Reading existing modules reveals established patterns (file naming, exports structure, test organization). Generating from general knowledge (B) risks inconsistency with the codebase."
+        },
+        {
+          "id": "codegen-3",
+          "question": "What's the primary risk of asking Claude Code to generate code without reading existing files first?",
+          "options": {
+            "A": "The code won't compile because Claude Code doesn't know which language version is being used",
+            "B": "Claude Code will refuse to generate code without first reading related files",
+            "C": "The generated code may use different conventions, naming, and patterns than the existing codebase",
+            "D": "The code will lack proper error handling since Claude Code needs examples to learn error patterns",
+            "E": "The generated code will exceed the Write tool's maximum file size limit due to verbose defaults"
+          },
+          "correct": "C",
+          "explanation": "Without reading existing code, Claude Code may use different naming conventions, import styles, or architectural approaches. It won't refuse (B), and the code will likely compile (A) \u2014 it just won't be consistent."
+        },
+        {
+          "id": "codegen-4",
+          "question": "Which prompt best leverages Claude Code's code generation capabilities?",
+          "options": {
+            "A": "\"Create a payments feature with full test coverage and documentation\"",
+            "B": "\"Look at how src/features/auth is structured, then create a similar structure for a payments feature with tests following the same patterns\"",
+            "C": "\"Generate the standard boilerplate for a new feature module in this framework\"",
+            "D": "\"Copy the auth feature to a new payments directory and rename all references\"",
+            "E": "\"Use the /scaffold skill to generate a payments feature from the project's built-in template\""
+          },
+          "correct": "B",
+          "explanation": "Referencing an existing feature as a template ensures consistency. It tells Claude Code exactly which patterns to follow, which file structure to mimic, and what test style to use."
+        },
+        {
+          "id": "codegen-5",
+          "question": "Claude Code follows a principle about what to avoid when generating code. Which is it?",
+          "options": {
+            "A": "Avoid generating more than 100 lines of code in a single Write call",
+            "B": "Avoid using third-party libraries that aren't already in the project's dependencies",
+            "C": "Avoid generating code without first creating a detailed plan file",
+            "D": "Avoid adding features, refactoring, or improvements beyond what was explicitly asked",
+            "E": "Avoid using language features newer than ES2020 to ensure maximum runtime compatibility"
+          },
+          "correct": "D",
+          "explanation": "Claude Code should avoid over-engineering \u2014 don't add extra features, unnecessary error handling, or unprompted refactoring. Do exactly what was asked, nothing more."
+        }
+      ]
+    },
+    "web-research": {
+      "name": "Web Research Tools",
+      "moduleDir": "14-web-research",
+      "questions": [
+        {
+          "id": "web-1",
+          "question": "What are Claude Code's two dedicated web research tools?",
+          "options": {
+            "A": "WebFetch and WebSearch \u2014 one processes a URL's content, the other searches the web",
+            "B": "Fetch and Crawl \u2014 one gets single pages, the other follows links",
+            "C": "Browser and Search \u2014 one renders pages, the other queries search engines",
+            "D": "HTTP and API \u2014 one makes GET requests, the other calls REST endpoints",
+            "E": "WebGet and WebQuery \u2014 one downloads page content, the other performs search engine queries"
+          },
+          "correct": "A",
+          "explanation": "WebFetch fetches and processes content from a specific URL. WebSearch performs web searches and returns results. These are the actual tool names in Claude Code."
+        },
+        {
+          "id": "web-2",
+          "question": "You use WebFetch on a Google Docs URL. What happens?",
+          "options": {
+            "A": "WebFetch downloads the document and converts it to markdown for processing",
+            "B": "WebFetch fails \u2014 it cannot access authenticated or private URLs like Google Docs, Confluence, or Jira",
+            "C": "WebFetch prompts you for your Google account credentials to access the document",
+            "D": "WebFetch retrieves a cached public version of the document if one exists",
+            "E": "WebFetch opens the URL in a headless browser to bypass authentication and extract the content"
+          },
+          "correct": "B",
+          "explanation": "WebFetch will fail for authenticated/private URLs. For services like Google Docs, Confluence, or Jira, you should look for specialized MCP tools that provide authenticated access."
+        },
+        {
+          "id": "web-3",
+          "question": "How does WebFetch process the web page content it retrieves?",
+          "options": {
+            "A": "It returns the raw HTML for Claude Code to parse directly",
+            "B": "It takes a screenshot and uses OCR to extract text",
+            "C": "It converts HTML to markdown, then processes it with a prompt using a small, fast model",
+            "D": "It strips all HTML tags and returns plain text content",
+            "E": "It renders the page with a headless browser engine and extracts the fully hydrated DOM as structured JSON"
+          },
+          "correct": "C",
+          "explanation": "WebFetch converts HTML to markdown, then processes the content with your prompt using a small, fast model. Results may be summarized if the content is very large."
+        },
+        {
+          "id": "web-4",
+          "question": "WebFetch includes a caching mechanism. How long does it cache responses?",
+          "options": {
+            "A": "For the entire Claude Code session until you restart",
+            "B": "24 hours, refreshed on each access",
+            "C": "Until you explicitly clear the cache with a Bash command",
+            "D": "30 minutes with an LRU eviction policy based on access frequency",
+            "E": "15 minutes with self-cleaning \u2014 no manual cache management needed"
+          },
+          "correct": "E",
+          "explanation": "WebFetch has a self-cleaning 15-minute cache. This speeds up repeated access to the same URL during a session without requiring manual cache management."
+        },
+        {
+          "id": "web-5",
+          "question": "You need to check the status of a GitHub pull request. What should Claude Code use instead of WebFetch?",
+          "options": {
+            "A": "The Read tool pointed at the GitHub URL",
+            "B": "WebSearch to find the PR page, then WebFetch to read it",
+            "C": "The gh CLI via Bash (e.g., 'gh pr view'), which provides authenticated, structured access",
+            "D": "An MCP server configured for GitHub API access",
+            "E": "The GitHub REST API directly via Bash curl with a personal access token from the environment"
+          },
+          "correct": "C",
+          "explanation": "For GitHub URLs, the gh CLI via Bash is preferred. Commands like 'gh pr view', 'gh issue view', and 'gh api' provide authenticated, structured access. While MCP (D) could work, gh is the recommended approach."
+        }
+      ]
+    },
+    "subagents": {
+      "name": "Subagents",
+      "moduleDir": "06-subagents",
+      "questions": [
+        {
+          "id": "sub-1",
+          "question": "Which tool launches subagents in Claude Code?",
+          "options": {
+            "A": "The Task tool with a subagent_type parameter (e.g., Bash, Explore, Plan)",
+            "B": "The Spawn tool which creates an independent agent process",
+            "C": "The Agent tool with a type parameter specifying the agent kind",
+            "D": "The Process tool with a mode: 'agent' parameter",
+            "E": "The Subagent tool with a kind parameter that accepts agent type strings"
+          },
+          "correct": "A",
+          "explanation": "The Task tool launches subagents. The key parameter is subagent_type which selects the agent kind. Despite the intuitive name, there is no 'Agent' tool in Claude Code."
+        },
+        {
+          "id": "sub-2",
+          "question": "How do you run multiple subagents in parallel?",
+          "options": {
+            "A": "Set parallel: true on a single Task call that lists all the agents",
+            "B": "Use a Bash script that launches agents in the background",
+            "C": "Include multiple Task tool calls in a single message \u2014 each runs independently",
+            "D": "Use the BatchTask tool which accepts an array of agent configurations",
+            "E": "Chain Task calls with the async: true parameter so they execute concurrently in a shared thread pool"
+          },
+          "correct": "C",
+          "explanation": "To run subagents in parallel, include multiple Task tool calls in one message. There's no parallel parameter, BatchTask tool, or need to use Bash for this."
+        },
+        {
+          "id": "sub-3",
+          "question": "What subagent type is specialized for fast, read-only codebase exploration?",
+          "options": {
+            "A": "The general-purpose agent \u2014 it has all tools and can explore efficiently",
+            "B": "The Search agent \u2014 designed specifically for code search operations",
+            "C": "The ReadOnly agent \u2014 a restricted variant that disables all write operations for safety",
+            "D": "The Plan agent \u2014 it analyzes codebases before suggesting changes",
+            "E": "The Explore agent \u2014 optimized for finding files, searching code, and answering questions about the codebase"
+          },
+          "correct": "E",
+          "explanation": "The Explore agent is specialized for fast codebase exploration. It has access to search tools (Glob, Grep, Read) but NOT editing tools. There is no 'Search' or 'ReadOnly' agent type."
+        },
+        {
+          "id": "sub-4",
+          "question": "A subagent returned useful results but you need it to do follow-up work. How do you continue its work?",
+          "options": {
+            "A": "Reference the previous output in a new Task call \u2014 the system maintains agent history automatically",
+            "B": "Use the resume parameter with the agent's ID \u2014 it continues with its full previous context preserved",
+            "C": "Copy the agent's output into a new Task call's prompt for context",
+            "D": "Subagents are stateless \u2014 you must start fresh with all context in the new prompt",
+            "E": "Set continuation: true on the new Task call to inherit the previous agent's tool permissions and memory"
+          },
+          "correct": "B",
+          "explanation": "Pass the agent's ID via the 'resume' parameter on a new Task call. The agent continues exactly where it left off with full context preserved."
+        },
+        {
+          "id": "sub-5",
+          "question": "When should you use a subagent instead of making direct Glob/Grep/Read tool calls?",
+          "options": {
+            "A": "Always \u2014 subagents are more reliable than direct tool calls",
+            "B": "Only when the user explicitly requests autonomous research",
+            "C": "When the search is simple and you know exactly what file or pattern to look for",
+            "D": "When the task needs multiple rounds of searching/reading that would flood the main context with intermediate results",
+            "E": "When the codebase exceeds 10,000 files, since subagents have higher file-count limits than direct tool calls"
+          },
+          "correct": "D",
+          "explanation": "Subagents protect the main context from excessive output during multi-round exploration. For simple, targeted searches, direct tool calls are faster and preferred."
+        }
+      ]
+    },
+    "background-tasks": {
+      "name": "Background Tasks",
+      "moduleDir": "15-background-tasks",
+      "questions": [
+        {
+          "id": "bg-1",
+          "question": "How do you run a Bash command in the background in Claude Code?",
+          "options": {
+            "A": "Append '&' to the end of the command string like in a normal shell",
+            "B": "Set the run_in_background: true parameter on the Bash tool call",
+            "C": "Wrap the command with 'nohup ... &' to daemonize it",
+            "D": "Use the BackgroundBash tool instead of the regular Bash tool",
+            "E": "Set async: true in the Bash tool's options parameter to enable non-blocking execution"
+          },
+          "correct": "B",
+          "explanation": "Set run_in_background: true on the Bash tool call. You don't need '&' or nohup. There is no separate BackgroundBash tool or async parameter. Claude Code handles the backgrounding internally."
+        },
+        {
+          "id": "bg-2",
+          "question": "After launching a background task, how do you check whether it's finished and get its output?",
+          "options": {
+            "A": "Use TaskOutput with the task_id \u2014 set block: false for a status check, or block: true to wait for completion",
+            "B": "Check the task's exit code file that's written to /tmp when it completes",
+            "C": "Poll with 'ps aux | grep' via Bash to check if the process is still running",
+            "D": "Background tasks automatically notify you when they're done \u2014 no checking needed",
+            "E": "Use the Bash tool to read the task's stdout log file at ~/.claude/tasks/<task_id>/output.log"
+          },
+          "correct": "A",
+          "explanation": "TaskOutput with the task_id retrieves output from background tasks. Set block: false for a non-blocking check, or block: true to wait. You can also Read the output file directly."
+        },
+        {
+          "id": "bg-3",
+          "question": "Which tool calls support the run_in_background parameter?",
+          "options": {
+            "A": "Only Bash \u2014 subagents always run in the foreground",
+            "B": "All tools support it \u2014 Read, Write, Edit, Bash, Grep, Glob can all run in background",
+            "C": "Both Bash and Task (subagents) \u2014 they return a task_id and output_file path",
+            "D": "Only Task (subagents) \u2014 Bash commands are too fast to need backgrounding",
+            "E": "Bash, Task, and Grep \u2014 since Grep can run long searches that benefit from backgrounding"
+          },
+          "correct": "C",
+          "explanation": "Both Bash and Task tool calls support run_in_background. Both return a task_id and output file path. Read, Write, Edit, Grep, etc. don't support it \u2014 they're designed to be fast and blocking."
+        },
+        {
+          "id": "bg-4",
+          "question": "When should you make parallel tool calls (multiple tools in one message) instead of sequential calls?",
+          "options": {
+            "A": "Always \u2014 parallel execution is faster and has no downsides",
+            "B": "When you need to process more than three tool calls \u2014 Claude Code batches parallel calls more efficiently at scale",
+            "C": "Never for Bash commands \u2014 only Read/Grep/Glob can safely run in parallel",
+            "D": "Only when you explicitly need to save time on a task with a deadline",
+            "E": "When the operations have no data dependencies \u2014 for example, reading multiple independent files or running separate git commands that don't affect each other"
+          },
+          "correct": "E",
+          "explanation": "Parallel calls work when operations are independent and have no data dependencies. If one call needs another's result (like reading a file before editing it), they must be sequential. This applies to ALL tool types including Bash."
+        },
+        {
+          "id": "bg-5",
+          "question": "How do you terminate a running background task that's taking too long?",
+          "options": {
+            "A": "Use Bash with 'kill' and the process PID",
+            "B": "Close and reopen the Claude Code session",
+            "C": "Background tasks have a built-in 2-minute timeout and stop automatically",
+            "D": "Use the TaskStop tool with the task_id",
+            "E": "Send an interrupt signal by calling TaskOutput with the cancel: true parameter"
+          },
+          "correct": "D",
+          "explanation": "Use TaskStop with the task_id to terminate any background task (shell, agent, or remote session). No need to find PIDs, restart sessions, or use a cancel parameter on TaskOutput."
+        }
+      ]
+    },
+    "agentic-loops": {
+      "name": "Agentic Loops (Ralph Loop)",
+      "moduleDir": "16-agentic-loops",
+      "questions": [
+        {
+          "id": "loop-1",
+          "question": "What is the Ralph Loop pattern in Claude Code?",
+          "options": {
+            "A": "An autonomous execution loop where Claude Code works continuously through tool calls until a task is complete",
+            "B": "A safety mechanism that loops back to ask user permission before each destructive action",
+            "C": "A feedback loop where Claude Code reads code, writes tests, and iterates until all tests pass",
+            "D": "A debugging loop that repeatedly runs failing tests and applies fixes until they pass",
+            "E": "A recursive planning pattern where Claude Code generates a plan, executes it, evaluates the result, and re-plans if needed"
+          },
+          "correct": "A",
+          "explanation": "The Ralph Loop is a general autonomous execution pattern where Claude Code chains tool calls continuously until the full task is complete. It's not limited to testing, permission checking, or recursive planning."
+        },
+        {
+          "id": "loop-2",
+          "question": "What is a 'completion promise' in the context of agentic loops?",
+          "options": {
+            "A": "A JavaScript Promise that resolves when the agentic loop finishes executing",
+            "B": "A contractual SLA that Claude Code provides for maximum loop execution time",
+            "C": "A guarantee from Claude Code that the task will complete without errors",
+            "D": "A callback function that Claude Code invokes when the loop terminates",
+            "E": "A clear definition of what 'done' looks like \u2014 the measurable exit criteria that tell the autonomous loop when to stop iterating"
+          },
+          "correct": "E",
+          "explanation": "A completion promise defines measurable exit criteria (e.g., 'all tests pass', 'file exists with X content'). Without clear criteria, the loop may stop too early or continue unnecessarily. It's not a JavaScript Promise, SLA, or callback."
+        },
+        {
+          "id": "loop-3",
+          "question": "When is the Ralph Loop pattern most appropriate?",
+          "options": {
+            "A": "For any task \u2014 autonomous execution is always more efficient than step-by-step",
+            "B": "Only for debugging tasks where the fix-test cycle naturally loops",
+            "C": "For multi-step tasks with clear completion criteria that benefit from autonomous execution without human review at each step",
+            "D": "Only when the user explicitly invokes the /ralph command",
+            "E": "For tasks that require accessing external APIs, since the loop can retry on transient failures automatically"
+          },
+          "correct": "C",
+          "explanation": "The Ralph Loop works best for multi-step tasks with clear 'done' criteria. It's overkill for simple tasks, and inappropriate when human judgment is needed at each step. It's not limited to API retry scenarios."
+        },
+        {
+          "id": "loop-4",
+          "question": "What makes a good prompt for an agentic loop?",
+          "options": {
+            "A": "A brief, high-level goal like 'make the app work' \u2014 the loop figures out the details",
+            "B": "A prompt with no constraints so the loop has maximum flexibility",
+            "C": "A series of numbered steps for the loop to follow sequentially",
+            "D": "A specific task with clear completion criteria, explicit constraints, and expected outputs",
+            "E": "A prompt that sets a maximum iteration count to prevent runaway loops from consuming too many tokens"
+          },
+          "correct": "D",
+          "explanation": "Good loop prompts include: specific task description, clear 'done' criteria, constraints (what NOT to do), and expected outputs. Vague prompts (A) and unconstrained loops (B) lead to unpredictable results. Iteration limits (E) are a safety measure, not what makes a prompt good."
+        },
+        {
+          "id": "loop-5",
+          "question": "What critical risk must you manage when using autonomous agentic loops?",
+          "options": {
+            "A": "The loop may make irreversible changes (deleting files, pushing code) without human review at each step",
+            "B": "Token consumption \u2014 loops use exponentially more tokens with each iteration",
+            "C": "Loops can only access a subset of tools, limiting their capabilities",
+            "D": "Network timeouts \u2014 loops that run longer than 5 minutes are automatically terminated",
+            "E": "Memory leaks \u2014 each loop iteration allocates context that is never freed, eventually crashing the session"
+          },
+          "correct": "A",
+          "explanation": "Autonomous loops can make destructive changes without human confirmation at each step. Clear constraints and careful scope are essential. There's no special token scaling, tool restrictions, timeout, or memory leak behavior for loops."
+        }
+      ]
+    },
+    "skills-hooks": {
+      "name": "Skills & Hooks",
+      "moduleDir": "07-skills-hooks",
+      "questions": [
+        {
+          "id": "skill-1",
+          "question": "What file format defines a Claude Code skill?",
+          "options": {
+            "A": "A SKILL.md file with YAML frontmatter (name, description) and markdown body containing the skill's prompt/instructions",
+            "B": "A JavaScript/TypeScript module that exports handler functions",
+            "C": "A JSON configuration file (skill.json) with tool definitions and trigger patterns",
+            "D": "A Python script in the skills/ directory that Claude Code executes on invocation",
+            "E": "A TOML configuration file (skill.toml) with sections for metadata, triggers, and inline prompt templates"
+          },
+          "correct": "A",
+          "explanation": "Skills are SKILL.md files \u2014 YAML frontmatter for metadata (name, description, user-invocable) and markdown body for instructions. They're prompts, not executable code or TOML configuration."
+        },
+        {
+          "id": "skill-2",
+          "question": "What makes a skill appear as a slash command (e.g., /review) that users can type?",
+          "options": {
+            "A": "Placing it in a directory named 'commands/' instead of 'skills/'",
+            "B": "Adding a 'trigger: slash' field to the YAML frontmatter",
+            "C": "Registering it in plugin.json under the 'commands' array",
+            "D": "Setting 'user-invocable: true' in the SKILL.md frontmatter",
+            "E": "Naming the file with a leading slash character (e.g., '/review.skill.md') which Claude Code parses as a command"
+          },
+          "correct": "D",
+          "explanation": "The user-invocable: true frontmatter field makes a skill available as a slash command. Without it, the skill can only be triggered by other agents or the system. The filename does not affect invocability."
+        },
+        {
+          "id": "skill-3",
+          "question": "Which Claude Code hook event fires BEFORE a tool is executed and can prevent it from running?",
+          "options": {
+            "A": "BeforeToolUse \u2014 the standard naming convention for pre-execution hooks",
+            "B": "PreToolUse \u2014 it pauses execution and opens an interactive approval prompt for the user",
+            "C": "ToolValidation \u2014 it validates tool parameters before execution proceeds",
+            "D": "OnToolCall \u2014 it intercepts the call and can return an early response",
+            "E": "PreToolUse \u2014 it can block execution by returning a JSON object with {\"decision\": \"block\"} from stdout or exiting with a non-zero code"
+          },
+          "correct": "E",
+          "explanation": "PreToolUse (not BeforeToolUse, despite that sounding more intuitive) fires before tool execution. It can block by exiting non-zero or returning {\"decision\": \"block\"} on stdout. It does not open an interactive prompt. PostToolUse fires after and cannot block."
+        },
+        {
+          "id": "skill-4",
+          "question": "What's the key difference between PreToolUse and PostToolUse hooks?",
+          "options": {
+            "A": "PreToolUse runs synchronously while PostToolUse runs asynchronously",
+            "B": "PreToolUse has access to tool parameters while PostToolUse only sees the tool name",
+            "C": "PreToolUse can block/prevent the tool from executing; PostToolUse runs after and cannot block",
+            "D": "PreToolUse is for read-only tools while PostToolUse is for write tools",
+            "E": "PreToolUse receives the tool input as environment variables while PostToolUse receives the full tool output as JSON on stdin"
+          },
+          "correct": "C",
+          "explanation": "PreToolUse can block tool execution (e.g., preventing a destructive Bash command). PostToolUse fires after the tool has already executed, so it can only react, not prevent."
+        },
+        {
+          "id": "skill-5",
+          "question": "What does the 'allowed-tools' field in SKILL.md frontmatter control?",
+          "options": {
+            "A": "Which tools the user must grant permission for before the skill can run",
+            "B": "Which tools Claude Code is allowed to use while the skill is active \u2014 limiting the skill's capabilities",
+            "C": "Which tools are blocked from running during skill execution for safety",
+            "D": "Which tools are automatically approved without user confirmation during the skill",
+            "E": "Which tools trigger the skill when invoked \u2014 for example, listing 'Bash' means the skill activates whenever Bash runs"
+          },
+          "correct": "B",
+          "explanation": "The allowed-tools field (e.g., 'Read, Write, Edit, Bash') specifies which tools are available during skill execution. This is a whitelist, not a blocklist or trigger list \u2014 tools not listed are unavailable."
+        }
+      ]
+    },
+    "mcp-integration": {
+      "name": "MCP Integration",
+      "moduleDir": "08-mcp-integration",
+      "questions": [
+        {
+          "id": "mcp-1",
+          "question": "Where does Claude Code look for MCP server configuration?",
+          "options": {
+            "A": "In CLAUDE.md under an 'mcp-servers' section",
+            "B": "In .mcp.json at the project root (or ~/.claude/.mcp.json for global config)",
+            "C": "In package.json under a 'mcpServers' key",
+            "D": "In .claude/settings.json alongside permission settings",
+            "E": "In a dedicated mcp-config.yaml file that supports both YAML and JSON syntax for server definitions"
+          },
+          "correct": "B",
+          "explanation": ".mcp.json in the project root configures project-specific MCP servers. Global config goes in ~/.claude/.mcp.json. It's a separate file from settings.json, CLAUDE.md, or any YAML config."
+        },
+        {
+          "id": "mcp-2",
+          "question": "An MCP server named 'github' provides a tool called 'create_issue'. How does this tool appear in Claude Code?",
+          "options": {
+            "A": "As 'create_issue' \u2014 tool names are globally unique across all servers",
+            "B": "As 'github.create_issue' \u2014 using dot notation for namespacing",
+            "C": "As 'mcp__github_create_issue' \u2014 using the mcp__ prefix and server name for namespacing",
+            "D": "As 'mcp:github:create_issue' \u2014 using colon-separated namespacing",
+            "E": "As 'mcp__github__create_issue' \u2014 using double underscores between every segment for consistent delimiter parsing"
+          },
+          "correct": "C",
+          "explanation": "MCP tools follow the convention mcp__<serverName>_<toolName>. Double underscores separate the mcp prefix from the server name, then a single underscore separates the server name from the tool name. This prevents naming conflicts between servers."
+        },
+        {
+          "id": "mcp-3",
+          "question": "What are the two transport types MCP servers can use to communicate with Claude Code?",
+          "options": {
+            "A": "stdio (local process via stdin/stdout) and SSE (remote server via Server-Sent Events)",
+            "B": "gRPC (binary protocol) and GraphQL (query language)",
+            "C": "HTTP (REST API calls) and WebSocket (bidirectional streaming)",
+            "D": "TCP sockets (direct connection) and Unix domain sockets (local IPC)",
+            "E": "stdio (local process via stdin/stdout) and HTTP with long-polling (remote server via chunked transfer encoding)"
+          },
+          "correct": "A",
+          "explanation": "MCP supports stdio (standard I/O for local processes \u2014 most common) and SSE (Server-Sent Events for remote HTTP servers). These are the two documented transport types. HTTP long-polling is not a supported MCP transport."
+        },
+        {
+          "id": "mcp-4",
+          "question": "What security consideration is most critical when adding MCP servers to your project?",
+          "options": {
+            "A": "MCP servers run in a sandboxed container with restricted filesystem access",
+            "B": "MCP servers are verified by Anthropic's security team before they can be used",
+            "C": "MCP servers are read-only by default and need explicit write permissions in .mcp.json",
+            "D": "MCP servers can execute arbitrary code and access system resources \u2014 only use trusted servers",
+            "E": "MCP servers require a signed certificate from the MCP Registry before Claude Code will load them"
+          },
+          "correct": "D",
+          "explanation": "MCP servers can execute arbitrary code and access files, network, etc. They're NOT sandboxed (A), pre-verified (B), or certificate-gated (E). Only use servers from trusted sources and review their code."
+        },
+        {
+          "id": "mcp-5",
+          "question": "What capabilities can an MCP server provide to Claude Code?",
+          "options": {
+            "A": "Tools (callable functions) and resources (data sources) \u2014 prompts are handled separately by CLAUDE.md",
+            "B": "Only new tools (callable functions) that extend Claude Code's action set",
+            "C": "Only data access \u2014 MCP servers read external systems but can't take actions",
+            "D": "Only authentication \u2014 MCP servers handle OAuth/API keys for external services",
+            "E": "Tools (callable functions), resources (readable data sources), and prompts (reusable prompt templates) \u2014 the three core MCP primitives"
+          },
+          "correct": "E",
+          "explanation": "MCP servers can provide tools (actions), resources (data), and prompts (templates). These three core primitives make MCP a comprehensive extensibility mechanism. Prompts are an MCP capability, not limited to CLAUDE.md."
+        }
+      ]
+    },
+    "plugin-development": {
+      "name": "Plugin Development",
+      "moduleDir": "09-plugin-development",
+      "questions": [
+        {
+          "id": "plugin-1",
+          "question": "Where is a Claude Code plugin's manifest file located?",
+          "options": {
+            "A": "In .claude-plugin/plugin.json \u2014 the .claude-plugin/ directory identifies a plugin",
+            "B": "In a .claude/ directory as plugin-manifest.json",
+            "C": "At the project root as plugin.json (similar to package.json)",
+            "D": "In any directory, specified by a PLUGIN_PATH environment variable",
+            "E": "In .claude-plugin/manifest.yaml \u2014 YAML format is required for multi-line descriptions and complex metadata"
+          },
+          "correct": "A",
+          "explanation": "The plugin manifest lives at .claude-plugin/plugin.json. The presence of a .claude-plugin/ directory is what identifies a project as a Claude Code plugin. It uses JSON, not YAML."
+        },
+        {
+          "id": "plugin-2",
+          "question": "What does ${CLAUDE_PLUGIN_ROOT} resolve to in hook commands and skill configurations?",
+          "options": {
+            "A": "The Claude Code installation directory (e.g., /usr/local/lib/claude-code/)",
+            "B": "The user's home directory ~/.claude/plugins/",
+            "C": "The current working directory where Claude Code was launched",
+            "D": "The root directory of the currently active plugin, enabling portable file references",
+            "E": "The nearest parent directory containing a .git folder, ensuring paths stay within the repository boundary"
+          },
+          "correct": "D",
+          "explanation": "${CLAUDE_PLUGIN_ROOT} resolves to the plugin's own root directory. This lets hooks and skills reference files relative to the plugin regardless of where it's installed. It is not related to git roots or installation directories."
+        },
+        {
+          "id": "plugin-3",
+          "question": "How does Claude Code discover and load plugins?",
+          "options": {
+            "A": "Plugins must be registered via 'claude plugin install <name>' command",
+            "B": "Auto-discovered by finding .claude-plugin/plugin.json directories in the project path",
+            "C": "Listed in a plugins.json file at the project root",
+            "D": "Installed via npm and registered in package.json dependencies",
+            "E": "Declared in .claude/settings.json under a 'plugins' array with paths to each plugin directory"
+          },
+          "correct": "B",
+          "explanation": "Claude Code auto-discovers plugins by scanning for .claude-plugin/plugin.json files. No manual registration, npm installation, settings.json entry, or configuration file needed."
+        },
+        {
+          "id": "plugin-4",
+          "question": "What is a .local.md file used for in plugin development?",
+          "options": {
+            "A": "Localization strings for translating plugin UI to different languages",
+            "B": "Local configuration overrides that take priority over the plugin's default settings",
+            "C": "Local test configuration files that override the plugin's default test fixtures during development",
+            "D": "Local test fixtures specific to the developer's machine",
+            "E": "Developer-specific local notes and environment-specific instructions that are automatically git-ignored so they don't ship with the distributed plugin"
+          },
+          "correct": "E",
+          "explanation": ".local.md files contain development notes and environment-specific instructions for a developer's individual setup. They're automatically git-ignored so they don't get distributed with the plugin."
+        },
+        {
+          "id": "plugin-5",
+          "question": "What components can a Claude Code plugin package together?",
+          "options": {
+            "A": "Only skills (slash commands) \u2014 hooks and agents are configured separately",
+            "B": "Only CLAUDE.md instructions and settings.json overrides",
+            "C": "Only custom tools defined as JavaScript functions",
+            "D": "Skills, hooks, agents, and MCP server configurations \u2014 bundled as a distributable unit",
+            "E": "Skills and hooks only \u2014 MCP servers must be configured separately in .mcp.json and cannot be bundled"
+          },
+          "correct": "D",
+          "explanation": "A plugin bundles skills, hooks, agents, and MCP configurations together. MCP configs can be included in the plugin bundle. This makes plugins a complete extensibility package that can be shared and installed as a unit."
+        }
+      ]
+    }
+  }
+}

@@ -86,7 +86,30 @@
             </div>
         </div>
 
-        <!-- Recent Activity -->
+        <!-- Quiz Results Section -->
+        <h2 class="text-2xl font-bold mb-4">Quiz Results</h2>
+        <div class="bg-dojo-darker rounded-xl p-6 mb-8" id="quizSection">
+            <div class="text-gray-500" id="noQuizzes">Run <code class="bg-gray-700 px-2 py-1 rounded text-sm">/dojo quiz</code> to test your knowledge!</div>
+            <div id="quizContent" style="display: none;">
+                <!-- Diagnostic Score -->
+                <div id="diagnosticResult" style="display: none;" class="mb-6">
+                    <h3 class="text-lg font-semibold mb-3 text-dojo-accent">Latest Diagnostic</h3>
+                    <div class="flex items-center gap-4 mb-3">
+                        <div class="text-3xl font-bold"><span id="diagScore">0</span><span class="text-gray-500 text-lg">/15</span></div>
+                        <div class="text-sm text-gray-400" id="diagDate"></div>
+                        <div id="diagImprovement" class="text-sm font-semibold" style="display: none;"></div>
+                    </div>
+                    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2" id="diagModules"></div>
+                </div>
+                <!-- Module Quiz History -->
+                <div id="moduleQuizResults" style="display: none;">
+                    <h3 class="text-lg font-semibold mb-3 text-dojo-accent">Module Quizzes</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3" id="moduleQuizGrid"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Skills Progress -->
         <h2 class="text-2xl font-bold mb-4">Skills Progress</h2>
         <div class="bg-dojo-darker rounded-xl p-6" id="skillsContainer">
             <div class="text-gray-500">Complete challenges to track skill progress!</div>
@@ -103,7 +126,8 @@
             'no-hints-5': { name: 'Self-Reliant', icon: '🧠', description: 'Complete 5 challenges without hints' },
             'speed-demon': { name: 'Speed Demon', icon: '⚡', description: 'Complete advanced challenge in under 2 minutes' },
             'git-guru': { name: 'Git Guru', icon: '📚', description: 'Master all Git challenges' },
-            'all-complete': { name: 'Dojo Master', icon: '🥋', description: 'Complete all 70 challenges' }
+            'all-complete': { name: 'Dojo Master', icon: '🥋', description: 'Complete all 70 challenges' },
+            'quiz-ace': { name: 'Quiz Ace', icon: '🎯', description: 'Score 100% on a module quiz' }
         };
 
         // Module config
@@ -217,6 +241,98 @@
                         `).join('')}
                     </div>
                 `;
+            }
+
+            // Quiz Results
+            const quizzes = progress.quizzes || { diagnostic: [], modules: {} };
+            const hasDiagnostic = quizzes.diagnostic && quizzes.diagnostic.length > 0;
+            const hasModuleQuizzes = quizzes.modules && Object.keys(quizzes.modules).length > 0;
+
+            if (hasDiagnostic || hasModuleQuizzes) {
+                document.getElementById('noQuizzes').style.display = 'none';
+                document.getElementById('quizContent').style.display = 'block';
+            }
+
+            if (hasDiagnostic) {
+                const latest = quizzes.diagnostic[quizzes.diagnostic.length - 1];
+                document.getElementById('diagnosticResult').style.display = 'block';
+                document.getElementById('diagScore').textContent = latest.totalCorrect;
+                document.getElementById('diagDate').textContent = new Date(latest.takenAt).toLocaleDateString();
+
+                // Show improvement if more than one attempt
+                if (quizzes.diagnostic.length > 1) {
+                    const prev = quizzes.diagnostic[quizzes.diagnostic.length - 2];
+                    const delta = latest.totalCorrect - prev.totalCorrect;
+                    const improvEl = document.getElementById('diagImprovement');
+                    improvEl.style.display = 'inline';
+                    if (delta > 0) {
+                        improvEl.textContent = `+${delta} improvement`;
+                        improvEl.className = 'text-sm font-semibold text-green-400';
+                    } else if (delta < 0) {
+                        improvEl.textContent = `${delta} from last`;
+                        improvEl.className = 'text-sm font-semibold text-red-400';
+                    } else {
+                        improvEl.textContent = 'Same as last';
+                        improvEl.className = 'text-sm font-semibold text-gray-400';
+                    }
+                }
+
+                // Module results grid
+                const moduleNames = {
+                    'fundamentals': 'Fundamentals', 'search-navigation': 'Search & Nav',
+                    'code-editing': 'Code Editing', 'debugging': 'Debugging',
+                    'testing-tdd': 'Testing & TDD', 'project-config': 'Project Config',
+                    'effective-prompting': 'Prompting', 'code-generation': 'Code Gen',
+                    'web-research': 'Web Research', 'subagents': 'Subagents',
+                    'background-tasks': 'Background', 'agentic-loops': 'Ralph Loop',
+                    'skills-hooks': 'Skills & Hooks', 'mcp-integration': 'MCP',
+                    'plugin-development': 'Plugin Dev'
+                };
+                document.getElementById('diagModules').innerHTML = Object.entries(latest.scores || {}).map(([mod, passed]) => `
+                    <div class="flex items-center gap-2 bg-gray-800 rounded px-3 py-2 text-sm">
+                        <span>${passed ? '✅' : '❌'}</span>
+                        <span class="${passed ? 'text-gray-300' : 'text-red-300'}">${moduleNames[mod] || mod}</span>
+                    </div>
+                `).join('');
+            }
+
+            if (hasModuleQuizzes) {
+                document.getElementById('moduleQuizResults').style.display = 'block';
+                const moduleNames = {
+                    'fundamentals': 'Fundamentals', 'search-navigation': 'Search & Nav',
+                    'code-editing': 'Code Editing', 'debugging': 'Debugging',
+                    'testing-tdd': 'Testing & TDD', 'project-config': 'Project Config',
+                    'effective-prompting': 'Prompting', 'code-generation': 'Code Gen',
+                    'web-research': 'Web Research', 'subagents': 'Subagents',
+                    'background-tasks': 'Background', 'agentic-loops': 'Ralph Loop',
+                    'skills-hooks': 'Skills & Hooks', 'mcp-integration': 'MCP',
+                    'plugin-development': 'Plugin Dev'
+                };
+                document.getElementById('moduleQuizGrid').innerHTML = Object.entries(quizzes.modules).map(([modId, attempts]) => {
+                    const latest = attempts[attempts.length - 1];
+                    const pct = Math.round((latest.correct / latest.total) * 100);
+                    const isPerfect = latest.correct === latest.total;
+                    const barColor = isPerfect ? 'bg-dojo-gold' : pct >= 60 ? 'bg-green-500' : 'bg-red-500';
+                    let trend = '';
+                    if (attempts.length > 1) {
+                        const prev = attempts[attempts.length - 2];
+                        const delta = latest.correct - prev.correct;
+                        if (delta > 0) trend = `<span class="text-green-400 text-xs">+${delta}</span>`;
+                        else if (delta < 0) trend = `<span class="text-red-400 text-xs">${delta}</span>`;
+                    }
+                    return `
+                        <div class="bg-gray-800 rounded-lg p-3">
+                            <div class="flex justify-between items-center mb-2">
+                                <span class="font-semibold text-sm">${moduleNames[modId] || modId}</span>
+                                <span class="text-sm">${latest.correct}/${latest.total} ${trend}</span>
+                            </div>
+                            <div class="w-full bg-gray-700 rounded-full h-2">
+                                <div class="${barColor} h-2 rounded-full transition-all" style="width: ${pct}%"></div>
+                            </div>
+                            ${isPerfect ? '<div class="text-xs text-dojo-gold mt-1">🎯 Perfect!</div>' : ''}
+                        </div>
+                    `;
+                }).join('');
             }
         }
 
