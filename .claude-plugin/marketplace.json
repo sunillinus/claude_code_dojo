@@ -1,10 +1,14 @@
 {
   "name": "sunillinus-claude-code-dojo",
+  "owner": {
+    "name": "Sunil",
+    "url": "https://github.com/sunillinus"
+  },
   "plugins": [
     {
       "name": "claude-code-dojo",
       "description": "Learn Claude Code through hands-on challenges with progress tracking and gamification",
-      "path": "."
+      "source": "."
     }
   ]
 }
