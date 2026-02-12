@@ -1,37 +1,12 @@
 {
-  "description": "Claude Code Dojo progress tracking hook",
   "hooks": {
     "PostToolUse": [
       {
-        "matcher": {
-          "tool_name": "Write"
-        },
         "hooks": [
           {
             "type": "command",
-            "command": "python3 ${CLAUDE_PLUGIN_ROOT}/hooks/track-progress.py"
-          }
-        ]
-      },
-      {
-        "matcher": {
-          "tool_name": "Edit"
-        },
-        "hooks": [
-          {
-            "type": "command",
-            "command": "python3 ${CLAUDE_PLUGIN_ROOT}/hooks/track-progress.py"
-          }
-        ]
-      },
-      {
-        "matcher": {
-          "tool_name": "Bash"
-        },
-        "hooks": [
-          {
-            "type": "command",
-            "command": "python3 ${CLAUDE_PLUGIN_ROOT}/hooks/track-progress.py"
+            "command": "python3 ${CLAUDE_PLUGIN_ROOT}/hooks/track-progress.py",
+            "timeout": 10
           }
         ]
       }
