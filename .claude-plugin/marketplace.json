@@ -8,7 +8,7 @@
     {
       "name": "claude-code-dojo",
       "description": "Learn Claude Code through hands-on challenges with progress tracking and gamification",
-      "source": "."
+      "source": "./"
     }
   ]
 }
