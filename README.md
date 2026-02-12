@@ -5,14 +5,15 @@ Learn Claude Code through hands-on challenges with progress tracking and gamific
 ## Installation
 
 ### From GitHub (recommended)
-```bash
+```
 /plugin marketplace add sunillinus/claude_code_dojo
 /plugin install claude-code-dojo@sunillinus-claude-code-dojo
 ```
+Then restart Claude Code to load the plugin.
 
 ### From local path
 ```bash
-claude config add plugins /path/to/claude_code_dojo
+claude --plugin-dir /path/to/claude_code_dojo
 ```
 
 ## Usage
