@@ -549,22 +549,22 @@
       "xpReward": 300
     },
     "16-001": {
-      "title": "Understanding Ralph Loop",
+      "title": "Your First Ralph Loop",
       "difficulty": "intermediate",
       "xpReward": 200
     },
     "16-002": {
-      "title": "Start Your First Loop",
+      "title": "Crafting Completion Promises",
       "difficulty": "intermediate",
       "xpReward": 225
     },
     "16-003": {
-      "title": "Completion Promises",
+      "title": "Multi-Phase Loops",
       "difficulty": "advanced",
       "xpReward": 275
     },
     "16-004": {
-      "title": "Complex Iterative Tasks",
+      "title": "Complex Iterative Task",
       "difficulty": "advanced",
       "xpReward": 350
     }

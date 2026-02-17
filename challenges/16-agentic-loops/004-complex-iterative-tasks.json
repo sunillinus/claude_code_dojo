@@ -1,47 +1,47 @@
 {
   "id": "16-004",
   "module": "agentic-loops",
-  "title": "Complex Iterative Tasks",
-  "description": "Design complete Ralph Loop workflows for complex, multi-phase tasks. Learn to decompose large projects into ordered loop phases, choose the right tool for each phase, and avoid common anti-patterns.",
+  "title": "Complex Iterative Task",
+  "description": "Use Ralph Loop to tackle a large-scale codebase cleanup — the kind of task where agentic loops really shine.\n\n## When Ralph Loop Shines\n\nRalph Loop is at its best with **large-scale, well-defined cleanup** tasks:\n- The same kind of fix needed across many files\n- Clear, measurable criteria for \"done\"\n- Mechanical changes that don't require creative judgment\n\nExamples: removing all debug logs from a project, adding error handling to every async function, or standardizing naming conventions across a codebase.\n\n## Anti-Patterns to Avoid\n\n- **Scope too broad**: \"Make the project production-ready\" — too vague, unmeasurable\n- **Unmeasurable promises**: \"Improve code quality\" — what does that mean?\n- **Conflicting changes**: \"Make code DRY and also self-contained\" — contradictory goals\n- **No verification step**: Always verify Ralph Loop's work when it finishes\n\n## The Verification Step\n\nAfter Ralph Loop completes, **always verify**:\n1. Read key files to spot-check the changes\n2. Run any available tests or linters\n3. Search for patterns that should have been eliminated\n4. Confirm nothing was broken by the changes\n\nTrust but verify. Ralph Loop is powerful but not infallible.\n\n## When to Cancel and Re-scope\n\nIf Ralph Loop is making the same mistake repeatedly or going in circles:\n- Cancel with Ctrl+C\n- Narrow the scope (fewer files, simpler criteria)\n- Re-run with a more focused prompt\n\n## Your Exercise\n\nThis workspace contains a **messy inventory API** with multiple categories of problems across 9 files. Your job: use Ralph Loop to bring the codebase up to standard.\n\n**Problems in the codebase:**\n- `console.log` debug statements left in handler files\n- TODO comments scattered across files (unimplemented features)\n- No error handling on any async function\n- No JSDoc documentation on any function\n- Inconsistent naming: some files use `snake_case` variables while others use `camelCase`\n\n**Your strategy:** Decide whether to use one big Ralph Loop or multiple phases. Then execute with `/ralph-loop:ralph-loop` and verify the results.\n\n**Suggested approach (multi-phase):**\n\nPhase 1 — Clean up:\n> Remove all console.log debug statements and all TODO comments from files in src/. Implement what each TODO asks for before removing it. Completion: no file in src/ contains console.log or TODO.\n\nPhase 2 — Standardize and harden:\n> Add try/catch error handling to every async function in src/handlers/. Add JSDoc with @param and @returns to every exported function in src/. Normalize all variable names to camelCase. Completion: every async handler has try/catch, every exported function has JSDoc, and no snake_case variable names remain in src/.\n\n**Or try one big loop** if you're feeling confident:\n> Clean up this codebase: remove all console.log and TODO comments (implement TODOs first), add try/catch to all async functions, add JSDoc to all exported functions, normalize all variables to camelCase. Completion: no console.log, no TODO, all async functions have try/catch, all functions have JSDoc, no snake_case variables.\n\nAfter completion, verify the results and run `/dojo check`.",
   "difficulty": "advanced",
   "xpReward": 350,
-  "estimatedMinutes": 20,
-  "skills": ["complex-automation", "multi-phase-tasks", "workflow-design"],
+  "estimatedMinutes": 25,
+  "skills": ["complex-automation", "ralph-loop", "codebase-cleanup"],
 
   "setup": {
     "workingDir": "~/dojo-workspace/challenge-16-004",
     "initialFiles": [
       {
         "path": "README.md",
-        "content": "# Challenge: Complex Iterative Tasks\n\nDesign complete Ralph Loop workflows for complex, multi-phase projects.\n\n---\n\n## Multi-Phase Ralph Loop Workflows\n\nReal-world projects rarely need just one loop. Complex tasks require\nmultiple phases, each with its own prompt and completion criteria.\nDesigning these workflows is a skill in itself.\n\n### Why Multi-Phase?\n\nA single Ralph Loop works best with a focused scope. When you throw\ntoo much at one loop, problems emerge:\n\n- Claude loses focus after many iterations\n- Broad completion criteria are hard to verify\n- Early changes might conflict with later changes\n- If something goes wrong, you lose all progress\n\nInstead, break complex tasks into **ordered phases** where each phase\nhas its own focused Ralph Loop.\n\n### The Phase Pattern\n\nA typical multi-phase workflow follows this pattern:\n\n```\nPhase 1: Analysis    (understand what needs to change)\nPhase 2: Foundation  (structural changes, setup)\nPhase 3: Implementation (the main work)\nPhase 4: Verification   (testing, linting, validation)\nPhase 5: Documentation   (update docs to match changes)\n```\n\nNot every task needs all 5 phases. Simple tasks might need 2-3 phases.\nComplex migrations might need more.\n\n## Combining Ralph Loop with Other Tools\n\nRalph Loop is not always the right tool for every phase:\n\n| Phase | Best Tool | Why |\n|-------|-----------|-----|\n| Research / Analysis | Explore subagent | Read-only, fast, focused |\n| Planning | Manual prompting | Needs human judgment |\n| Implementation | Ralph Loop | Autonomous, iterative |\n| Verification | Ralph Loop | Iterate until tests pass |\n| Code Review | Manual prompting | Needs human judgment |\n\nExample workflow for a large refactor:\n1. **Explore agent**: \"Find all files that use the old API pattern\"\n2. **Manual prompt**: Review the list, decide which to change first\n3. **Ralph Loop**: \"Convert all identified files to the new API pattern.\n   DONE when no file uses the old pattern.\"\n4. **Ralph Loop**: \"Add tests for the converted files. DONE when all\n   tests pass.\"\n5. **Manual prompt**: Review the changes, approve or request fixes\n\n## Design Patterns for Complex Tasks\n\n### Test-Driven Iteration\n\nOne powerful pattern is test-driven iteration:\n1. Ralph Loop Phase 1: \"Write failing tests for the expected behavior\"\n2. Ralph Loop Phase 2: \"Make all tests pass by implementing the code\"\n3. Ralph Loop Phase 3: \"Refactor while keeping all tests passing\"\n\nEach phase has a clear, measurable completion promise.\n\n### Large Refactors\n\nWhen changing a pattern across 20+ files:\n1. Phase 1: Identify all files (Explore agent)\n2. Phase 2: Change 5 files as a pilot (Ralph Loop, narrow scope)\n3. Phase 3: Verify the pilot (run tests, review)\n4. Phase 4: Change remaining files (Ralph Loop, full scope)\n5. Phase 5: Final verification (Ralph Loop -- all tests pass)\n\nThe pilot phase catches problems early before you commit to the\nfull scope.\n\n### Incremental Improvement\n\nWhen a project has multiple types of issues:\n1. Phase 1: Fix critical issues (errors, crashes)\n2. Phase 2: Add missing error handling\n3. Phase 3: Add missing tests\n4. Phase 4: Add missing documentation\n5. Phase 5: Apply code style standards\n\nOrder matters: fix functionality before documentation, because\nthe code might change during earlier phases.\n\n## Anti-Patterns to Avoid\n\n### 1. Too-Large Scope\n**Problem**: \"Refactor the entire codebase to be production-ready\"\n**Why it fails**: Too many things to change, no clear done criteria\n**Fix**: Break into focused phases with specific criteria\n\n### 2. No Verification Step\n**Problem**: \"Add error handling to all files\" with no way to verify\n**Why it fails**: Claude can't know if it missed anything\n**Fix**: Add a verification promise: \"grep for async functions without try/catch returns zero results\"\n\n### 3. Conflicting Criteria\n**Problem**: \"Make the code DRY and also make each function self-contained\"\n**Why it fails**: These goals contradict -- DRY means sharing code,\nself-contained means duplicating it\n**Fix**: Choose one primary goal per phase\n\n### 4. No Ordering\n**Problem**: Running tests before fixing the code that tests depend on\n**Why it fails**: Phase 2 depends on Phase 1 being complete\n**Fix**: Sequence phases with dependencies in the right order\n\n### 5. Ignoring Pilot Testing\n**Problem**: Running a Ralph Loop across 50 files immediately\n**Why it fails**: If the approach is wrong, 50 files are wrong\n**Fix**: Test on 2-3 files first, verify, then expand\n\n## When Ralph Loop Is NOT the Right Tool\n\nEven for complex tasks, Ralph Loop isn't always the answer:\n\n- **Architecture decisions**: Use manual prompting with back-and-forth\n- **Choosing between approaches**: Discuss with Claude first, loop later\n- **One-off tasks**: Just ask Claude directly\n- **Tasks with external dependencies**: If you need to wait for API keys,\n  deploy, or get human approval, break around those points\n\n---\n\n## Your Task\n\nThis workspace contains a substantial project with multiple improvement\nareas. Examine the code and identify what needs fixing.\n\nCreate a file called `workflow-design.md` that designs a complete Ralph\nLoop workflow for improving this project. Your design should include:\n\n1. **Assessment**: What problems exist in the codebase? (List them)\n2. **Phase Plan**: Which tasks to tackle in what order, and why that order\n3. **Tool Selection**: For each phase, whether to use Ralph Loop, Explore\n   agent, or manual prompting -- and why\n4. **Prompts and Promises**: For each Ralph Loop phase, the exact prompt\n   (with TASK, SCOPE, COMPLETION CRITERIA)\n5. **Anti-Pattern Awareness**: Which anti-patterns you consciously avoided\n   and how your design avoids them\n"
+        "content": "# Inventory Management API\n\nREST API for managing inventory items, categories, suppliers, and orders.\n\n## Files\n\n- `src/index.js` — Server entry point and route setup\n- `src/handlers/items.js` — Item CRUD handlers\n- `src/handlers/categories.js` — Category handlers\n- `src/handlers/suppliers.js` — Supplier handlers\n- `src/handlers/orders.js` — Order handlers\n- `src/handlers/reports.js` — Report generation\n- `src/db.js` — Database connection\n- `src/middleware/auth.js` — Authentication middleware\n- `src/utils/helpers.js` — Utility functions\n"
       },
       {
         "path": "package.json",
-        "content": "{\n  \"name\": \"inventory-api\",\n  \"version\": \"1.0.0\",\n  \"scripts\": {\n    \"test\": \"node --test\",\n    \"start\": \"node src/index.js\",\n    \"lint\": \"echo 'Lint passed'\"\n  }\n}\n"
+        "content": "{\n  \"name\": \"inventory-api\",\n  \"version\": \"1.0.0\",\n  \"scripts\": {\n    \"start\": \"node src/index.js\"\n  }\n}\n"
       },
       {
         "path": "src/index.js",
-        "content": "const express = require('express');\nconst app = express();\n\napp.use(express.json());\n\n// TODO: move routes to separate files\nconst { getAllItems, getItem, createItem, updateItem, deleteItem } = require('./handlers/items');\nconst { getAllCategories, getCategory, createCategory } = require('./handlers/categories');\nconst { getAllSuppliers, getSupplier, createSupplier, updateSupplier } = require('./handlers/suppliers');\nconst { createOrder, getOrder, getOrdersByStatus, updateOrderStatus } = require('./handlers/orders');\nconst { getReport, getSummary } = require('./handlers/reports');\n\napp.get('/api/items', getAllItems);\napp.get('/api/items/:id', getItem);\napp.post('/api/items', createItem);\napp.put('/api/items/:id', updateItem);\napp.delete('/api/items/:id', deleteItem);\n\napp.get('/api/categories', getAllCategories);\napp.get('/api/categories/:id', getCategory);\napp.post('/api/categories', createCategory);\n\napp.get('/api/suppliers', getAllSuppliers);\napp.get('/api/suppliers/:id', getSupplier);\napp.post('/api/suppliers', createSupplier);\napp.put('/api/suppliers/:id', updateSupplier);\n\napp.post('/api/orders', createOrder);\napp.get('/api/orders/:id', getOrder);\napp.get('/api/orders/status/:status', getOrdersByStatus);\napp.patch('/api/orders/:id/status', updateOrderStatus);\n\napp.get('/api/reports/:type', getReport);\napp.get('/api/summary', getSummary);\n\napp.listen(3000);\n"
+        "content": "const express = require('express');\nconst app = express();\n\napp.use(express.json());\n\nconst { getAllItems, getItem, createItem, updateItem, deleteItem } = require('./handlers/items');\nconst { getAllCategories, getCategory, createCategory } = require('./handlers/categories');\nconst { getAllSuppliers, getSupplier, createSupplier, updateSupplier } = require('./handlers/suppliers');\nconst { createOrder, getOrder, getOrdersByStatus, updateOrderStatus } = require('./handlers/orders');\nconst { getReport, getSummary } = require('./handlers/reports');\n\napp.get('/api/items', getAllItems);\napp.get('/api/items/:id', getItem);\napp.post('/api/items', createItem);\napp.put('/api/items/:id', updateItem);\napp.delete('/api/items/:id', deleteItem);\n\napp.get('/api/categories', getAllCategories);\napp.get('/api/categories/:id', getCategory);\napp.post('/api/categories', createCategory);\n\napp.get('/api/suppliers', getAllSuppliers);\napp.get('/api/suppliers/:id', getSupplier);\napp.post('/api/suppliers', createSupplier);\napp.put('/api/suppliers/:id', updateSupplier);\n\napp.post('/api/orders', createOrder);\napp.get('/api/orders/:id', getOrder);\napp.get('/api/orders/status/:status', getOrdersByStatus);\napp.patch('/api/orders/:id/status', updateOrderStatus);\n\napp.get('/api/reports/:type', getReport);\napp.get('/api/summary', getSummary);\n\nconsole.log('Setting up routes...');\napp.listen(3000);\n"
       },
       {
         "path": "src/handlers/items.js",
-        "content": "const db = require('../db');\n\nasync function getAllItems(req, res) {\n  const items = await db.query('SELECT * FROM items');\n  res.json(items);\n}\n\nasync function getItem(req, res) {\n  const item = await db.query('SELECT * FROM items WHERE id = $1', [req.params.id]);\n  res.json(item);\n}\n\nasync function createItem(req, res) {\n  var name = req.body.name;\n  var price = req.body.price;\n  var quantity = req.body.quantity;\n  var categoryId = req.body.categoryId;\n  var supplierId = req.body.supplierId;\n  const item = await db.query(\n    'INSERT INTO items (name, price, quantity, category_id, supplier_id) VALUES ($1, $2, $3, $4, $5) RETURNING *',\n    [name, price, quantity, categoryId, supplierId]\n  );\n  res.json(item);\n}\n\nasync function updateItem(req, res) {\n  var name = req.body.name;\n  var price = req.body.price;\n  var quantity = req.body.quantity;\n  const item = await db.query(\n    'UPDATE items SET name = $1, price = $2, quantity = $3 WHERE id = $4 RETURNING *',\n    [name, price, quantity, req.params.id]\n  );\n  res.json(item);\n}\n\nasync function deleteItem(req, res) {\n  await db.query('DELETE FROM items WHERE id = $1', [req.params.id]);\n  res.status(204).end();\n}\n\nmodule.exports = { getAllItems, getItem, createItem, updateItem, deleteItem };\n"
+        "content": "const db = require('../db');\n\nasync function getAllItems(req, res) {\n  console.log('Fetching all items');\n  const items = await db.query('SELECT * FROM items');\n  res.json(items);\n}\n\nasync function getItem(req, res) {\n  var item_id = req.params.id;\n  console.log('Fetching item:', item_id);\n  const item = await db.query('SELECT * FROM items WHERE id = $1', [item_id]);\n  res.json(item);\n}\n\nasync function createItem(req, res) {\n  var item_name = req.body.name;\n  var item_price = req.body.price;\n  var item_quantity = req.body.quantity;\n  var category_id = req.body.categoryId;\n  var supplier_id = req.body.supplierId;\n  console.log('Creating item:', item_name);\n  const item = await db.query(\n    'INSERT INTO items (name, price, quantity, category_id, supplier_id) VALUES ($1, $2, $3, $4, $5) RETURNING *',\n    [item_name, item_price, item_quantity, category_id, supplier_id]\n  );\n  res.json(item);\n}\n\nasync function updateItem(req, res) {\n  var item_name = req.body.name;\n  var item_price = req.body.price;\n  var item_quantity = req.body.quantity;\n  console.log('Updating item:', req.params.id);\n  const item = await db.query(\n    'UPDATE items SET name = $1, price = $2, quantity = $3 WHERE id = $4 RETURNING *',\n    [item_name, item_price, item_quantity, req.params.id]\n  );\n  res.json(item);\n}\n\nasync function deleteItem(req, res) {\n  console.log('Deleting item:', req.params.id);\n  await db.query('DELETE FROM items WHERE id = $1', [req.params.id]);\n  res.status(204).end();\n}\n\nmodule.exports = { getAllItems, getItem, createItem, updateItem, deleteItem };\n"
       },
       {
         "path": "src/handlers/categories.js",
-        "content": "const db = require('../db');\n\nasync function getAllCategories(req, res) {\n  const categories = await db.query('SELECT * FROM categories');\n  res.json(categories);\n}\n\nasync function getCategory(req, res) {\n  const cat = await db.query('SELECT * FROM categories WHERE id = $1', [req.params.id]);\n  res.json(cat);\n}\n\nasync function createCategory(req, res) {\n  var name = req.body.name;\n  var description = req.body.description;\n  const cat = await db.query(\n    'INSERT INTO categories (name, description) VALUES ($1, $2) RETURNING *',\n    [name, description]\n  );\n  res.json(cat);\n}\n\nmodule.exports = { getAllCategories, getCategory, createCategory };\n"
+        "content": "const db = require('../db');\n\nasync function getAllCategories(req, res) {\n  console.log('Fetching categories');\n  const categories = await db.query('SELECT * FROM categories');\n  res.json(categories);\n}\n\nasync function getCategory(req, res) {\n  var cat_id = req.params.id;\n  const cat = await db.query('SELECT * FROM categories WHERE id = $1', [cat_id]);\n  res.json(cat);\n}\n\nasync function createCategory(req, res) {\n  var cat_name = req.body.name;\n  var cat_description = req.body.description;\n  console.log('Creating category:', cat_name);\n  const cat = await db.query(\n    'INSERT INTO categories (name, description) VALUES ($1, $2) RETURNING *',\n    [cat_name, cat_description]\n  );\n  res.json(cat);\n}\n\nmodule.exports = { getAllCategories, getCategory, createCategory };\n"
       },
       {
         "path": "src/handlers/suppliers.js",
-        "content": "const db = require('../db');\n\nasync function getAllSuppliers(req, res) {\n  const suppliers = await db.query('SELECT * FROM suppliers');\n  res.json(suppliers);\n}\n\nasync function getSupplier(req, res) {\n  const supplier = await db.query('SELECT * FROM suppliers WHERE id = $1', [req.params.id]);\n  res.json(supplier);\n}\n\nasync function createSupplier(req, res) {\n  var name = req.body.name;\n  var contact = req.body.contact;\n  var email = req.body.email;\n  const supplier = await db.query(\n    'INSERT INTO suppliers (name, contact, email) VALUES ($1, $2, $3) RETURNING *',\n    [name, contact, email]\n  );\n  res.json(supplier);\n}\n\nasync function updateSupplier(req, res) {\n  var name = req.body.name;\n  var contact = req.body.contact;\n  var email = req.body.email;\n  const supplier = await db.query(\n    'UPDATE suppliers SET name = $1, contact = $2, email = $3 WHERE id = $4 RETURNING *',\n    [name, contact, email, req.params.id]\n  );\n  res.json(supplier);\n}\n\nmodule.exports = { getAllSuppliers, getSupplier, createSupplier, updateSupplier };\n"
+        "content": "const db = require('../db');\n\nasync function getAllSuppliers(req, res) {\n  console.log('Fetching suppliers');\n  const suppliers = await db.query('SELECT * FROM suppliers');\n  res.json(suppliers);\n}\n\nasync function getSupplier(req, res) {\n  var supplier_id = req.params.id;\n  const supplier = await db.query('SELECT * FROM suppliers WHERE id = $1', [supplier_id]);\n  res.json(supplier);\n}\n\nasync function createSupplier(req, res) {\n  var supplier_name = req.body.name;\n  var contact_info = req.body.contact;\n  var supplier_email = req.body.email;\n  console.log('Creating supplier:', supplier_name);\n  const supplier = await db.query(\n    'INSERT INTO suppliers (name, contact, email) VALUES ($1, $2, $3) RETURNING *',\n    [supplier_name, contact_info, supplier_email]\n  );\n  res.json(supplier);\n}\n\nasync function updateSupplier(req, res) {\n  var supplier_name = req.body.name;\n  var contact_info = req.body.contact;\n  var supplier_email = req.body.email;\n  console.log('Updating supplier:', req.params.id);\n  const supplier = await db.query(\n    'UPDATE suppliers SET name = $1, contact = $2, email = $3 WHERE id = $4 RETURNING *',\n    [supplier_name, contact_info, supplier_email, req.params.id]\n  );\n  res.json(supplier);\n}\n\nmodule.exports = { getAllSuppliers, getSupplier, createSupplier, updateSupplier };\n"
       },
       {
         "path": "src/handlers/orders.js",
-        "content": "const db = require('../db');\n\n// TODO: validate order items\nasync function createOrder(req, res) {\n  var userId = req.body.userId;\n  var items = req.body.items;\n  var total = 0;\n  for (var i = 0; i < items.length; i++) {\n    total = total + items[i].price * items[i].quantity;\n  }\n  const order = await db.query(\n    'INSERT INTO orders (user_id, items, total, status) VALUES ($1, $2, $3, $4) RETURNING *',\n    [userId, JSON.stringify(items), total, 'pending']\n  );\n  res.json(order);\n}\n\nasync function getOrder(req, res) {\n  const order = await db.query('SELECT * FROM orders WHERE id = $1', [req.params.id]);\n  res.json(order);\n}\n\nasync function getOrdersByStatus(req, res) {\n  const orders = await db.query('SELECT * FROM orders WHERE status = $1', [req.params.status]);\n  res.json(orders);\n}\n\n// TODO: validate status transitions (pending -> confirmed -> shipped -> delivered)\nasync function updateOrderStatus(req, res) {\n  var status = req.body.status;\n  const order = await db.query(\n    'UPDATE orders SET status = $1 WHERE id = $2 RETURNING *',\n    [status, req.params.id]\n  );\n  res.json(order);\n}\n\nmodule.exports = { createOrder, getOrder, getOrdersByStatus, updateOrderStatus };\n"
+        "content": "const db = require('../db');\n\n// TODO: validate order items before creating\nasync function createOrder(req, res) {\n  var user_id = req.body.userId;\n  var order_items = req.body.items;\n  var order_total = 0;\n  for (var i = 0; i < order_items.length; i++) {\n    order_total = order_total + order_items[i].price * order_items[i].quantity;\n  }\n  console.log('Creating order for user:', user_id, 'total:', order_total);\n  const order = await db.query(\n    'INSERT INTO orders (user_id, items, total, status) VALUES ($1, $2, $3, $4) RETURNING *',\n    [user_id, JSON.stringify(order_items), order_total, 'pending']\n  );\n  res.json(order);\n}\n\nasync function getOrder(req, res) {\n  var order_id = req.params.id;\n  console.log('Fetching order:', order_id);\n  const order = await db.query('SELECT * FROM orders WHERE id = $1', [order_id]);\n  res.json(order);\n}\n\nasync function getOrdersByStatus(req, res) {\n  var order_status = req.params.status;\n  const orders = await db.query('SELECT * FROM orders WHERE status = $1', [order_status]);\n  res.json(orders);\n}\n\n// TODO: validate status transitions (pending -> confirmed -> shipped -> delivered)\nasync function updateOrderStatus(req, res) {\n  var new_status = req.body.status;\n  console.log('Updating order status:', req.params.id, '->', new_status);\n  const order = await db.query(\n    'UPDATE orders SET status = $1 WHERE id = $2 RETURNING *',\n    [new_status, req.params.id]\n  );\n  res.json(order);\n}\n\nmodule.exports = { createOrder, getOrder, getOrdersByStatus, updateOrderStatus };\n"
       },
       {
         "path": "src/handlers/reports.js",
-        "content": "const db = require('../db');\n\nasync function getReport(req, res) {\n  var type = req.params.type;\n  if (type == 'inventory') {\n    const items = await db.query('SELECT * FROM items WHERE quantity < 10');\n    res.json({ type: 'low-stock', items: items });\n  } else if (type == 'orders') {\n    const orders = await db.query('SELECT * FROM orders WHERE status = $1', ['pending']);\n    res.json({ type: 'pending-orders', orders: orders });\n  } else if (type == 'revenue') {\n    const orders = await db.query('SELECT SUM(total) as revenue FROM orders WHERE status = $1', ['delivered']);\n    res.json({ type: 'revenue', data: orders });\n  } else {\n    res.status(400).json({ error: 'Unknown report type' });\n  }\n}\n\nasync function getSummary(req, res) {\n  const items = await db.query('SELECT COUNT(*) as count FROM items');\n  const orders = await db.query('SELECT COUNT(*) as count FROM orders');\n  const suppliers = await db.query('SELECT COUNT(*) as count FROM suppliers');\n  res.json({\n    items: items,\n    orders: orders,\n    suppliers: suppliers\n  });\n}\n\nmodule.exports = { getReport, getSummary };\n"
+        "content": "const db = require('../db');\n\n// TODO: add caching for expensive report queries\nasync function getReport(req, res) {\n  var report_type = req.params.type;\n  console.log('Generating report:', report_type);\n  if (report_type == 'inventory') {\n    const items = await db.query('SELECT * FROM items WHERE quantity < 10');\n    res.json({ type: 'low-stock', items: items });\n  } else if (report_type == 'orders') {\n    const orders = await db.query('SELECT * FROM orders WHERE status = $1', ['pending']);\n    res.json({ type: 'pending-orders', orders: orders });\n  } else if (report_type == 'revenue') {\n    const orders = await db.query('SELECT SUM(total) as revenue FROM orders WHERE status = $1', ['delivered']);\n    res.json({ type: 'revenue', data: orders });\n  } else {\n    res.status(400).json({ error: 'Unknown report type' });\n  }\n}\n\nasync function getSummary(req, res) {\n  console.log('Generating summary');\n  const item_count = await db.query('SELECT COUNT(*) as count FROM items');\n  const order_count = await db.query('SELECT COUNT(*) as count FROM orders');\n  const supplier_count = await db.query('SELECT COUNT(*) as count FROM suppliers');\n  res.json({\n    items: item_count,\n    orders: order_count,\n    suppliers: supplier_count\n  });\n}\n\nmodule.exports = { getReport, getSummary };\n"
       },
       {
         "path": "src/db.js",
@@ -49,11 +49,11 @@
       },
       {
         "path": "src/middleware/auth.js",
-        "content": "// TODO: implement authentication\nfunction authenticate(req, res, next) {\n  // placeholder - no actual auth\n  next();\n}\n\nfunction requireAdmin(req, res, next) {\n  // TODO: check admin role\n  next();\n}\n\nmodule.exports = { authenticate, requireAdmin };\n"
+        "content": "// TODO: implement real authentication\nfunction authenticate(req, res, next) {\n  console.log('Auth check for:', req.path);\n  // placeholder - no actual auth\n  next();\n}\n\n// TODO: implement admin role check\nfunction requireAdmin(req, res, next) {\n  console.log('Admin check for:', req.path);\n  next();\n}\n\nmodule.exports = { authenticate, requireAdmin };\n"
       },
       {
         "path": "src/utils/helpers.js",
-        "content": "function formatPrice(price) {\n  return '$' + price.toFixed(2);\n}\n\nfunction generateId() {\n  return Math.random().toString(36).substr(2, 9);\n}\n\nfunction paginate(array, page, perPage) {\n  var start = (page - 1) * perPage;\n  var end = start + perPage;\n  return {\n    data: array.slice(start, end),\n    total: array.length,\n    page: page,\n    totalPages: Math.ceil(array.length / perPage)\n  };\n}\n\nmodule.exports = { formatPrice, generateId, paginate };\n"
+        "content": "function format_price(price) {\n  return '$' + price.toFixed(2);\n}\n\nfunction generate_id() {\n  return Math.random().toString(36).substr(2, 9);\n}\n\nfunction paginate_results(array, page, per_page) {\n  var start_index = (page - 1) * per_page;\n  var end_index = start_index + per_page;\n  return {\n    data: array.slice(start_index, end_index),\n    total: array.length,\n    page: page,\n    total_pages: Math.ceil(array.length / per_page)\n  };\n}\n\nmodule.exports = { format_price, generate_id, paginate_results };\n"
       }
     ],
     "cleanBefore": true
@@ -62,49 +62,58 @@
   "objectives": [
     {
       "id": "obj-1",
-      "description": "Create workflow-design.md with a complete Ralph Loop workflow",
-      "type": "file_exists",
-      "target": "workflow-design.md",
+      "description": "No TODO comments remain in src/handlers/orders.js",
+      "type": "file_not_contains",
+      "target": "src/handlers/orders.js",
+      "pattern": "TODO",
       "required": true
     },
     {
       "id": "obj-2",
-      "description": "Assessment section: identifies problems in the codebase (missing error handling, var usage, TODOs, no tests, no docs)",
-      "type": "file_contains",
-      "target": "workflow-design.md",
-      "pattern": "[Aa]ssess|[Pp]roblem|[Ii]ssue|[Mm]issing|TODO|var\\b|[Ee]rror [Hh]andl|[Nn]o test|[Nn]o doc",
+      "description": "No TODO comments remain in src/handlers/reports.js",
+      "type": "file_not_contains",
+      "target": "src/handlers/reports.js",
+      "pattern": "TODO",
       "required": true
     },
     {
       "id": "obj-3",
-      "description": "Phase plan: multiple ordered phases with rationale for ordering",
-      "type": "file_contains",
-      "target": "workflow-design.md",
-      "pattern": "[Pp]hase [1-5]|[Ss]tep [1-5]|[Oo]rder|[Ss]equence|[Ff]irst.*[Tt]hen|[Bb]efore.*[Aa]fter",
+      "description": "No TODO comments remain in src/db.js",
+      "type": "file_not_contains",
+      "target": "src/db.js",
+      "pattern": "TODO",
       "required": true
     },
     {
       "id": "obj-4",
-      "description": "Tool selection: explains when to use Ralph Loop vs Explore agent vs manual prompting",
-      "type": "file_contains",
-      "target": "workflow-design.md",
-      "pattern": "[Rr]alph [Ll]oop|[Ee]xplore|[Mm]anual|[Tt]ool.*select|[Ww]hy.*[Rr]alph|[Ww]hy.*[Mm]anual",
+      "description": "No console.log statements remain in src/handlers/items.js",
+      "type": "file_not_contains",
+      "target": "src/handlers/items.js",
+      "pattern": "console\\.log",
       "required": true
     },
     {
       "id": "obj-5",
-      "description": "Ralph Loop phases include TASK, SCOPE, and COMPLETION CRITERIA",
-      "type": "file_contains",
-      "target": "workflow-design.md",
-      "pattern": "TASK|SCOPE|COMPLETION|[Cc]ompletion [Cc]riteri|[Cc]ompletion [Pp]romise",
+      "description": "No console.log statements remain in src/handlers/orders.js",
+      "type": "file_not_contains",
+      "target": "src/handlers/orders.js",
+      "pattern": "console\\.log",
       "required": true
     },
     {
       "id": "obj-6",
-      "description": "Discusses anti-patterns that the design avoids",
+      "description": "Error handling added to handler files (try/catch blocks)",
       "type": "file_contains",
-      "target": "workflow-design.md",
-      "pattern": "[Aa]nti.pattern|[Aa]void|[Tt]oo.large|[Tt]oo broad|[Cc]onflict|[Pp]ilot|[Ff]ocus",
+      "target": "src/handlers/items.js",
+      "pattern": "try|catch",
+      "required": true
+    },
+    {
+      "id": "obj-7",
+      "description": "JSDoc documentation added to handler files",
+      "type": "file_contains",
+      "target": "src/handlers/items.js",
+      "pattern": "/\\*\\*|@param|@returns",
       "required": true
     }
   ],
@@ -112,74 +121,71 @@
   "bonusObjectives": [
     {
       "id": "bonus-1",
-      "description": "Includes a pilot testing phase before full-scope changes",
-      "type": "file_contains",
-      "target": "workflow-design.md",
-      "pattern": "[Pp]ilot|[Tt]est.*first|[Ss]mall.*batch|[Tt]ry.*few|[Ss]ample|[Pp]roof of concept",
-      "xpBonus": 40
+      "description": "No TODO comments remain in src/middleware/auth.js",
+      "type": "file_not_contains",
+      "target": "src/middleware/auth.js",
+      "pattern": "TODO",
+      "xpBonus": 25
     },
     {
       "id": "bonus-2",
-      "description": "References specific files from the project in the prompts",
-      "type": "file_contains",
-      "target": "workflow-design.md",
-      "pattern": "items\\.js|orders\\.js|categories\\.js|suppliers\\.js|reports\\.js|helpers\\.js",
-      "xpBonus": 30
+      "description": "No console.log debug statements remain in src/middleware/auth.js",
+      "type": "file_not_contains",
+      "target": "src/middleware/auth.js",
+      "pattern": "console\\.log",
+      "xpBonus": 25
     },
     {
       "id": "bonus-3",
-      "description": "Includes dependency analysis between phases (which phases depend on which)",
-      "type": "file_contains",
-      "target": "workflow-design.md",
-      "pattern": "[Dd]epend|[Rr]equire.*phase|[Bb]lock|[Pp]rerequisite|[Mm]ust.*before|[Nn]eeds.*complet",
+      "description": "helpers.js uses camelCase naming (no snake_case function names)",
+      "type": "file_not_contains",
+      "target": "src/utils/helpers.js",
+      "pattern": "function format_price|function generate_id|function paginate_results",
       "xpBonus": 30
     },
     {
       "id": "bonus-4",
-      "description": "Estimates iteration count or effort level for each phase",
-      "type": "file_contains",
-      "target": "workflow-design.md",
-      "pattern": "[Ii]teration|[Ee]stimate|[Aa]pprox|[Mm]inute|[Tt]ime|[Ee]ffort|[Cc]omplexity",
-      "xpBonus": 25
+      "description": "User creates cleanup-report.md summarizing what was changed",
+      "type": "file_exists",
+      "target": "cleanup-report.md",
+      "xpBonus": 30
     }
   ],
 
   "hints": [
     {
       "level": 1,
-      "text": "Start by reading all the source files to build a list of problems: var usage, missing error handling, TODOs, no tests, no JSDoc, inconsistent patterns, routes all in index.js. Then think about what order you would fix them in -- which problems should be fixed first, and which depend on earlier fixes being done?",
+      "text": "Start by reading through the files to catalog the problems: console.log statements, TODO comments, no try/catch, no JSDoc, snake_case variables. Then decide your strategy: one big loop or multiple focused phases.",
       "xpCost": 25
     },
     {
       "level": 2,
-      "text": "Design 4-5 phases. Phase 1 might be code modernization (var to const/let, arrow functions) since later phases assume modern code. Phase 2 might be error handling since it changes function signatures. Phase 3 might be tests since you need stable code to test. Phase 4 might be documentation since the code should be final before documenting it. For each Ralph Loop phase, specify TASK + SCOPE + COMPLETION CRITERIA. Mention which anti-patterns you're avoiding (too-large scope, no verification, etc.).",
+      "text": "A two-phase approach works well. Phase 1: 'Remove all console.log debug statements and implement/remove all TODO comments in src/. Completion: no file contains console.log or TODO.' Phase 2: 'Add try/catch to all async functions in src/handlers/, add JSDoc to all exported functions, and rename snake_case variables to camelCase in src/utils/helpers.js. Completion: all async functions have try/catch, all exported functions have JSDoc, no snake_case remains.'",
       "xpCost": 70
     },
     {
       "level": 3,
-      "text": "Create workflow-design.md with: Assessment (list: var usage in 4 files, no error handling in any handler, 7 TODOs, no test files, no JSDoc, routes in index.js). Phases: 1) Explore agent to catalog all issues. 2) Ralph Loop: modernize code (var->const/let, ==->===). SCOPE: src/handlers/. CRITERIA: No var or == remains. 3) Ralph Loop: add error handling. SCOPE: src/handlers/. CRITERIA: All async handlers have try/catch with proper HTTP status. 4) Ralph Loop: add tests. SCOPE: create tests/. CRITERIA: Each handler file has tests, all pass. 5) Ralph Loop: add JSDoc. SCOPE: all src/ files. CRITERIA: Every exported function has JSDoc. Anti-patterns avoided: too-large scope (separate phases), no verification (each phase has runnable checks), no ordering (modernize before test).",
+      "text": "If you want to do it in one loop: '/ralph-loop:ralph-loop Clean up this entire codebase in src/. (1) Remove all console.log statements. (2) Implement what each TODO asks for, then remove the TODO comment. (3) Add try/catch error handling to every async function in handlers/. (4) Add JSDoc with @param and @returns to every exported function. (5) Rename snake_case variables in helpers.js to camelCase. Completion: grep for console.log returns nothing, grep for TODO returns nothing, every async handler has try/catch, every exported function has JSDoc, no snake_case variable names in helpers.js.'",
       "xpCost": 140
     }
   ],
 
   "solution": {
-    "approach": "Examine all project files to catalog issues. Design an ordered multi-phase workflow where each phase uses the right tool (Explore, Ralph Loop, or manual prompting). Write specific prompts with completion criteria for each Ralph Loop phase. Explain anti-patterns avoided.",
-    "example": "Create workflow-design.md with: assessment of all issues, 4-5 ordered phases, tool selection rationale, prompts with TASK/SCOPE/CRITERIA for each Ralph Loop phase, and anti-pattern awareness.",
+    "approach": "Assess the codebase problems, then use /ralph-loop:ralph-loop (in one or more phases) to systematically clean up: remove debug logs, implement TODOs, add error handling, add JSDoc, and normalize naming. Verify the results after each phase.",
+    "example": "Two-phase approach: Phase 1 removes console.log and TODOs. Phase 2 adds try/catch, JSDoc, and fixes naming. Or one big loop with all 5 criteria as a compound completion promise.",
     "alternativeApproaches": [
-      "Design fewer, broader phases with compound completion criteria",
-      "Start with tests (test-driven approach) before making other changes",
-      "Prioritize by impact: fix error handling first since it affects production reliability"
+      "Five separate focused loops, one per issue category",
+      "Manual cleanup without Ralph Loop",
+      "Single comprehensive loop with compound promise"
     ]
   },
 
   "learningPoints": [
-    "Complex tasks should be broken into multiple focused Ralph Loop phases",
-    "Phase ordering matters: modernize code before testing it, test before documenting",
-    "Not every phase needs Ralph Loop -- use Explore agents for analysis, manual prompting for decisions",
-    "Pilot testing on a small batch of files catches problems before full-scope changes",
-    "Anti-patterns to avoid: too-large scope, no verification step, conflicting criteria, wrong ordering",
-    "Each phase should have independent, verifiable completion criteria",
-    "Good workflow design considers dependencies between phases"
+    "Ralph Loop excels at large-scale, well-defined codebase cleanup tasks",
+    "Avoid anti-patterns: scope too broad, unmeasurable promises, conflicting changes",
+    "Always verify Ralph Loop's work — read files and search for remaining issues",
+    "You can choose between one big loop or multiple focused phases based on complexity",
+    "When something isn't working, cancel and re-scope rather than letting the loop spin"
   ],
 
   "nextChallenge": "07-001"

@@ -1,43 +1,39 @@
 {
   "id": "16-002",
   "module": "agentic-loops",
-  "title": "Start Your First Loop",
-  "description": "Learn to write effective Ralph Loop prompts with clear task definitions, explicit scope, and measurable completion criteria.",
+  "title": "Crafting Completion Promises",
+  "description": "Master completion promises — the measurable \"done\" criteria that make Ralph Loop effective — then use `/ralph-loop:ralph-loop` to eliminate every TODO in a project.\n\n## What Are Completion Promises?\n\nA completion promise is the measurable definition of \"done\" that you give Ralph Loop. It's how Claude knows when to stop iterating. Without a clear promise, a loop might run forever or stop too early.\n\nThink of it as a contract: \"Keep working until THIS specific, checkable condition is true.\"\n\n## Good vs Bad Promises\n\nThe key test: **Can Claude verify this without human judgment?**\n\n| Bad (Vague) | Good (Measurable) | Why It's Better |\n|-------------|-------------------|-----------------|\n| \"Make the code better\" | \"No TODO comments remain in src/\" | Grep-verifiable |\n| \"Add some docs\" | \"Every exported function has JSDoc with @param and @returns\" | Checkable by reading code |\n| \"Handle errors\" | \"Every async function has try/catch that sends a proper HTTP status\" | Pattern-matchable |\n| \"Clean up the code\" | \"No console.log statements and no var declarations remain\" | Searchable |\n\n## Categories of Good Promises\n\n- **Code quality**: \"No TODO comments remain\" — verify with grep\n- **Test-based**: \"All tests pass\" — verify by running npm test\n- **Structural**: \"Every module has an index.js\" — verify by checking files\n- **Documentation**: \"Every function has JSDoc\" — verify by reading code\n- **Standards**: \"ESLint reports zero warnings\" — verify by running linter\n\n## Compound Promises\n\nFor complex tasks, combine multiple criteria:\n> Remove all TODO comments by implementing what each one asks for. Completion: (1) no file contains the string TODO, AND (2) config.js validates required env vars, AND (3) db.js has error handling, AND (4) helpers.js has JSDoc on all functions.\n\nClaude checks each condition. If any fails, it keeps working.\n\n## Your Exercise\n\nThis workspace has a project with **4 TODO comments** scattered across files. Each TODO describes a real improvement that needs implementing:\n\n- `src/config.js`: \"TODO: add validation\" — validate that required env vars exist\n- `src/db.js`: \"TODO: add error handling\" — wrap the DB connection in try/catch\n- `src/utils/helpers.js`: \"TODO: add JSDoc\" — add JSDoc comments to all functions\n- `src/app.js`: \"TODO: add graceful shutdown\" — handle SIGTERM signal\n\n**Use `/ralph-loop:ralph-loop` to eliminate ALL TODO comments by actually implementing what each one asks for.** Don't just delete the comments — implement the functionality.\n\n**Suggested prompt for `/ralph-loop:ralph-loop`:**\n> Implement every TODO in this project, then remove the TODO comments. config.js: validate required env vars and throw if missing. db.js: wrap connection in try/catch. helpers.js: add JSDoc to all functions. app.js: handle SIGTERM for graceful shutdown. Completion: no file contains the string TODO, and each improvement is actually implemented.\n\nAfter Ralph Loop completes, verify the TODOs are gone AND the implementations exist. Then run `/dojo check`.",
   "difficulty": "intermediate",
   "xpReward": 225,
   "estimatedMinutes": 15,
-  "skills": ["loop-initiation", "task-definition", "prompt-structure"],
+  "skills": ["completion-promises", "ralph-loop", "code-improvement"],
 
   "setup": {
     "workingDir": "~/dojo-workspace/challenge-16-002",
     "initialFiles": [
       {
         "path": "README.md",
-        "content": "# Challenge: Start Your First Loop\n\nLearn to write effective Ralph Loop prompts that give Claude clear\ninstructions for autonomous work.\n\n---\n\n## Writing Effective Ralph Loop Prompts\n\nThe quality of a Ralph Loop's output depends entirely on the quality of\nyour prompt. A vague prompt produces unfocused work. A precise prompt\nproduces exactly what you need.\n\nEvery effective Ralph Loop prompt has three components:\n\n### 1. TASK: What To Do\n\nThe task describes the action Claude should take. It should be specific\nand actionable.\n\n- Good: \"Add JSDoc comments to all exported functions\"\n- Bad: \"Document the code\"\n- Good: \"Convert all callback-based async code to async/await\"\n- Bad: \"Modernize the code\"\n\nNotice the difference: good tasks name a *specific action* that Claude\ncan perform mechanically. Bad tasks require Claude to interpret what\nyou mean, which leads to unpredictable results.\n\n### 2. SCOPE: Where To Work\n\nThe scope constrains where Claude should make changes. Without scope,\nClaude might modify files you didn't intend to change.\n\n- Good: \"Only modify files in src/services/\"\n- Bad: (no scope specified -- Claude touches everything)\n- Good: \"Only change .js files, don't modify tests or config\"\n- Bad: \"Fix the project\" (entire project is too broad)\n\nScope prevents Claude from going off-track and keeps the loop focused.\n\n### 3. COMPLETION CRITERIA: What \"Done\" Means\n\nCompletion criteria are measurable conditions that Claude checks to know\nwhen to stop. This is the most important part of the prompt.\n\n- Good: \"Every exported function has a JSDoc comment with @param and @returns\"\n- Bad: \"The code is well-documented\"\n- Good: \"Every async function has try/catch with meaningful error messages\"\n- Bad: \"Add some error handling\"\n\n## Good vs Bad Prompts: A Comparison\n\n| Quality | Prompt | Why |\n|---------|--------|-----|\n| Bad | \"Make the code better\" | Unmeasurable -- what is \"better\"? |\n| Bad | \"Add some tests\" | Vague scope, no criteria for \"enough\" |\n| Bad | \"Clean up the project\" | No specific action, no scope |\n| Good | \"Add JSDoc to all functions in src/services/ with @param and @returns tags\" | Specific action + scope + criteria |\n| Good | \"Every API endpoint in src/routes.js returns proper HTTP status codes: 400 for bad input, 404 for not found, 500 for server errors\" | Exact action + file scope + measurable criteria |\n| Good | \"All 5 files in src/services/ use async/await instead of .then() chains, and no Promise.then() calls remain\" | Countable scope + verifiable criteria |\n\n## The Prompt Template\n\nHere is a template for writing Ralph Loop prompts:\n\n```\nTASK: [specific action to perform]\nSCOPE: [which files/directories to modify]\nCOMPLETION CRITERIA:\n- [measurable condition 1]\n- [measurable condition 2]\n- [measurable condition 3]\n```\n\nExample:\n\n```\nTASK: Add JSDoc documentation to all service files\nSCOPE: Only modify files in src/services/\nCOMPLETION CRITERIA:\n- Every exported function has a JSDoc comment\n- Every @param tag includes type and description\n- Every function with a return value has @returns\n- No function is missing documentation\n```\n\n## Monitoring and Stopping\n\nWhile a Ralph Loop runs, you can:\n\n- **Watch progress**: Claude shows what it's doing at each step\n- **Intervene**: If Claude goes off-track, you can redirect it\n- **Stop early**: Use Ctrl+C or `/cancel` to halt the loop\n\nYou don't need to wait for the loop to finish. If you see it heading\nin the wrong direction, stop it, refine your prompt, and restart.\n\n## Common Prompt Mistakes\n\n1. **No completion criteria**: Claude doesn't know when to stop\n2. **Unmeasurable criteria**: \"Make it good\" -- good by what standard?\n3. **Too-broad scope**: \"Fix the whole project\" -- Claude loses focus\n4. **Conflicting criteria**: \"Be thorough but also be fast\"\n5. **Missing context**: Assuming Claude knows your conventions\n\n---\n\n## Your Task\n\nThis workspace contains a project with 5 service files, all of which are\nmissing JSDoc documentation. Examine the files to understand their structure.\n\nThen create a file called `loop-prompts.md` containing 3 different Ralph\nLoop prompts for 3 different tasks on this codebase:\n\n1. A prompt for adding JSDoc documentation to the service files\n2. A prompt for adding error handling to the service files\n3. A prompt for adding input validation to the service files\n\nEach prompt must include all three components: TASK, SCOPE, and\nCOMPLETION CRITERIA. The criteria must be measurable and specific.\n\nDo NOT actually run the prompts -- this challenge is about writing them well.\n"
+        "content": "# Sample Express API\n\nA simple Express REST API with user and product endpoints.\n\n## Files\n\n- `src/app.js` — App setup and server startup\n- `src/config.js` — Configuration loading\n- `src/routes.js` — API route handlers\n- `src/db.js` — Database connection\n- `src/utils/helpers.js` — Utility functions\n"
       },
       {
-        "path": "src/services/userService.js",
-        "content": "const db = require('../db');\n\nasync function createUser(name, email, role) {\n  const user = await db.query(\n    'INSERT INTO users (name, email, role) VALUES ($1, $2, $3) RETURNING *',\n    [name, email, role]\n  );\n  return user;\n}\n\nasync function getUserById(id) {\n  const user = await db.query('SELECT * FROM users WHERE id = $1', [id]);\n  return user;\n}\n\nasync function updateUser(id, updates) {\n  const fields = Object.keys(updates).map((k, i) => `${k} = $${i + 2}`);\n  const values = [id, ...Object.values(updates)];\n  const user = await db.query(\n    `UPDATE users SET ${fields.join(', ')} WHERE id = $1 RETURNING *`,\n    values\n  );\n  return user;\n}\n\nasync function deleteUser(id) {\n  await db.query('DELETE FROM users WHERE id = $1', [id]);\n}\n\nasync function listUsers(limit, offset) {\n  const users = await db.query(\n    'SELECT * FROM users ORDER BY created_at DESC LIMIT $1 OFFSET $2',\n    [limit, offset]\n  );\n  return users;\n}\n\nmodule.exports = { createUser, getUserById, updateUser, deleteUser, listUsers };\n"
+        "path": "src/app.js",
+        "content": "const express = require('express');\nconst { loadConfig } = require('./config');\nconst { setupRoutes } = require('./routes');\nconst { connectDB } = require('./db');\n\n// TODO: add graceful shutdown\nasync function startApp() {\n  const config = loadConfig();\n  const db = await connectDB(config.dbUrl);\n  const app = express();\n  setupRoutes(app, db);\n  app.listen(config.port);\n  return app;\n}\n\nmodule.exports = { startApp };\n"
       },
       {
-        "path": "src/services/productService.js",
-        "content": "const db = require('../db');\n\nasync function createProduct(name, price, category) {\n  const product = await db.query(\n    'INSERT INTO products (name, price, category) VALUES ($1, $2, $3) RETURNING *',\n    [name, price, category]\n  );\n  return product;\n}\n\nasync function getProductById(id) {\n  const product = await db.query('SELECT * FROM products WHERE id = $1', [id]);\n  return product;\n}\n\nasync function updateProduct(id, updates) {\n  const fields = Object.keys(updates).map((k, i) => `${k} = $${i + 2}`);\n  const values = [id, ...Object.values(updates)];\n  const product = await db.query(\n    `UPDATE products SET ${fields.join(', ')} WHERE id = $1 RETURNING *`,\n    values\n  );\n  return product;\n}\n\nasync function deleteProduct(id) {\n  await db.query('DELETE FROM products WHERE id = $1', [id]);\n}\n\nasync function listProducts(category, limit) {\n  let query = 'SELECT * FROM products';\n  const params = [];\n  if (category) {\n    query += ' WHERE category = $1';\n    params.push(category);\n  }\n  query += ` LIMIT $${params.length + 1}`;\n  params.push(limit);\n  const products = await db.query(query, params);\n  return products;\n}\n\nmodule.exports = { createProduct, getProductById, updateProduct, deleteProduct, listProducts };\n"
+        "path": "src/config.js",
+        "content": "// TODO: add validation\nfunction loadConfig() {\n  return {\n    port: process.env.PORT || 3000,\n    dbUrl: process.env.DATABASE_URL || 'postgres://localhost/myapp',\n    secret: process.env.JWT_SECRET || 'dev-secret'\n  };\n}\n\nmodule.exports = { loadConfig };\n"
       },
       {
-        "path": "src/services/orderService.js",
-        "content": "const db = require('../db');\n\nasync function createOrder(userId, items, total) {\n  const order = await db.query(\n    'INSERT INTO orders (user_id, items, total, status) VALUES ($1, $2, $3, $4) RETURNING *',\n    [userId, JSON.stringify(items), total, 'pending']\n  );\n  return order;\n}\n\nasync function getOrderById(id) {\n  const order = await db.query('SELECT * FROM orders WHERE id = $1', [id]);\n  return order;\n}\n\nasync function updateOrderStatus(id, status) {\n  const order = await db.query(\n    'UPDATE orders SET status = $1 WHERE id = $2 RETURNING *',\n    [status, id]\n  );\n  return order;\n}\n\nasync function getOrdersByUser(userId) {\n  const orders = await db.query(\n    'SELECT * FROM orders WHERE user_id = $1 ORDER BY created_at DESC',\n    [userId]\n  );\n  return orders;\n}\n\nasync function cancelOrder(id) {\n  const order = await db.query(\n    'UPDATE orders SET status = $1 WHERE id = $2 AND status = $3 RETURNING *',\n    ['cancelled', id, 'pending']\n  );\n  return order;\n}\n\nmodule.exports = { createOrder, getOrderById, updateOrderStatus, getOrdersByUser, cancelOrder };\n"
-      },
-      {
-        "path": "src/services/authService.js",
-        "content": "const db = require('../db');\nconst bcrypt = require('bcrypt');\nconst jwt = require('jsonwebtoken');\n\nasync function register(email, password, name) {\n  const hashed = await bcrypt.hash(password, 10);\n  const user = await db.query(\n    'INSERT INTO users (email, password, name) VALUES ($1, $2, $3) RETURNING id, email, name',\n    [email, hashed, name]\n  );\n  return user;\n}\n\nasync function login(email, password) {\n  const user = await db.query('SELECT * FROM users WHERE email = $1', [email]);\n  if (!user) return null;\n  const valid = await bcrypt.compare(password, user.password);\n  if (!valid) return null;\n  const token = jwt.sign({ id: user.id, email: user.email }, process.env.JWT_SECRET, { expiresIn: '24h' });\n  return { user: { id: user.id, email: user.email, name: user.name }, token };\n}\n\nasync function refreshToken(token) {\n  const decoded = jwt.verify(token, process.env.JWT_SECRET);\n  const newToken = jwt.sign({ id: decoded.id, email: decoded.email }, process.env.JWT_SECRET, { expiresIn: '24h' });\n  return newToken;\n}\n\nasync function changePassword(userId, oldPassword, newPassword) {\n  const user = await db.query('SELECT * FROM users WHERE id = $1', [userId]);\n  const valid = await bcrypt.compare(oldPassword, user.password);\n  if (!valid) throw new Error('Invalid current password');\n  const hashed = await bcrypt.hash(newPassword, 10);\n  await db.query('UPDATE users SET password = $1 WHERE id = $2', [hashed, userId]);\n}\n\nmodule.exports = { register, login, refreshToken, changePassword };\n"
-      },
-      {
-        "path": "src/services/notificationService.js",
-        "content": "const db = require('../db');\n\nasync function sendNotification(userId, type, message) {\n  const notification = await db.query(\n    'INSERT INTO notifications (user_id, type, message, read) VALUES ($1, $2, $3, $4) RETURNING *',\n    [userId, type, message, false]\n  );\n  return notification;\n}\n\nasync function getNotifications(userId, unreadOnly) {\n  let query = 'SELECT * FROM notifications WHERE user_id = $1';\n  const params = [userId];\n  if (unreadOnly) {\n    query += ' AND read = false';\n  }\n  query += ' ORDER BY created_at DESC';\n  const notifications = await db.query(query, params);\n  return notifications;\n}\n\nasync function markAsRead(notificationId) {\n  const notification = await db.query(\n    'UPDATE notifications SET read = true WHERE id = $1 RETURNING *',\n    [notificationId]\n  );\n  return notification;\n}\n\nasync function markAllAsRead(userId) {\n  await db.query(\n    'UPDATE notifications SET read = true WHERE user_id = $1 AND read = false',\n    [userId]\n  );\n}\n\nasync function deleteOldNotifications(userId, daysOld) {\n  await db.query(\n    'DELETE FROM notifications WHERE user_id = $1 AND created_at < NOW() - INTERVAL $2',\n    [userId, `${daysOld} days`]\n  );\n}\n\nmodule.exports = { sendNotification, getNotifications, markAsRead, markAllAsRead, deleteOldNotifications };\n"
+        "path": "src/routes.js",
+        "content": "function setupRoutes(app, db) {\n  app.get('/api/users', async (req, res) => {\n    const users = await db.query('SELECT * FROM users');\n    res.json(users);\n  });\n\n  app.post('/api/users', async (req, res) => {\n    const { name, email } = req.body;\n    const user = await db.query('INSERT INTO users (name, email) VALUES ($1, $2)', [name, email]);\n    res.status(201).json(user);\n  });\n\n  app.get('/api/products', async (req, res) => {\n    const products = await db.query('SELECT * FROM products');\n    res.json(products);\n  });\n\n  app.get('/api/products/:id', async (req, res) => {\n    const product = await db.query('SELECT * FROM products WHERE id = $1', [req.params.id]);\n    res.json(product);\n  });\n}\n\nmodule.exports = { setupRoutes };\n"
       },
       {
         "path": "src/db.js",
-        "content": "async function connectDB(url) {\n  return {\n    query: async (sql, params) => {\n      // simulated database\n      return [];\n    }\n  };\n}\n\nconst db = { query: async () => [] };\n\nmodule.exports = db;\n"
+        "content": "// TODO: add error handling\nasync function connectDB(url) {\n  return {\n    query: async (sql, params) => {\n      // simulated database\n      return [];\n    }\n  };\n}\n\nmodule.exports = { connectDB };\n"
+      },
+      {
+        "path": "src/utils/helpers.js",
+        "content": "// TODO: add JSDoc\nfunction formatDate(date) {\n  return date.toISOString().split('T')[0];\n}\n\nfunction slugify(text) {\n  return text.toLowerCase().replace(/\\s+/g, '-').replace(/[^a-z0-9-]/g, '');\n}\n\nfunction truncate(str, len) {\n  if (str.length <= len) return str;\n  return str.substring(0, len) + '...';\n}\n\nfunction isEmpty(obj) {\n  return Object.keys(obj).length === 0;\n}\n\nmodule.exports = { formatDate, slugify, truncate, isEmpty };\n"
       }
     ],
     "cleanBefore": true
@@ -46,49 +42,50 @@
   "objectives": [
     {
       "id": "obj-1",
-      "description": "Create loop-prompts.md with Ralph Loop prompts",
-      "type": "file_exists",
-      "target": "loop-prompts.md",
+      "description": "config.js has no TODO comments remaining",
+      "type": "file_not_contains",
+      "target": "src/config.js",
+      "pattern": "TODO",
       "required": true
     },
     {
       "id": "obj-2",
-      "description": "First prompt: JSDoc documentation task with clear scope and completion criteria",
-      "type": "file_contains",
-      "target": "loop-prompts.md",
-      "pattern": "[Jj][Ss][Dd]oc|[Dd]ocument|@param|@returns",
+      "description": "db.js has no TODO comments remaining",
+      "type": "file_not_contains",
+      "target": "src/db.js",
+      "pattern": "TODO",
       "required": true
     },
     {
       "id": "obj-3",
-      "description": "Second prompt: Error handling task with measurable criteria",
-      "type": "file_contains",
-      "target": "loop-prompts.md",
-      "pattern": "[Ee]rror [Hh]andling|try.catch|[Ee]rror.*message|[Tt]hrow",
+      "description": "helpers.js has no TODO comments remaining",
+      "type": "file_not_contains",
+      "target": "src/utils/helpers.js",
+      "pattern": "TODO",
       "required": true
     },
     {
       "id": "obj-4",
-      "description": "Third prompt: Input validation task with specific criteria",
-      "type": "file_contains",
-      "target": "loop-prompts.md",
-      "pattern": "[Vv]alidat|[Ii]nput|[Cc]heck|[Pp]arameter|[Aa]rgument",
+      "description": "app.js has no TODO comments remaining",
+      "type": "file_not_contains",
+      "target": "src/app.js",
+      "pattern": "TODO",
       "required": true
     },
     {
       "id": "obj-5",
-      "description": "All prompts include explicit scope (which files or directories)",
+      "description": "config.js has actual validation (not just TODO removed)",
       "type": "file_contains",
-      "target": "loop-prompts.md",
-      "pattern": "src/services|[Ss]cope|[Oo]nly.*modif|[Oo]nly.*change|[Ff]iles in",
+      "target": "src/config.js",
+      "pattern": "throw|Error|valid|required|!.*process\\.env",
       "required": true
     },
     {
       "id": "obj-6",
-      "description": "All prompts include measurable completion criteria",
+      "description": "helpers.js has JSDoc comments (not just TODO removed)",
       "type": "file_contains",
-      "target": "loop-prompts.md",
-      "pattern": "[Cc]ompletion|[Cc]riteri|[Dd]one when|[Cc]omplete when|[Ff]inish when|COMPLET",
+      "target": "src/utils/helpers.js",
+      "pattern": "/\\*\\*",
       "required": true
     }
   ],
@@ -96,64 +93,55 @@
   "bonusObjectives": [
     {
       "id": "bonus-1",
-      "description": "Prompts reference specific function names from the service files",
+      "description": "db.js has real error handling (try/catch around connection)",
       "type": "file_contains",
-      "target": "loop-prompts.md",
-      "pattern": "createUser|getOrderById|login|sendNotification|listProducts",
+      "target": "src/db.js",
+      "pattern": "try|catch|error",
       "xpBonus": 30
     },
     {
       "id": "bonus-2",
-      "description": "Includes analysis of why each prompt's criteria are measurable",
+      "description": "app.js handles SIGTERM for graceful shutdown",
       "type": "file_contains",
-      "target": "loop-prompts.md",
-      "pattern": "[Mm]easurable|[Vv]erif|[Cc]heck.*by|[Cc]laude can|[Cc]an be.*confirm|[Hh]ow.*know",
+      "target": "src/app.js",
+      "pattern": "SIGTERM|SIGINT|graceful|shutdown|process\\.on",
       "xpBonus": 30
-    },
-    {
-      "id": "bonus-3",
-      "description": "Mentions how to monitor or stop the loop",
-      "type": "file_contains",
-      "target": "loop-prompts.md",
-      "pattern": "[Mm]onitor|[Ss]top|[Cc]ancel|Ctrl|/cancel|[Ii]ntervene",
-      "xpBonus": 20
     }
   ],
 
   "hints": [
     {
       "level": 1,
-      "text": "Read the README to understand the three components of a Ralph Loop prompt: TASK (what to do), SCOPE (where to work), and COMPLETION CRITERIA (what 'done' means). Then examine the 5 service files to understand what improvements each prompt should target.",
+      "text": "Read each file to see what the TODO comments ask for. Then craft a /ralph-loop:ralph-loop prompt with a compound completion promise: no TODOs remain AND each improvement is implemented.",
       "xpCost": 15
     },
     {
       "level": 2,
-      "text": "For each prompt, follow the template: TASK + SCOPE + COMPLETION CRITERIA. For JSDoc, criteria might be 'every exported function has @param and @returns'. For error handling, criteria might be 'every async function has try/catch'. For validation, criteria might be 'every function that takes an id checks that id is a positive integer'. Make each criterion something Claude could verify by reading the code.",
+      "text": "A good completion promise for this task lists each expected implementation: 'config.js validates env vars, db.js has try/catch, helpers.js has JSDoc, app.js handles SIGTERM, and no file contains the string TODO.' This gives Claude clear, checkable criteria for each file.",
       "xpCost": 45
     },
     {
       "level": 3,
-      "text": "Create loop-prompts.md with three sections. Prompt 1 -- TASK: Add JSDoc to all service functions. SCOPE: Only src/services/*.js files. CRITERIA: Every exported function has JSDoc with @param (type + description) and @returns. Prompt 2 -- TASK: Add error handling. SCOPE: src/services/. CRITERIA: Every async function wraps db calls in try/catch, errors include function name in message. Prompt 3 -- TASK: Add input validation. SCOPE: src/services/. CRITERIA: Functions validate parameters (ids are positive integers, strings are non-empty, required fields are present).",
+      "text": "Use /ralph-loop:ralph-loop with: 'Implement every TODO in this project: (1) config.js: validate DATABASE_URL and JWT_SECRET exist, throw Error if missing. (2) db.js: wrap connectDB in try/catch. (3) helpers.js: add JSDoc with @param and @returns to all 4 functions. (4) app.js: add process.on(SIGTERM) for graceful shutdown. Remove all TODO comments after implementing. Completion: grep for TODO returns nothing, and each file has its improvement.'",
       "xpCost": 90
     }
   ],
 
   "solution": {
-    "approach": "Examine the 5 service files, identify what improvements they need, then write 3 structured Ralph Loop prompts -- each with a specific TASK, bounded SCOPE, and measurable COMPLETION CRITERIA.",
-    "example": "Create loop-prompts.md with 3 well-structured prompts: one for JSDoc, one for error handling, one for input validation, each following the TASK/SCOPE/CRITERIA template.",
+    "approach": "Use /ralph-loop:ralph-loop with a compound completion promise that lists each TODO's required implementation AND the removal of all TODO comments. Ralph Loop implements each one and verifies both the implementation and the removal.",
+    "example": "Invoke /ralph-loop:ralph-loop with a prompt that lists each TODO, what to implement, and states: Completion: no file contains TODO and each improvement is implemented.",
     "alternativeApproaches": [
-      "Write prompts as natural language paragraphs rather than structured templates",
-      "Include example before/after code snippets alongside each prompt"
+      "Run /ralph-loop:ralph-loop once per file, with a focused prompt and promise for each TODO",
+      "Manually implement each TODO and remove the comments"
     ]
   },
 
   "learningPoints": [
-    "Every Ralph Loop prompt needs three components: TASK, SCOPE, and COMPLETION CRITERIA",
-    "Specific, actionable tasks produce better results than vague directives",
-    "Scope prevents Claude from modifying files outside your intended area",
-    "Completion criteria must be measurable -- something Claude can verify by reading code or running commands",
-    "You can monitor progress and stop a loop early with Ctrl+C or /cancel",
-    "Bad prompts lead to unfocused loops; investing time in prompt quality pays off"
+    "Completion promises must be measurable — 'Can Claude verify this without human judgment?'",
+    "Good promises are grep-verifiable, command-runnable, or code-readable",
+    "Compound promises combine multiple criteria (all must be true for the loop to stop)",
+    "A good Ralph Loop prompt specifies BOTH what to do AND what done looks like",
+    "Don't just delete TODOs — implement them. A good promise checks for both removal and implementation"
   ],
 
   "nextChallenge": "16-003"
