@@ -2,7 +2,7 @@
   "id": "15-003",
   "module": "background-tasks",
   "title": "Monitor Long-Running Tasks",
-  "description": "Learn the full lifecycle of background tasks in Claude Code -- from launch to completion -- and master the different approaches for monitoring their progress, reading partial output, and handling tasks that take too long.",
+  "description": "Learn the full lifecycle of background tasks and the tools for monitoring them, then practice by running a build in the background while fixing a bug.\n\n## Task Lifecycle\n\nEvery background task in Claude Code goes through 3 states:\n\n```\n[Launched] --> [Running] --> [Completed]\n                  |               |\n                  v               v\n            (output file      (exit code\n             grows over        available)\n             time)\n```\n\n1. **Launched**: The Bash or Task tool runs with `run_in_background: true`. Claude Code receives a **task ID** and **output file path** immediately.\n2. **Running**: The command executes in a separate process. stdout/stderr are written to the output file continuously.\n3. **Completed**: The process exits. Full output is available. Exit code indicates success (0) or failure (non-zero).\n\n## 4 Monitoring Methods\n\n### Method 1: TaskOutput Tool (Non-Blocking)\n```\nTaskOutput:\n  task_id: \"the-id\"\n  block: false\n```\nReturns immediately with current status and whatever output exists so far. Perfect for quick \"is it done yet?\" checks.\n\n### Method 2: TaskOutput Tool (Blocking)\n```\nTaskOutput:\n  task_id: \"the-id\"\n  block: true\n```\nWaits until the task completes, then returns all output. Use when you've reached a point where you need the result.\n\n### Method 3: Read the Output File\n```\nRead tool:\n  file_path: \"/path/to/output/file\"\n```\nShows everything written so far. Good for seeing full output including earlier lines.\n\n### Method 4: tail via Bash\n```\nBash tool:\n  command: \"tail -20 /path/to/output/file\"\n```\nQuick peek at the most recent output. Useful when output is very long.\n\n## Monitoring Patterns\n\n| Pattern | How It Works | Best For |\n|---------|-------------|----------|\n| **Fire and Check** | Launch task, do other work, check when needed | Having productive parallel work |\n| **Periodic Progress** | Launch task, peek at output periodically | Long tasks you want to track |\n| **Wait When Ready** | Launch task, do other work, then block until done | Fixed amount of parallel work |\n\n## Handling Stuck Tasks\n\n- **Check output growth**: Read the output file twice -- if it's not growing, the task may be stuck\n- **Bash timeout**: Set timeout in the Bash tool parameters (up to 600000ms / 10 minutes)\n- **Kill the process**: Use `ps` and `kill` via Bash as a last resort\n\n## Your Exercise\n\nThis project has a build script (`scripts/build.js`) that takes several seconds and generates `dist/bundle.js`. The source file `src/routes.js` has a bug: **none of the route handlers have error handling**. If a database call fails, the server crashes.\n\n**Your task:**\n1. Run the build script (`node scripts/build.js`) in the background\n2. While the build is running, fix `src/routes.js` by adding try/catch to the route handlers (each catch should send `res.status(500).json({ error: error.message })`)\n3. After the build completes, verify that `dist/bundle.js` was generated\n\nThis exercises the real skill: **doing productive work while a background task runs**.\n\nRun `/dojo check` when done.",
   "difficulty": "intermediate",
   "xpReward": 200,
   "estimatedMinutes": 12,
@@ -13,11 +13,11 @@
     "initialFiles": [
       {
         "path": "README.md",
-        "content": "# Challenge: Monitor Long-Running Tasks\n\nLearn the complete lifecycle of background tasks and master all the\nmethods for monitoring them.\n\n---\n\n## Task Lifecycle\n\nEvery background task in Claude Code goes through a predictable\nlifecycle:\n\n```\n[Launched] --> [Running] --> [Completed]\n                  |               |\n                  v               v\n            (output file      (exit code\n             grows over        available)\n             time)\n```\n\n1. **Launched**: The Bash or Task tool runs with `run_in_background: true`.\n   Claude Code receives a task ID and output file path immediately.\n2. **Running**: The command executes in a separate process. stdout and\n   stderr are continuously written to the output file.\n3. **Completed**: The process exits (success or failure). The full\n   output is available in the output file. The exit code indicates\n   success (0) or failure (non-zero).\n\n## Where Output Goes\n\nBackground tasks write their output to temporary files. When a task\nlaunches, Claude Code receives the output file path. This file grows\nas the command produces output.\n\nFor Bash background tasks, the output path is typically something like:\n```\n/private/tmp/claude-<session>/tasks/<id>.output\n```\n\nYou do not need to memorize this path -- it is returned when the task\nlaunches. But knowing the pattern helps you understand what happens\nbehind the scenes.\n\n## Monitoring Method 1: TaskOutput Tool\n\nThe most structured way to check on a background task. It accepts:\n\n| Parameter | Value | Effect |\n|-----------|-------|--------|\n| `task_id` | The ID from launch | Identifies which task to check |\n| `block` | `false` | Returns immediately with current status and output |\n| `block` | `true` | Waits until the task completes, then returns output |\n\n**Non-blocking check** (`block: false`):\n- Returns the current status: running or completed\n- Returns whatever output has been produced so far\n- Perfect for periodic \"is it done yet?\" checks\n\n**Blocking wait** (`block: true`):\n- Pauses until the task finishes\n- Returns all output and the exit code\n- Use when you have reached a point where you need the result\n\n## Monitoring Method 2: Read the Output File\n\nUse the Read tool directly on the output file path:\n\n```\nRead tool:\n  file_path: \"/private/tmp/claude-<session>/tasks/<id>.output\"\n```\n\nThis shows everything the task has written so far. Benefits:\n- See full output including earlier lines that may have scrolled past\n- Can re-read multiple times as the task progresses\n- Works even after the task completes\n\n## Monitoring Method 3: tail via Bash\n\nFor a quick peek at the most recent output:\n\n```\nBash tool:\n  command: \"tail -20 /path/to/output/file\"\n```\n\nThis is useful when:\n- The output is very long and you only need the latest\n- You want to see if a build step has progressed\n- You need a quick status check without reading everything\n\nYou can also use `tail -f` conceptually, but in Claude Code context,\na one-shot `tail -20` is more practical than a continuous follow.\n\n## Monitoring Method 4: wc -l for Progress Estimation\n\nIf you know a task should produce a certain amount of output:\n\n```\nBash tool:\n  command: \"wc -l /path/to/output/file\"\n```\n\nThis tells you how many lines of output exist, giving a rough progress\nindicator without reading the entire file.\n\n## Monitoring Patterns\n\nDifferent situations call for different monitoring strategies:\n\n### Pattern 1: Fire and Check Later\nLaunch the task, do unrelated work, check when you need the result.\n```\n1. Launch task in background\n2. Do other work (edit files, search, etc.)\n3. When you need the result: TaskOutput(block: false)\n4. If done: use the result. If not: continue working or wait.\n```\nBest for: tasks where you have other productive work to do.\n\n### Pattern 2: Periodic Progress Check\nLaunch the task, periodically peek at output to track progress.\n```\n1. Launch task in background\n2. Do some work\n3. tail -20 output file (quick progress peek)\n4. Continue work\n5. Repeat step 3-4 as needed\n6. TaskOutput(block: false) when you think it is done\n```\nBest for: long tasks where you want to know they are progressing.\n\n### Pattern 3: Wait When Ready\nLaunch the task, do some work, then block until it completes.\n```\n1. Launch task in background\n2. Do all other available work\n3. TaskOutput(block: true) -- wait for completion\n4. Use the result\n```\nBest for: when you have a fixed amount of other work to do first.\n\n## Handling Tasks That Take Too Long\n\nSometimes a task gets stuck or takes longer than expected:\n\n- **Check if it is still producing output**: Read the output file at\n  two different times. If it is growing, the task is still working.\n  If static, it may be stuck.\n- **Bash timeout**: When launching, you can set a timeout in the Bash\n  tool parameters (up to 600000ms / 10 minutes).\n- **Kill the process**: If a task is truly stuck, you can identify and\n  kill it using standard Unix commands via Bash (`ps`, `kill`).\n\n---\n\n## Your Task\n\nThis project simulates a realistic scenario: a build system, a test\nsuite, and a migration script -- all of which produce output over time.\n\nCreate a `monitoring-guide.md` that serves as a practical reference for\nmonitoring background tasks in Claude Code. Your guide should cover:\n\n1. The task lifecycle (launched, running, completed)\n2. At least 3 different monitoring methods and when to use each\n3. The monitoring patterns (fire-and-check, periodic, wait-when-ready)\n4. How to handle tasks that take too long or appear stuck\n5. Practical examples using this project's tasks\n\n## Objectives\n1. Create monitoring-guide.md with comprehensive task monitoring documentation\n2. Cover at least 3 monitoring methods (TaskOutput, Read, tail, etc.)\n3. Describe monitoring patterns (when to use each approach)\n4. Include guidance on handling stuck or long-running tasks\n5. Include practical examples referencing this project\n"
+        "content": "# Build & Fix Project\n\nA Node.js project with a build script and route handlers that need error handling.\n\n## Structure\n\n- `src/` — Source files (server, routes, config, handlers)\n- `scripts/` — Build and utility scripts\n- `dist/` — Generated by the build script\n"
       },
       {
         "path": "package.json",
-        "content": "{\n  \"name\": \"monitoring-practice\",\n  \"version\": \"1.0.0\",\n  \"description\": \"Project with long-running tasks for monitoring practice\",\n  \"scripts\": {\n    \"build\": \"node scripts/build.js\",\n    \"test\": \"node scripts/test-suite.js\",\n    \"migrate\": \"node scripts/migrate.js\",\n    \"start\": \"node src/server.js\"\n  }\n}\n"
+        "content": "{\n  \"name\": \"build-fix-project\",\n  \"version\": \"1.0.0\",\n  \"scripts\": {\n    \"build\": \"node scripts/build.js\",\n    \"test\": \"node scripts/test-suite.js\",\n    \"start\": \"node src/server.js\"\n  }\n}\n"
       },
       {
         "path": "src/server.js",
@@ -33,23 +33,19 @@
       },
       {
         "path": "src/handlers/users.js",
-        "content": "function getUsers(req, res) {\n  res.writeHead(200, { 'Content-Type': 'application/json' });\n  res.end(JSON.stringify([{ id: 1, name: 'Alice' }, { id: 2, name: 'Bob' }]));\n}\n\nfunction createUser(req, res) {\n  let body = '';\n  req.on('data', chunk => { body += chunk; });\n  req.on('end', () => {\n    const user = JSON.parse(body);\n    res.writeHead(201, { 'Content-Type': 'application/json' });\n    res.end(JSON.stringify({ id: 3, ...user }));\n  });\n}\n\nmodule.exports = { getUsers, createUser };\n"
+        "content": "async function getUsers(req, res) {\n  const users = await db.query('SELECT id, name, email FROM users');\n  res.writeHead(200, { 'Content-Type': 'application/json' });\n  res.end(JSON.stringify(users));\n}\n\nasync function createUser(req, res) {\n  let body = '';\n  req.on('data', chunk => { body += chunk; });\n  req.on('end', async () => {\n    const { name, email } = JSON.parse(body);\n    const user = await db.query('INSERT INTO users (name, email) VALUES ($1, $2)', [name, email]);\n    res.writeHead(201, { 'Content-Type': 'application/json' });\n    res.end(JSON.stringify(user));\n  });\n}\n\nmodule.exports = { getUsers, createUser };\n"
       },
       {
         "path": "src/handlers/orders.js",
-        "content": "function getOrders(req, res) {\n  res.writeHead(200, { 'Content-Type': 'application/json' });\n  res.end(JSON.stringify([\n    { id: 1, userId: 1, total: 29.99, status: 'shipped' },\n    { id: 2, userId: 2, total: 54.50, status: 'pending' }\n  ]));\n}\n\nmodule.exports = { getOrders };\n"
+        "content": "async function getOrders(req, res) {\n  const orders = await db.query('SELECT * FROM orders');\n  res.writeHead(200, { 'Content-Type': 'application/json' });\n  res.end(JSON.stringify(orders));\n}\n\nmodule.exports = { getOrders };\n"
       },
       {
         "path": "scripts/build.js",
-        "content": "console.log('[Build] Starting build process...');\nconsole.log('[Build] Step 1/4: Checking dependencies...');\n\nsetTimeout(() => {\n  console.log('[Build] Step 2/4: Compiling source files...');\n  setTimeout(() => {\n    console.log('[Build] Step 3/4: Bundling modules...');\n    setTimeout(() => {\n      console.log('[Build] Step 4/4: Generating source maps...');\n      setTimeout(() => {\n        console.log('[Build] Build completed successfully!');\n        console.log('[Build] Output: dist/bundle.js (245kb)');\n      }, 1000);\n    }, 1500);\n  }, 2000);\n}, 1000);\n"
+        "content": "const fs = require('fs');\nconst path = require('path');\n\nconst distDir = path.join(__dirname, '..', 'dist');\n\nconsole.log('[Build] Starting build process...');\nconsole.log('[Build] Step 1/4: Checking dependencies...');\n\nsetTimeout(() => {\n  console.log('[Build] Step 2/4: Compiling source files...');\n  setTimeout(() => {\n    console.log('[Build] Step 3/4: Bundling modules...');\n    setTimeout(() => {\n      console.log('[Build] Step 4/4: Writing output...');\n      if (!fs.existsSync(distDir)) {\n        fs.mkdirSync(distDir, { recursive: true });\n      }\n      const content = '// Bundled output\\n// Generated at ' + new Date().toISOString() + '\\n';\n      fs.writeFileSync(path.join(distDir, 'bundle.js'), content);\n      console.log('[Build] Build completed successfully!');\n      console.log('[Build] Output: dist/bundle.js');\n    }, 1500);\n  }, 2000);\n}, 1000);\n"
       },
       {
         "path": "scripts/test-suite.js",
-        "content": "console.log('[Test] Starting test suite...');\nconsole.log('[Test] Discovering test files...');\n\nsetTimeout(() => {\n  console.log('[Test] Running unit tests (12 tests)...');\n  console.log('[Test]   PASS: user creation');\n  console.log('[Test]   PASS: user validation');\n  console.log('[Test]   PASS: order calculation');\n  setTimeout(() => {\n    console.log('[Test] Running integration tests (5 tests)...');\n    console.log('[Test]   PASS: API /users endpoint');\n    console.log('[Test]   PASS: API /orders endpoint');\n    setTimeout(() => {\n      console.log('[Test] Running e2e tests (3 tests)...');\n      console.log('[Test]   PASS: user registration flow');\n      setTimeout(() => {\n        console.log('[Test] All 20 tests passed!');\n        console.log('[Test] Coverage: 87%');\n      }, 1000);\n    }, 1500);\n  }, 2000);\n}, 1000);\n"
-      },
-      {
-        "path": "scripts/migrate.js",
-        "content": "console.log('[Migrate] Starting database migration...');\nconsole.log('[Migrate] Connecting to database...');\n\nsetTimeout(() => {\n  console.log('[Migrate] Running migration 001_create_users...');\n  setTimeout(() => {\n    console.log('[Migrate] Running migration 002_create_orders...');\n    setTimeout(() => {\n      console.log('[Migrate] Running migration 003_add_indexes...');\n      setTimeout(() => {\n        console.log('[Migrate] All migrations completed!');\n        console.log('[Migrate] Database is up to date.');\n      }, 800);\n    }, 1200);\n  }, 1000);\n}, 500);\n"
+        "content": "console.log('[Test] Starting test suite...');\nconsole.log('[Test] Running unit tests...');\n\nsetTimeout(() => {\n  console.log('[Test]   PASS: user creation');\n  console.log('[Test]   PASS: user validation');\n  console.log('[Test]   PASS: order calculation');\n  setTimeout(() => {\n    console.log('[Test] Running integration tests...');\n    console.log('[Test]   PASS: API /users endpoint');\n    console.log('[Test]   PASS: API /orders endpoint');\n    console.log('[Test] All 5 tests passed!');\n  }, 1500);\n}, 1000);\n"
       }
     ],
     "cleanBefore": true
@@ -58,41 +54,17 @@
   "objectives": [
     {
       "id": "obj-1",
-      "description": "Create monitoring-guide.md",
-      "type": "file_exists",
-      "target": "monitoring-guide.md",
+      "description": "Route handlers have error handling (try/catch added)",
+      "type": "file_contains",
+      "target": "src/routes.js",
+      "pattern": "try|catch",
       "required": true
     },
     {
       "id": "obj-2",
-      "description": "Guide covers at least 3 monitoring methods (TaskOutput, Read output file, tail, etc.)",
-      "type": "file_contains",
-      "target": "monitoring-guide.md",
-      "pattern": "TaskOutput|output.*file|[Rr]ead.*output|tail|wc -l",
-      "required": true
-    },
-    {
-      "id": "obj-3",
-      "description": "Guide describes monitoring patterns or strategies (when to use each approach)",
-      "type": "file_contains",
-      "target": "monitoring-guide.md",
-      "pattern": "[Pp]attern|[Ss]trateg|[Aa]pproach|[Ff]ire.*check|[Pp]eriodic|[Ww]ait.*ready|[Ww]ait.*complet|check.*later",
-      "required": true
-    },
-    {
-      "id": "obj-4",
-      "description": "Guide includes handling stuck or long-running tasks (kill, timeout, or stuck detection)",
-      "type": "file_contains",
-      "target": "monitoring-guide.md",
-      "pattern": "[Ss]tuck|[Tt]imeout|[Kk]ill|[Ss]top|[Tt]erminate|[Cc]ancel|too long|[Tt]akes too|not responding",
-      "required": true
-    },
-    {
-      "id": "obj-5",
-      "description": "Guide references practical examples from this project (build, test, migrate)",
-      "type": "file_contains",
-      "target": "monitoring-guide.md",
-      "pattern": "build|test|migrate|npm run|[Ss]erver",
+      "description": "Build output was generated (dist/bundle.js exists)",
+      "type": "file_exists",
+      "target": "dist/bundle.js",
       "required": true
     }
   ],
@@ -100,18 +72,10 @@
   "bonusObjectives": [
     {
       "id": "bonus-1",
-      "description": "Guide describes the task lifecycle (launched, running, completed states)",
+      "description": "Error handling also added to handler files (users.js or orders.js)",
       "type": "file_contains",
-      "target": "monitoring-guide.md",
-      "pattern": "[Ll]ifecycle|[Ll]aunch.*[Rr]unning.*[Cc]omplet|[Ss]tate|[Pp]hase|[Ss]tage",
-      "xpBonus": 40
-    },
-    {
-      "id": "bonus-2",
-      "description": "Guide distinguishes blocking vs non-blocking TaskOutput checks (block: true vs block: false)",
-      "type": "file_contains",
-      "target": "monitoring-guide.md",
-      "pattern": "block.*true|block.*false|non.blocking.*check|blocking.*wait",
+      "target": "src/handlers/users.js",
+      "pattern": "try|catch",
       "xpBonus": 40
     }
   ],
@@ -119,27 +83,27 @@
   "hints": [
     {
       "level": 1,
-      "text": "The README explains 4 monitoring methods and 3 monitoring patterns. Your guide needs to cover at least 3 methods and explain when each pattern is best. Think about which of this project's scripts (build, test, migrate) would benefit from which monitoring approach.",
+      "text": "Run the build in the background: 'Run node scripts/build.js in the background.' Then while it runs, fix src/routes.js by wrapping the route handler calls in try/catch blocks that send 500 status on error. After the build completes, check that dist/bundle.js exists.",
       "xpCost": 15
     },
     {
       "level": 2,
-      "text": "For monitoring methods, cover: (1) TaskOutput with block: false for non-blocking status, (2) TaskOutput with block: true to wait for completion, (3) Read tool on the output file for full history, (4) tail via Bash for recent output. For stuck tasks, mention: checking if output file is still growing, using Bash timeout parameter, using kill via Bash.",
+      "text": "For src/routes.js, wrap each route handler call in a try/catch. For example: try { return await getUsers(req, res); } catch (error) { res.writeHead(500); res.end(JSON.stringify({ error: error.message })); }. Make the setupRoutes function async or wrap individual calls. The build script takes about 5 seconds so you have time to make the edit while it runs.",
       "xpCost": 40
     },
     {
       "level": 3,
-      "text": "Create monitoring-guide.md with these sections: (1) Task Lifecycle -- launched/running/completed states. (2) Monitoring Methods -- TaskOutput (block: true and false), Read output file, tail command, wc -l for progress. (3) Patterns -- fire-and-check-later (for when you have other work), periodic checking (for long tasks), wait-when-ready (when you need the result). (4) Handling problems -- detect stuck tasks by checking if output is growing, use timeout parameter, kill if needed. (5) Examples -- this project's build takes 5+ seconds, test suite runs 20 tests, migrate runs 3 migrations.",
+      "text": "Ask Claude: '1. Run node scripts/build.js in the background. 2. While the build runs, add try/catch error handling to src/routes.js. Each route handler call (getUsers, createUser, getOrders) should be wrapped in try/catch where the catch block sends res.writeHead(500) and res.end(JSON.stringify({ error: error.message })). 3. After the build completes, verify dist/bundle.js was created.'",
       "xpCost": 80
     }
   ],
 
   "solution": {
-    "approach": "Study the README's explanation of task lifecycle, monitoring methods, and patterns. Create a practical reference guide covering all monitoring approaches with examples drawn from this project's build, test, and migration scripts.",
-    "example": "Create monitoring-guide.md with sections on: lifecycle (launched/running/completed), monitoring methods (TaskOutput blocking and non-blocking, Read output file, tail), patterns (fire-and-check, periodic, wait-when-ready), stuck task handling (output growth check, timeout, kill), and practical examples using npm run build/test/migrate.",
+    "approach": "Run build in background, fix routes.js error handling while build runs, verify build output exists after completion.",
+    "example": "Launch background build, add try/catch to all route handlers in routes.js, verify dist/bundle.js was created.",
     "alternativeApproaches": [
-      "Run the project's tasks in background and actually practice monitoring them, then document the experience",
-      "Create a decision tree: 'If you need the result now, use blocking wait. If you have other work, use fire-and-check.'"
+      "Fix the routes first, then run the build (works but misses the background task practice)",
+      "Run build in background, fix handlers in users.js and orders.js instead of routes.js"
     ]
   },
 

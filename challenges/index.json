@@ -339,17 +339,17 @@
       "xpReward": 300
     },
     "06-001": {
-      "title": "Understanding Subagents",
+      "title": "Use Explore Subagent",
       "difficulty": "intermediate",
       "xpReward": 225
     },
     "06-002": {
-      "title": "Parallel & Background Subagents",
+      "title": "Parallel Research",
       "difficulty": "intermediate",
       "xpReward": 250
     },
     "06-003": {
-      "title": "Resuming Agents & Agent Types Deep Dive",
+      "title": "Resume & Deep Dive",
       "difficulty": "advanced",
       "xpReward": 350
     },
@@ -476,17 +476,17 @@
     "12-002": {
       "title": "Iterative Refinement",
       "difficulty": "intermediate",
-      "xpReward": 175
+      "xpReward": 125
     },
     "12-003": {
       "title": "Context and Constraints",
       "difficulty": "intermediate",
-      "xpReward": 200
+      "xpReward": 125
     },
     "12-004": {
       "title": "Breaking Down Complex Tasks",
       "difficulty": "intermediate",
-      "xpReward": 225
+      "xpReward": 125
     },
     "13-001": {
       "title": "Generate a Component",

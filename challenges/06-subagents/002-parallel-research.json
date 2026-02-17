@@ -1,19 +1,19 @@
 {
   "id": "06-002",
   "module": "subagents",
-  "title": "Parallel & Background Subagents",
-  "description": "Learn to run multiple subagents in parallel and use background agents. This is key to working efficiently on complex tasks.",
+  "title": "Parallel Research",
+  "description": "Learn to run multiple subagents simultaneously and use them to investigate and fix bugs across independent areas of a codebase.\n\n## Running Subagents in Parallel\n\nWhen you have independent tasks, Claude Code can spawn **multiple subagents at the same time**. Each runs in its own context, and all execute simultaneously:\n\n```\nYou: \"Research the auth, database, and API areas simultaneously\"\n\nClaude Code spawns:\n  [Explore Agent 1] -> researching auth\n  [Explore Agent 2] -> researching database   (all run at same time)\n  [Explore Agent 3] -> researching API\n```\n\nThis is much faster than doing them one at a time. If each investigation takes 10 seconds, sequential takes 30 seconds but parallel takes ~10.\n\n## How to Trigger Parallel Subagents\n\nYou can guide Claude Code to use parallel subagents by:\n- Requesting multiple independent investigations in one prompt\n- Being explicit: \"investigate these 3 areas simultaneously\"\n- Phrasing as a list: \"research: 1) auth system, 2) database layer, 3) API routes\"\n\nClaude Code recognizes that the tasks are independent and launches them in parallel.\n\n## Background Subagents\n\nSubagents can also run in the background using `run_in_background: true` on the Task tool. Background subagents:\n- Return immediately with a task ID and output file path\n- Continue running while you do other work\n- Can be checked on later with TaskOutput or by reading the output file\n\nThis is useful for longer research tasks where you want to keep working.\n\n## Resuming Agents\n\nEvery subagent gets an **agent ID** when it finishes. You can resume it later:\n- \"Resume that explore agent to dig deeper into the auth module\"\n- The agent picks up with its full previous context preserved\n- No need to re-explain what it already found\n\n## Your Exercise\n\nThis project has **3 independent areas** (auth, database, API routes), each with a specific bug:\n\n1. **`src/auth/service.js`**: The token expiry is hardcoded to `'24h'` instead of using the `TOKEN_EXPIRY` value from `src/auth/config.js`\n2. **`src/db/connection.js`**: The `connectDB()` function has no error handling -- if the database connection fails, the app crashes with an unhandled error\n3. **`src/routes/users.js`**: The `/register` endpoint accepts any input with no validation -- it should check that `email` and `password` are provided before creating a user\n\n**Use parallel Explore subagents to investigate all 3 areas, identify the bugs, then fix them.**\n\nSuggested approach:\n1. Ask Claude to \"use 3 parallel explore agents to investigate: 1) the auth service for configuration issues, 2) the database connection for error handling, 3) the user registration for validation\"\n2. Review the findings from all 3 agents\n3. Fix all 3 bugs\n\nRun `/dojo check` when done.",
   "difficulty": "intermediate",
   "xpReward": 250,
   "estimatedMinutes": 15,
-  "skills": ["parallel-subagents", "background-agents"],
+  "skills": ["parallel-subagents", "bug-fixing", "code-investigation"],
 
   "setup": {
     "workingDir": "~/dojo-workspace/challenge-06-002",
     "initialFiles": [
       {
         "path": "README.md",
-        "content": "# Challenge: Parallel & Background Subagents\n\nLearn to run subagents in parallel and in the background.\n\n## Parallel Subagents\n\nWhen you have independent tasks, Claude Code can spawn multiple\nsubagents at the same time. Each runs in its own context:\n\n```\nYou: \"Research auth, database, and API structure simultaneously\"\n\nClaude Code spawns:\n  [Explore Agent 1] → researching auth\n  [Explore Agent 2] → researching database   (all run at same time)\n  [Explore Agent 3] → researching API\n```\n\nThis is much faster than doing them one at a time.\n\n## Background Subagents\n\nNormally, subagents block - you wait for them to finish. But you can\nask for background execution:\n\n- \"Run this in the background\"\n- \"Check on that background task\"\n- \"What's the status of the background agent?\"\n\nBackground agents:\n- Return immediately with a task ID\n- Write output to a file you can check later\n- Let you continue working while they run\n\n## Resuming Agents\n\nEvery subagent gets an agent ID when it finishes. You can resume it:\n- \"Resume that explore agent to dig deeper into the auth module\"\n- The agent picks up with its full previous context preserved\n\n## Objectives\n1. Ask for 3 parallel explore agents to research different parts of this codebase\n2. Ask for a background agent to do a longer task\n3. Create parallel-notes.md documenting the experience\n"
+        "content": "# Web Application\n\nAn Express web application with authentication, database, and user management.\n\n## Structure\n\n- `src/auth/` — Authentication (middleware, service, config)\n- `src/db/` — Database connection and models\n- `src/routes/` — API route handlers\n"
       },
       {
         "path": "src/index.js",
@@ -29,7 +29,7 @@
       },
       {
         "path": "src/auth/service.js",
-        "content": "const jwt = require('jsonwebtoken');\nconst { SECRET, TOKEN_EXPIRY } = require('./config');\nconst { User } = require('../db/models/User');\n\nasync function login(email, password) {\n  const user = await User.findByEmail(email);\n  if (!user || !user.checkPassword(password)) {\n    throw new Error('Invalid credentials');\n  }\n  return jwt.sign({ id: user.id, email }, SECRET, { expiresIn: TOKEN_EXPIRY });\n}\n\nmodule.exports = { login };\n"
+        "content": "const jwt = require('jsonwebtoken');\nconst { SECRET } = require('./config');\nconst { User } = require('../db/models/User');\n\nasync function login(email, password) {\n  const user = await User.findByEmail(email);\n  if (!user || !user.checkPassword(password)) {\n    throw new Error('Invalid credentials');\n  }\n  return jwt.sign({ id: user.id, email }, SECRET, { expiresIn: '24h' });\n}\n\nmodule.exports = { login };\n"
       },
       {
         "path": "src/db/connection.js",
@@ -62,33 +62,26 @@
   "objectives": [
     {
       "id": "obj-1",
-      "description": "Create parallel-notes.md",
-      "type": "file_exists",
-      "target": "parallel-notes.md",
+      "description": "Auth service uses config value for token expiry instead of hardcoded string",
+      "type": "file_contains",
+      "target": "src/auth/service.js",
+      "pattern": "TOKEN_EXPIRY|config.*expir|expiry",
       "required": true
     },
     {
       "id": "obj-2",
-      "description": "Notes cover parallel execution",
+      "description": "Database connection has error handling (try/catch)",
       "type": "file_contains",
-      "target": "parallel-notes.md",
-      "pattern": "[Pp]arallel|[Ss]imultaneous|[Cc]oncurrent|at the same time|at once",
+      "target": "src/db/connection.js",
+      "pattern": "try|catch",
       "required": true
     },
     {
       "id": "obj-3",
-      "description": "Notes cover background agents",
+      "description": "User registration has input validation (checks for email/password)",
       "type": "file_contains",
-      "target": "parallel-notes.md",
-      "pattern": "[Bb]ackground|non.blocking|task.?[Ii][Dd]|output.?file",
-      "required": true
-    },
-    {
-      "id": "obj-4",
-      "description": "Notes include findings from at least 2 different areas of the codebase",
-      "type": "file_contains",
-      "target": "parallel-notes.md",
-      "pattern": "[Aa]uth|[Dd]atabase|[Rr]oute|[Mm]odel",
+      "target": "src/routes/users.js",
+      "pattern": "!.*email|!.*password|valid|400|[Mm]issing",
       "required": true
     }
   ],
@@ -96,10 +89,10 @@
   "bonusObjectives": [
     {
       "id": "bonus-1",
-      "description": "Document how parallel agents save time vs sequential",
+      "description": "Auth service imports TOKEN_EXPIRY from config module",
       "type": "file_contains",
-      "target": "parallel-notes.md",
-      "pattern": "[Ff]aster|[Ss]peed|[Tt]ime|[Ee]fficient|sequential",
+      "target": "src/auth/service.js",
+      "pattern": "require.*config.*TOKEN_EXPIRY|TOKEN_EXPIRY.*require.*config|\\{ SECRET, TOKEN_EXPIRY \\}|\\{.*TOKEN_EXPIRY.*\\}.*config",
       "xpBonus": 50
     }
   ],
@@ -107,36 +100,36 @@
   "hints": [
     {
       "level": 1,
-      "text": "Ask Claude: 'Use 3 parallel explore agents to research: 1) the auth system, 2) the database layer, 3) the API routes'",
+      "text": "Ask Claude to investigate all 3 areas simultaneously: 'Use 3 parallel explore agents to check: 1) src/auth/service.js for hardcoded values that should come from config, 2) src/db/connection.js for missing error handling, 3) src/routes/users.js for missing input validation.'",
       "xpCost": 20
     },
     {
       "level": 2,
-      "text": "For background agents, try: 'Run an agent in the background to create a comprehensive architecture document'. Then check on it with 'What's the status of that background task?'",
+      "text": "The 3 bugs: (1) In src/auth/service.js, the jwt.sign call uses '24h' directly instead of TOKEN_EXPIRY from ./config. Fix: import TOKEN_EXPIRY and use it. (2) In src/db/connection.js, connectDB() calls pool.connect() with no try/catch. Fix: wrap in try/catch. (3) In src/routes/users.js, the /register route creates a user from req.body with no validation. Fix: check that email and password exist.",
       "xpCost": 50
     },
     {
       "level": 3,
-      "text": "Your parallel-notes.md should cover: 1) What happened when you ran parallel agents (they all started at once), 2) What happened with the background agent (you got a task ID back), 3) Findings from the research, 4) When parallel execution is useful vs sequential.",
+      "text": "Fix 1: Change 'const { SECRET } = require(\"./config\")' to 'const { SECRET, TOKEN_EXPIRY } = require(\"./config\")' and change expiresIn: '24h' to expiresIn: TOKEN_EXPIRY. Fix 2: Wrap pool.connect() in try/catch with console.error and throw. Fix 3: Add before User.create: if (!req.body.email || !req.body.password) return res.status(400).json({ error: 'Missing email or password' });",
       "xpCost": 95
     }
   ],
 
   "solution": {
-    "approach": "Request parallel exploration, try a background agent, then document the experience.",
-    "example": "Run 3 explore agents in parallel, then a background agent, document in parallel-notes.md",
+    "approach": "Use 3 parallel Explore subagents to investigate auth/service.js (hardcoded config), db/connection.js (missing error handling), and routes/users.js (missing validation). Then fix all 3 bugs.",
+    "example": "Request parallel investigation, then fix: import TOKEN_EXPIRY in auth/service.js, add try/catch in db/connection.js, add email/password validation in routes/users.js.",
     "alternativeApproaches": [
-      "Ask for parallel research on auth, db, and routes, then document",
-      "Request concurrent exploration of different code areas"
+      "Fix all 3 bugs without using parallel agents (less efficient but works)",
+      "Use a single general-purpose subagent to find and fix all 3 bugs"
     ]
   },
 
   "learningPoints": [
     "Claude Code can spawn multiple subagents simultaneously for independent tasks",
-    "Parallel execution is faster than sequential for independent research",
-    "Background agents return immediately and let you continue working",
-    "Background agents write to an output file you can check with Read or tail",
-    "Each agent gets an ID you can use to resume it later"
+    "Parallel execution is faster than sequential for independent investigations",
+    "Background subagents return immediately and let you continue working",
+    "Each subagent gets an ID you can use to resume it later with full context preserved",
+    "Parallel subagents are ideal for investigating independent areas of a codebase"
   ],
 
   "nextChallenge": "06-003"

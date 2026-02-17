@@ -2,22 +2,22 @@
   "id": "15-002",
   "module": "background-tasks",
   "title": "Parallel Tool Execution",
-  "description": "Learn how Claude Code calls multiple tools simultaneously in a single message when the operations are independent, and how to recognize which operations can safely run in parallel versus which must be sequential.",
+  "description": "Learn how Claude Code calls multiple tools simultaneously when operations are independent, then practice by merging config files and adding module identifiers in parallel.\n\n## What Is Parallel Tool Execution?\n\nWhen Claude Code needs multiple actions, it can do them **one at a time** (sequential) or **all at once** (parallel). Parallel is possible when operations don't depend on each other's results.\n\n```\nSequential:   [Read file A] --> [Read file B] --> [Read file C]  ~3x time\nParallel:     [Read file A]\n              [Read file B]    <-- all at once                  ~1x time\n              [Read file C]\n```\n\nThis is different from background execution (Challenge 15-001). Background runs one long command asynchronously. Parallel executes multiple tool calls in the same response.\n\n## The Independence Rule\n\nTwo operations are **independent** when:\n- Neither needs the other's result to start\n- Neither modifies something the other reads\n- The order doesn't matter for correctness\n\nTwo operations are **dependent** when:\n- The second needs the first's output (read then edit)\n- Both modify the same file (write-write conflict)\n- One creates something the other needs (mkdir before create file)\n\n## Parallelizable Examples\n\n| Operations | Why Safe |\n|------------|----------|\n| Read file A, Read file B, Read file C | Independent reads |\n| Grep for \"TODO\", Grep for \"FIXME\" | Independent searches |\n| Run tests for module A, module B | Separate test suites |\n| Create /src/header.js, Create /src/footer.js | Different files |\n\n## NOT Parallelizable\n\n| Operations | Why Sequential |\n|------------|----------------|\n| Read file -> Edit that file | Must read before editing |\n| mkdir /src -> Create /src/app.js | Directory must exist first |\n| npm install -> npm run build | Build needs packages |\n| Search for pattern -> Fix matches | Must find before fixing |\n\n## Performance Benefit\n\n3 parallel reads take ~1x time. 3 sequential reads take ~3x time. The savings compound with more independent operations.\n\n## Your Exercise\n\nThis project has **3 config files** (`config/database.json`, `config/server.json`, `config/auth.json`) and **3 source modules** (`src/auth/login.js`, `src/api/users.js`, `src/utils/validation.js`).\n\n**Your task:**\n1. Read all 3 config files (these can be read in parallel) and merge them into a single `config/combined.json` that contains all settings\n2. Add a module identifier comment to the top of each source file:\n   - `src/auth/login.js` -> `// Auth module`\n   - `src/api/users.js` -> `// API module`\n   - `src/utils/validation.js` -> `// Utils module`\n\nBoth tasks involve independent operations that can be parallelized.\n\nRun `/dojo check` when done.",
   "difficulty": "intermediate",
   "xpReward": 225,
   "estimatedMinutes": 12,
-  "skills": ["parallel-execution", "dependency-analysis", "efficiency"],
+  "skills": ["parallel-execution", "config-management", "dependency-analysis"],
 
   "setup": {
     "workingDir": "~/dojo-workspace/challenge-15-002",
     "initialFiles": [
       {
         "path": "README.md",
-        "content": "# Challenge: Parallel Tool Execution\n\nLearn how Claude Code executes multiple tool calls in a single message\nwhen the operations are independent, and why recognizing independence\nis the key skill.\n\n---\n\n## What Is Parallel Tool Execution?\n\nWhen Claude Code needs to perform multiple actions, it can either do\nthem **one at a time** (sequential) or **all at once** (parallel).\nParallel execution is possible when the operations do not depend on\neach other's results.\n\nThis is different from background execution (Challenge 15-001). Background\nexecution runs a *single* long-running command asynchronously. Parallel\ntool execution runs *multiple* tool calls in the same response message.\n\n```\nSequential:   [Read file A] --> [Read file B] --> [Read file C]  ~3x time\nParallel:     [Read file A]\n              [Read file B]    <-- all happen at once           ~1x time\n              [Read file C]\n```\n\n## How It Works\n\nClaude Code can include multiple tool calls in a single response. The\nsystem executes them simultaneously and returns all results together.\nThis happens automatically when Claude recognizes that the operations\nare independent.\n\nYou can guide this behavior by:\n- Requesting multiple things in one prompt: \"Read all 3 config files\"\n- Being explicit: \"Search for X, Y, and Z simultaneously\"\n- Framing independence: \"These files are unrelated; read them all\"\n\n## The Independence Rule\n\nTwo operations are **independent** when:\n- Neither needs the other's result to start\n- Neither modifies something the other reads\n- The order doesn't matter for correctness\n\nTwo operations are **dependent** when:\n- The second needs the first's output (data dependency)\n- Both modify the same resource (write-write conflict)\n- One creates something the other needs (sequential prerequisite)\n\n## Examples: Parallelizable Operations\n\n| Operations | Why Parallel Is Safe |\n|------------|---------------------|\n| Read file A, Read file B, Read file C | Each read is independent |\n| Grep for \"TODO\", Grep for \"FIXME\", Grep for \"HACK\" | Three independent searches |\n| Run tests for module A, Run tests for module B | Separate test suites |\n| Fetch URL A, Fetch URL B | Independent network requests |\n| Glob for *.js, Glob for *.css, Glob for *.html | Three independent pattern searches |\n| Create /src/header.js, Create /src/footer.js | Different files, no overlap |\n\n## Examples: NOT Parallelizable Operations\n\n| Operations | Why Sequential Is Required |\n|------------|---------------------------|\n| Read file --> Edit that file | Must read before editing |\n| mkdir /src --> Create /src/app.js | Directory must exist first |\n| npm install --> npm run build | Build needs installed packages |\n| git add . --> git commit | Must stage before committing |\n| Search for pattern --> Edit matches | Must find before fixing |\n| Read config --> Use config values | Must know values before using |\n\n## The Performance Benefit\n\nIf each tool call takes approximately 1 unit of time:\n\n- **3 sequential reads:** ~3 units total\n- **3 parallel reads:** ~1 unit total (3x faster)\n- **5 independent searches:** 5 units sequential vs ~1 unit parallel\n\nThe savings compound as you add more independent operations. A workflow\nwith 10 independent file reads can complete in roughly the time of 1 read\nwhen parallelized.\n\n## Claude Code's Automatic Decision\n\nClaude Code analyzes each request and decides:\n1. What tool calls are needed?\n2. Which ones are independent?\n3. Group independent calls into parallel batches\n4. Execute dependent calls sequentially\n\nFor example, the request \"Read all config files, then create a summary\"\nbecomes:\n- **Batch 1 (parallel):** Read config-a.json, Read config-b.json, Read config-c.json\n- **Batch 2 (sequential):** Create summary.md (depends on all reads completing)\n\n---\n\n## Your Task\n\nThis project has multiple source modules, config files, and test files.\nExplore the project structure, identify which operations can be\nparallelized and which cannot, and document your analysis.\n\nCreate a `parallel-execution.md` file that demonstrates your\nunderstanding of:\n\n1. What parallel tool execution means and how it differs from sequential\n2. At least 3 specific examples of parallelizable operations from THIS project\n3. At least 3 specific examples of operations that CANNOT be parallelized\n4. Why independence between operations is the deciding factor\n\n## Objectives\n1. Create parallel-execution.md documenting parallel tool execution\n2. Include examples of parallelizable operations from this project\n3. Include examples of operations that require sequential execution\n4. Explain why independence is the key criterion\n"
+        "content": "# Web Application\n\nA multi-module web application with separate configuration files.\n\n## Structure\n\n- `config/` — Configuration files (database, server, auth)\n- `src/auth/` — Authentication module\n- `src/api/` — API endpoints\n- `src/utils/` — Utility functions\n"
       },
       {
         "path": "package.json",
-        "content": "{\n  \"name\": \"webapp-project\",\n  \"version\": \"1.0.0\",\n  \"description\": \"A multi-module web application for parallel execution practice\",\n  \"scripts\": {\n    \"test\": \"node test/run-all.js\",\n    \"test:auth\": \"node test/auth.test.js\",\n    \"test:api\": \"node test/api.test.js\",\n    \"test:utils\": \"node test/utils.test.js\",\n    \"lint\": \"echo 'Linting...' && node scripts/lint.js\",\n    \"build\": \"echo 'Building...' && sleep 2 && echo 'Done'\"\n  }\n}\n"
+        "content": "{\n  \"name\": \"webapp-project\",\n  \"version\": \"1.0.0\",\n  \"scripts\": {\n    \"test\": \"node test/run-all.js\",\n    \"lint\": \"echo 'Linting...' && node scripts/lint.js\",\n    \"build\": \"echo 'Building...' && sleep 2 && echo 'Done'\"\n  }\n}\n"
       },
       {
         "path": "config/database.json",
@@ -36,40 +36,12 @@
         "content": "const bcrypt = require('bcrypt');\nconst jwt = require('jsonwebtoken');\n\nasync function login(email, password, db, config) {\n  const user = await db.findUserByEmail(email);\n  if (!user) throw new Error('User not found');\n  \n  const valid = await bcrypt.compare(password, user.passwordHash);\n  if (!valid) throw new Error('Invalid password');\n  \n  const token = jwt.sign(\n    { id: user.id, email: user.email, role: user.role },\n    config.jwtSecret,\n    { expiresIn: config.jwtExpiry }\n  );\n  \n  return { token, user: { id: user.id, email: user.email } };\n}\n\nmodule.exports = { login };\n"
       },
       {
-        "path": "src/auth/register.js",
-        "content": "const bcrypt = require('bcrypt');\n\nasync function register(name, email, password, db, config) {\n  const existing = await db.findUserByEmail(email);\n  if (existing) throw new Error('Email already registered');\n  \n  const passwordHash = await bcrypt.hash(password, config.bcryptRounds);\n  const user = await db.createUser({ name, email, passwordHash });\n  \n  return { id: user.id, name: user.name, email: user.email };\n}\n\nmodule.exports = { register };\n"
-      },
-      {
         "path": "src/api/users.js",
         "content": "async function getUsers(db) {\n  return db.query('SELECT id, name, email FROM users');\n}\n\nasync function getUserById(db, id) {\n  const user = await db.query('SELECT * FROM users WHERE id = $1', [id]);\n  if (!user) throw new Error('User not found');\n  return user;\n}\n\nasync function updateUser(db, id, updates) {\n  return db.query('UPDATE users SET name = $1 WHERE id = $2', [updates.name, id]);\n}\n\nmodule.exports = { getUsers, getUserById, updateUser };\n"
       },
       {
-        "path": "src/api/products.js",
-        "content": "async function getProducts(db, filters) {\n  let query = 'SELECT * FROM products';\n  const params = [];\n  if (filters.category) {\n    query += ' WHERE category = $1';\n    params.push(filters.category);\n  }\n  return db.query(query, params);\n}\n\nasync function getProductById(db, id) {\n  return db.query('SELECT * FROM products WHERE id = $1', [id]);\n}\n\nasync function createProduct(db, product) {\n  return db.query(\n    'INSERT INTO products (name, price, category) VALUES ($1, $2, $3)',\n    [product.name, product.price, product.category]\n  );\n}\n\nmodule.exports = { getProducts, getProductById, createProduct };\n"
-      },
-      {
         "path": "src/utils/validation.js",
         "content": "function validateEmail(email) {\n  const pattern = /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/;\n  return pattern.test(email);\n}\n\nfunction validatePassword(password) {\n  return password && password.length >= 8;\n}\n\nfunction sanitizeInput(str) {\n  return str.replace(/[<>\"'&]/g, '');\n}\n\nmodule.exports = { validateEmail, validatePassword, sanitizeInput };\n"
-      },
-      {
-        "path": "src/utils/formatting.js",
-        "content": "function formatCurrency(amount, currency = 'USD') {\n  return new Intl.NumberFormat('en-US', {\n    style: 'currency',\n    currency\n  }).format(amount);\n}\n\nfunction formatDate(date) {\n  return new Intl.DateTimeFormat('en-US', {\n    year: 'numeric',\n    month: 'long',\n    day: 'numeric'\n  }).format(new Date(date));\n}\n\nmodule.exports = { formatCurrency, formatDate };\n"
-      },
-      {
-        "path": "test/auth.test.js",
-        "content": "console.log('Running auth tests...');\nconsole.log('  PASS: login with valid credentials');\nconsole.log('  PASS: login rejects invalid password');\nconsole.log('  PASS: register creates new user');\nconsole.log('  PASS: register rejects duplicate email');\nconsole.log('Auth tests: 4 passed');\n"
-      },
-      {
-        "path": "test/api.test.js",
-        "content": "console.log('Running API tests...');\nconsole.log('  PASS: GET /users returns list');\nconsole.log('  PASS: GET /users/:id returns user');\nconsole.log('  PASS: GET /products returns list');\nconsole.log('  PASS: POST /products creates product');\nconsole.log('API tests: 4 passed');\n"
-      },
-      {
-        "path": "test/utils.test.js",
-        "content": "console.log('Running utils tests...');\nconsole.log('  PASS: validateEmail accepts valid email');\nconsole.log('  PASS: validateEmail rejects invalid email');\nconsole.log('  PASS: formatCurrency formats USD');\nconsole.log('  PASS: sanitizeInput removes HTML');\nconsole.log('Utils tests: 4 passed');\n"
-      },
-      {
-        "path": "test/run-all.js",
-        "content": "require('./auth.test');\nrequire('./api.test');\nrequire('./utils.test');\nconsole.log('\\nAll test suites passed!');\n"
       }
     ],
     "cleanBefore": true
@@ -78,41 +50,33 @@
   "objectives": [
     {
       "id": "obj-1",
-      "description": "Create parallel-execution.md",
+      "description": "Combined config file exists",
       "type": "file_exists",
-      "target": "parallel-execution.md",
+      "target": "config/combined.json",
       "required": true
     },
     {
       "id": "obj-2",
-      "description": "Document explains what parallel tool execution is and how it differs from sequential",
+      "description": "Combined config contains settings from all 3 config files",
       "type": "file_contains",
-      "target": "parallel-execution.md",
-      "pattern": "[Pp]arallel|[Ss]imultaneous|[Ss]ame time|[Cc]oncurrent|at once",
+      "target": "config/combined.json",
+      "pattern": "database|server|auth",
       "required": true
     },
     {
       "id": "obj-3",
-      "description": "Document includes examples of parallelizable operations specific to this project",
+      "description": "Auth module has module identifier comment",
       "type": "file_contains",
-      "target": "parallel-execution.md",
-      "pattern": "config.*json|database.*server.*auth|auth\\.test|api\\.test|utils\\.test|[Rr]ead.*file|[Ss]earch|[Gg]rep",
+      "target": "src/auth/login.js",
+      "pattern": "// Auth module|// Module: auth|@module auth",
       "required": true
     },
     {
       "id": "obj-4",
-      "description": "Document includes examples of operations that cannot be parallelized",
+      "description": "API module has module identifier comment",
       "type": "file_contains",
-      "target": "parallel-execution.md",
-      "pattern": "[Ss]equential|[Dd]epend|[Cc]annot.*parallel|[Nn]ot.*parallel|[Mm]ust.*first|before|[Oo]rder|[Rr]ead.*[Ee]dit|[Rr]ead.*[Ww]rite",
-      "required": true
-    },
-    {
-      "id": "obj-5",
-      "description": "Document explains why independence between operations is the key criterion",
-      "type": "file_contains",
-      "target": "parallel-execution.md",
-      "pattern": "[Ii]ndependen|[Nn]o.*depend|[Dd]oesn't.*depend|[Dd]oes not.*depend|result.*other|output.*other|neither.*need",
+      "target": "src/api/users.js",
+      "pattern": "// API module|// Module: api|@module api",
       "required": true
     }
   ],
@@ -120,18 +84,10 @@
   "bonusObjectives": [
     {
       "id": "bonus-1",
-      "description": "Document includes a performance comparison or timing analysis",
+      "description": "Utils module also has identifier comment",
       "type": "file_contains",
-      "target": "parallel-execution.md",
-      "pattern": "[Ff]aster|[Tt]ime|[Pp]erformance|[Ss]peed|1x|3x|[Ss]aving",
-      "xpBonus": 40
-    },
-    {
-      "id": "bonus-2",
-      "description": "Document distinguishes parallel tool calls from background execution (15-001)",
-      "type": "file_contains",
-      "target": "parallel-execution.md",
-      "pattern": "background|run_in_background|[Dd]ifferent.*from|[Nn]ot the same|[Dd]istinct",
+      "target": "src/utils/validation.js",
+      "pattern": "// Utils module|// Module: utils|@module utils",
       "xpBonus": 40
     }
   ],
@@ -139,36 +95,35 @@
   "hints": [
     {
       "level": 1,
-      "text": "Explore this project's structure first. Notice it has 3 config files, 3 test files, and multiple source modules. Think about which operations on these files are independent (can happen at the same time) and which have ordering requirements.",
+      "text": "Ask Claude to read all 3 config files at once (parallel reads), then merge them into config/combined.json. Then ask it to add module identifier comments to the top of each source file.",
       "xpCost": 15
     },
     {
       "level": 2,
-      "text": "Parallelizable examples from this project: reading config/database.json, config/server.json, and config/auth.json simultaneously; running the 3 test suites independently; searching for patterns across different modules. NOT parallelizable: reading a file then editing it; installing packages then building; searching for a pattern then fixing all matches.",
+      "text": "For the combined config, structure it as: { \"database\": { ...database.json contents }, \"server\": { ...server.json contents }, \"auth\": { ...auth.json contents } }. For module identifiers, add '// Auth module' as the first line of src/auth/login.js, '// API module' for src/api/users.js, and '// Utils module' for src/utils/validation.js.",
       "xpCost": 45
     },
     {
       "level": 3,
-      "text": "Create parallel-execution.md with: (1) What parallel execution means -- Claude sends multiple tool calls in one message, they run simultaneously. (2) Parallelizable examples -- reading 3 config files at once, running 3 test suites, grepping for different patterns. (3) Non-parallelizable examples -- read-then-edit same file, mkdir-then-create-file, npm install-then-build. (4) The independence rule -- operations are safe to parallelize when neither needs the other's result and neither modifies what the other reads.",
+      "text": "Ask Claude: 'Read config/database.json, config/server.json, and config/auth.json. Create config/combined.json that merges all 3 under keys \"database\", \"server\", and \"auth\". Then add a comment \"// Auth module\" to the top of src/auth/login.js, \"// API module\" to src/api/users.js, and \"// Utils module\" to src/utils/validation.js.'",
       "xpCost": 90
     }
   ],
 
   "solution": {
-    "approach": "Analyze the project structure to identify independent operations (3 config files, 3 test suites, separate source modules) and dependent operations (read-before-edit, install-before-build). Document the independence criterion and concrete examples.",
-    "example": "Create parallel-execution.md covering: parallel = multiple tool calls in one message; examples from this project showing what can and cannot be parallelized; explanation that independence (no data dependency between operations) is the deciding factor.",
+    "approach": "Read all 3 config files in parallel, merge into combined.json under database/server/auth keys, then add module identifier comments to all 3 source files.",
+    "example": "Read configs in parallel, create combined.json with nested structure, add // Auth module, // API module, // Utils module comments.",
     "alternativeApproaches": [
-      "Ask Claude to read all 3 config files at once and observe the parallel behavior, then document it",
-      "Request parallel and sequential operations side by side and compare the experience"
+      "Read configs one at a time and merge incrementally",
+      "Write a Node.js script that reads and merges the configs programmatically"
     ]
   },
 
   "learningPoints": [
-    "Parallel tool execution means Claude Code sends multiple tool calls in a single response -- they all run simultaneously",
-    "Operations are parallelizable when they are independent: neither needs the other's result to begin",
-    "Common parallelizable patterns: reading multiple files, searching for different patterns, running independent test suites",
-    "Operations with data dependencies (read-then-edit, create-directory-then-file) must remain sequential",
-    "Parallel execution gives roughly N-times speedup for N independent operations versus doing them one at a time",
+    "Parallel tool execution sends multiple tool calls in one response -- they all run simultaneously",
+    "Operations are parallelizable when they are independent: neither needs the other's result",
+    "Common parallel patterns: reading multiple files, searching for different patterns, editing independent files",
+    "Operations with data dependencies (read-then-edit same file) must remain sequential",
     "Parallel tool calls are different from background execution -- parallel is multiple tools at once, background is one long task running asynchronously"
   ],
 

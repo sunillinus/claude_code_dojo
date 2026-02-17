@@ -2,18 +2,18 @@
   "id": "12-004",
   "module": "effective-prompting",
   "title": "Breaking Down Complex Tasks",
-  "description": "Learn to decompose complex feature requests into ordered, independently verifiable steps. Master the plan-then-execute pattern that prevents compounding errors and makes code reviews manageable.",
+  "description": "Learn to decompose complex features into ordered, verifiable steps, then practice by planning a notification system AND implementing the first two steps.\n\n## Why Decomposition Matters\n\nWhen you ask Claude Code to do too much at once, three things go wrong:\n\n### 1. Error Compounding\nIf step 3 has a mistake and steps 4-8 build on it, you have to undo everything. But if you verify step 3 before starting step 4, you catch mistakes when they're cheap to fix.\n\n### 2. Context Limits\nA single massive prompt leaves less room for Claude to reason. Smaller steps mean Claude can focus deeply on each one.\n\n### 3. Review Difficulty\nA 500-line diff is nearly impossible to review. Ten 50-line diffs, each with a clear purpose, can be validated individually.\n\n## The 4 Steps of Decomposition\n\n### Step 1: Identify Components\nList everything the feature needs (don't worry about order yet).\n\nFor \"Add a notification system\":\n- Notification types/interfaces\n- Database table\n- API endpoints (create, list, mark-read)\n- Real-time delivery\n- UI components\n- User preferences\n\n### Step 2: Find Dependencies\nWhich components depend on which?\n- Types come first (everything depends on them)\n- Storage depends on types\n- API depends on types + storage\n- UI depends on types + API\n\n### Step 3: Order by Dependencies\nArrange so each step only depends on completed steps:\n1. Define types -> 2. Create storage -> 3. Build API -> 4. Create UI\n\n### Step 4: Make Each Step Verifiable\nClear success criteria you can check:\n- Step 1: \"Types exist with no syntax errors\"\n- Step 2: \"Can store and retrieve a notification\"\n- Step 3: \"API endpoints return correct responses\"\n\n## Step Sizing: The Goldilocks Rule\n\n- **Big enough** to be meaningful (not \"add a semicolon\")\n- **Small enough** to review in under 5 minutes\n- **Independent enough** to verify on its own\n- **Complete enough** that the codebase works after it\n\n## The Checkpoint Pattern\n\nAfter each step, verify before proceeding:\n```\nStep 1: Create types --> Verify: no errors\nStep 2: Create storage --> Verify: tests pass\nStep 3: Create API --> Verify: endpoints work\n```\n\nIf verification fails, fix the current step before moving on.\n\n## Your Exercise\n\nThis workspace has an existing Express API with users, auth, and a database. Your task has **two parts**:\n\n### Part 1: Plan the Decomposition\nCreate `task-breakdown.md` with a 5-8 step plan for adding a notification system. Each step needs:\n- A clear description of what to build\n- Dependencies (which prior steps it requires)\n- Verification criteria (how to confirm it works)\n\n### Part 2: Implement Steps 1 and 2\n- **Step 1**: Create notification types in `src/types/notification.js` (or similar path) defining notification structure (id, userId, type, message, read status, timestamp)\n- **Step 2**: Add a notifications table to `src/db.js` so the database can store notifications\n\nThis proves you can both plan AND execute -- the two halves of the decomposition skill.\n\nRun `/dojo check` when done.",
   "difficulty": "intermediate",
   "xpReward": 125,
   "estimatedMinutes": 12,
-  "skills": ["task-decomposition", "planning", "dependency-analysis", "verification"],
+  "skills": ["task-decomposition", "planning", "implementation"],
 
   "setup": {
     "workingDir": "~/dojo-workspace/challenge-12-004",
     "initialFiles": [
       {
         "path": "README.md",
-        "content": "# Challenge: Breaking Down Complex Tasks\n\nLearn to decompose complex requests into manageable, verifiable steps.\n\n## Why Decomposition Matters\n\nWhen you ask Claude Code to do too much at once, three things go wrong:\n\n### 1. Context Limits\nClaude Code has a finite context window. A single massive prompt that tries\nto specify an entire feature will:\n- Leave less room for Claude to reason about the implementation\n- Force Claude to hold too many requirements in mind simultaneously\n- Result in some requirements being dropped or misinterpreted\n\n### 2. Error Compounding\nIf step 3 has a mistake and steps 4-8 build on it, you have to undo\neverything. But if you verify step 3 before starting step 4, you catch\nthe mistake when it's cheap to fix.\n\nThis is the same principle behind unit testing: find bugs early, close to\nwhere they were introduced.\n\n### 3. Review Difficulty\nA 500-line diff from one massive prompt is nearly impossible to review\nmeaningfully. Ten 50-line diffs, each with a clear purpose, can be\nreviewed and validated individually.\n\n## How to Decompose\n\n### Step 1: Identify the Components\nList everything the feature needs. Don't worry about order yet.\n\nExample for \"Add a notification system\":\n- Notification data model/types\n- Database table or storage\n- API endpoints (create, list, mark-read, delete)\n- Real-time delivery (WebSocket or polling)\n- UI components (notification bell, dropdown, individual notification)\n- Preferences (which notifications to receive)\n- Email integration for critical notifications\n\n### Step 2: Find Dependencies\nWhich components depend on which? Draw the dependency graph:\n- Types come first (everything depends on them)\n- Storage depends on types\n- API depends on types + storage\n- UI depends on types + API\n- Real-time depends on API\n- Preferences depends on types + storage + UI\n- Email depends on types + preferences\n\n### Step 3: Order by Dependencies\nArrange steps so each one only depends on completed steps:\n1. Define notification types and interfaces\n2. Create storage/database layer\n3. Build API endpoints\n4. Create UI components\n5. Add real-time delivery\n6. Build preferences system\n7. Add email integration\n\n### Step 4: Make Each Step Verifiable\nEach step should have clear success criteria you can check:\n- Step 1: \"Types compile with no errors\"\n- Step 2: \"Can store and retrieve a notification in tests\"\n- Step 3: \"API endpoints return correct responses (test with curl)\"\n- Step 4: \"Component renders notification list with mock data\"\n\n## The Plan-Then-Execute Pattern\n\nBefore writing any code, ask Claude to help you plan:\n\n1. **Use /plan or ask for a plan first**:\n   \"I need to add a notification system. Before writing any code, create\n   a plan breaking this into steps with dependencies and verification\n   criteria for each step.\"\n\n2. **Review the plan**: Check for missing steps, wrong ordering, unclear\n   verification criteria.\n\n3. **Execute step by step**: One prompt per step. Verify before continuing.\n\n4. **Adjust the plan**: If step 3 reveals something unexpected, update the\n   plan before continuing.\n\n## Step Size: The Goldilocks Rule\n\nEach step should be:\n- **Big enough** to be meaningful (not \"add a semicolon\")\n- **Small enough** to be reviewable in under 5 minutes\n- **Independent enough** to be verified on its own\n- **Complete enough** that the codebase is in a working state after it\n\nGood step size: \"Create the notification API endpoints with request/response\nvalidation and error handling\"\n\nToo small: \"Create the GET endpoint\" then \"Create the POST endpoint\" then\n\"Add validation to GET\" -- this creates unnecessary overhead.\n\nToo big: \"Create the entire notification backend including API, WebSocket,\nemail, and preferences\" -- this can't be reviewed or verified easily.\n\n## The Checkpoint Pattern\n\nAfter each step, verify before proceeding:\n\n```\nStep 1: Create types --> Verify: types compile\nStep 2: Create storage --> Verify: tests pass\nStep 3: Create API --> Verify: curl tests work\nStep 4: Create UI --> Verify: component renders\n```\n\nIf verification fails, fix the current step before moving on. This prevents\nthe cascade of errors that makes debugging massive changes so painful.\n\n## When NOT to Decompose\n\nDon't over-plan simple tasks:\n- Renaming a variable across files (one prompt)\n- Adding a JSDoc comment to a function (one prompt)\n- Fixing a specific, well-understood bug (one prompt)\n- Adding a single utility function (one prompt)\n\nThe rule of thumb: if the task touches fewer than 3 files and has no\nambiguity, just do it in one shot.\n\n## Example Decomposition\n\n**Feature request**: \"Add user authentication to our Express API\"\n\n| Step | Description | Depends On | Verification |\n|------|-------------|------------|--------------|\n| 1 | Define User type and auth types | Nothing | Types compile |\n| 2 | Create user storage with password hashing | Step 1 | Can create and retrieve users in tests |\n| 3 | Build registration endpoint | Steps 1-2 | POST /auth/register creates user |\n| 4 | Build login endpoint with JWT | Steps 1-2 | POST /auth/login returns token |\n| 5 | Create auth middleware | Step 4 | Protected routes reject invalid tokens |\n| 6 | Apply middleware to existing routes | Step 5 | Existing routes require authentication |\n\nEach step is independently verifiable. If step 4 has a bug in JWT signing,\nyou catch it before applying middleware to all your routes.\n\n## Your Exercise\n\nYou have been given a feature request for an existing Express project:\n\"Add a notification system that lets users receive, view, and manage\nnotifications with support for different notification types.\"\n\nDecompose this into 5-8 ordered steps in task-breakdown.md. Each step must\nhave: a description, dependencies (which prior steps it needs), and\nverification criteria (how to confirm it works).\n\nDo NOT implement the feature. The exercise is about planning, not coding.\n"
+        "content": "# Notification API Project\n\nAn Express API that needs a notification system added.\n\n## Existing Files\n\n- `src/server.js` — Express server with existing routes\n- `src/routes/auth.js` — Authentication endpoints\n- `src/routes/users.js` — User endpoints\n- `src/middleware/auth.js` — JWT auth middleware\n- `src/db.js` — SQLite database setup\n"
       },
       {
         "path": "package.json",
@@ -46,14 +46,14 @@
   "objectives": [
     {
       "id": "obj-1",
-      "description": "Create task-breakdown.md",
+      "description": "Decomposition plan exists (task-breakdown.md)",
       "type": "file_exists",
       "target": "task-breakdown.md",
       "required": true
     },
     {
       "id": "obj-2",
-      "description": "Breakdown contains at least 5 distinct steps",
+      "description": "Plan has at least 5 steps",
       "type": "file_contains",
       "target": "task-breakdown.md",
       "pattern": "[Ss]tep.*[5678]|##.*[5678]|\\b[5678]\\.",
@@ -61,34 +61,25 @@
     },
     {
       "id": "obj-3",
-      "description": "Steps include descriptions of what to build",
+      "description": "Plan includes dependency information",
       "type": "file_contains",
       "target": "task-breakdown.md",
-      "pattern": "[Nn]otification|[Tt]ype|[Ee]ndpoint|[Rr]oute|API|[Cc]omponent|[Ss]torage|[Dd]atabase",
+      "pattern": "[Dd]epend|[Rr]equire|[Pp]rerequisite|[Aa]fter.*[Ss]tep|[Nn]one",
       "required": true
     },
     {
       "id": "obj-4",
-      "description": "Steps include dependency information (what each step depends on)",
-      "type": "file_contains",
-      "target": "task-breakdown.md",
-      "pattern": "[Dd]epend|[Rr]equire|[Aa]fter.*[Ss]tep|[Nn]eed.*[Ss]tep|[Pp]rerequisite|[Bb]uild.*on|[Nn]one|[Nn]o.*depend",
+      "description": "Step 1 implemented: notification types file exists",
+      "type": "file_exists",
+      "target": "src/types/notification.js",
       "required": true
     },
     {
       "id": "obj-5",
-      "description": "Steps include verification criteria (how to confirm each step works)",
+      "description": "Step 2 implemented: notification table added to database",
       "type": "file_contains",
-      "target": "task-breakdown.md",
-      "pattern": "[Vv]erif|[Cc]heck|[Cc]onfirm|[Tt]est|[Vv]alidat|[Cc]ompile|[Cc]url|[Ss]uccess.*criter",
-      "required": true
-    },
-    {
-      "id": "obj-6",
-      "description": "Steps are ordered logically (types/models before API, API before UI)",
-      "type": "file_contains",
-      "target": "task-breakdown.md",
-      "pattern": "[Tt]ype|[Mm]odel|[Ii]nterface|[Ss]chema|[Dd]efine",
+      "target": "src/db.js",
+      "pattern": "notification",
       "required": true
     }
   ],
@@ -96,18 +87,10 @@
   "bonusObjectives": [
     {
       "id": "bonus-1",
-      "description": "Breakdown discusses step sizing (why each step is the right size)",
+      "description": "Plan includes verification criteria for each step",
       "type": "file_contains",
       "target": "task-breakdown.md",
-      "pattern": "[Ss]ize|[Ss]cope|[Rr]eview|[Mm]anageable|[Ii]ndependent|[Vv]erifiable|[Cc]heckpoint",
-      "xpBonus": 25
-    },
-    {
-      "id": "bonus-2",
-      "description": "Breakdown considers the existing project structure (references server.js, db.js, auth middleware)",
-      "type": "file_contains",
-      "target": "task-breakdown.md",
-      "pattern": "server\\.js|db\\.js|auth|middleware|existing|current",
+      "pattern": "[Vv]erif|[Cc]heck|[Cc]onfirm|[Tt]est|[Ss]uccess.*criter",
       "xpBonus": 25
     }
   ],
@@ -115,37 +98,36 @@
   "hints": [
     {
       "level": 1,
-      "text": "Think about what a notification system needs: types/models, database storage, API endpoints, and possibly real-time features. What comes first? Types and models, because everything else depends on them. What comes last? Features that depend on multiple other components being ready.",
+      "text": "Think about what a notification system needs: types/models first (everything depends on them), then storage (database table), then API endpoints, then features like mark-as-read. For each step, note what it depends on and how you'd verify it works.",
       "xpCost": 10
     },
     {
       "level": 2,
-      "text": "A good decomposition for notifications: (1) Define notification types/interfaces, (2) Create database table and storage functions, (3) Build CRUD API endpoints, (4) Add 'mark as read' functionality, (5) Create notification preferences, (6) Add real-time delivery or polling. For each step, state what it depends on and how to verify it (e.g., 'Verify: GET /api/notifications returns empty array for new user').",
+      "text": "For the plan: (1) Define notification types, (2) Create database table, (3) Build CRUD API endpoints, (4) Add mark-as-read, (5) Add notification preferences. For implementation: create src/types/notification.js with a Notification class or object shape (id, userId, type, message, read, createdAt). Then add a CREATE TABLE IF NOT EXISTS notifications statement to src/db.js.",
       "xpCost": 25
     },
     {
       "level": 3,
-      "text": "Your task-breakdown.md should have 5-8 steps, each with: (1) A clear title and description, (2) Dependencies listed ('Depends on: Step 1, Step 2' or 'None'), (3) Verification criteria ('Verify: run npm test and notification tests pass'). Consider the existing project: db.js already has SQLite set up, auth middleware exists, server.js has a TODO for notification routes. Reference these in your steps. Start with types, then storage, then API, then features.",
+      "text": "Ask Claude: '1) Create task-breakdown.md with 5-8 steps for adding a notification system to this Express API. Each step needs: description, dependencies, and verification criteria. 2) Then implement Step 1: create src/types/notification.js defining notification types (id, userId, type, message, read, createdAt). 3) Then implement Step 2: add a notifications table to src/db.js with columns matching the types.'",
       "xpCost": 50
     }
   ],
 
   "solution": {
-    "approach": "Analyze the notification system requirements, identify components and dependencies, order them logically, and document each step with description, dependencies, and verification criteria in task-breakdown.md.",
-    "example": "Step 1: Define types (no deps, verify: compiles). Step 2: Database table (deps: 1, verify: migration runs). Step 3: CRUD endpoints (deps: 1-2, verify: curl tests). Step 4: Mark-as-read (deps: 3, verify: endpoint works). Step 5: Notification preferences (deps: 1-2, verify: preferences saved). Step 6: List with filtering (deps: 3-5, verify: filtered results).",
+    "approach": "Create a decomposition plan in task-breakdown.md with 5-8 steps including dependencies and verification criteria. Then implement Steps 1 (notification types) and 2 (database table).",
+    "example": "Plan: Step 1 types (no deps), Step 2 database (deps: 1), Step 3 API (deps: 1-2), Step 4 mark-read (deps: 3), Step 5 preferences (deps: 1-2). Implement: create notification types file and add notifications table to db.js.",
     "alternativeApproaches": [
-      "Organize steps by layer (data -> API -> features) rather than by feature",
-      "Include estimated prompt complexity for each step to help plan the Claude Code session"
+      "Create the plan first, get feedback, then implement the first 2 steps",
+      "Implement steps 1-2 first to understand the system, then write the plan"
     ]
   },
 
   "learningPoints": [
     "Decomposition prevents error compounding: verify each step before building on it",
-    "Dependencies determine order: types before storage, storage before API, API before UI",
+    "Dependencies determine order: types before storage, storage before API",
     "Each step should be independently verifiable with clear success criteria",
     "The plan-then-execute pattern catches mistakes early when they're cheap to fix",
-    "Step sizing matters: big enough to be meaningful, small enough to review in 5 minutes",
-    "Don't decompose simple tasks: if it's fewer than 3 files with no ambiguity, do it in one prompt"
+    "Step sizing matters: big enough to be meaningful, small enough to review in 5 minutes"
   ],
 
   "nextChallenge": "13-001"

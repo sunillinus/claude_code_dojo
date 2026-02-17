@@ -2,22 +2,22 @@
   "id": "15-004",
   "module": "background-tasks",
   "title": "Orchestrate Parallel Workflows",
-  "description": "Combine background execution and parallel tool calls to design complex workflows with fan-out, fan-in, and dependency chains -- the real-world pattern for maximizing throughput while respecting task ordering.",
+  "description": "Learn to design complex workflows with fan-out, fan-in, and dependency chains, then practice by documenting 3 modules in parallel and creating a combined API reference.\n\n## Why Orchestration Matters\n\nReal-world tasks rarely consist of a single step. You often need to process multiple modules, run multiple checks, and combine results. The order matters: some tasks can run simultaneously, others must wait for prerequisites.\n\nOrchestration is the skill of **planning which tasks run in parallel and which must be sequential**, then executing that plan efficiently.\n\n## Core Pattern 1: Fan-Out\n\nFan-out means launching multiple independent tasks from a single point. Each runs in parallel.\n\n```\n                    +--> [Process module A]\n                    |\n[Start] -- fan-out --+--> [Process module B]\n                    |\n                    +--> [Process module C]\n```\n\nIn Claude Code, fan-out looks like:\n- Multiple parallel tool calls (e.g., 3 Edit calls in one message)\n- Multiple background Bash commands launched together\n- Multiple subagents launched with `run_in_background: true`\n\n## Core Pattern 2: Fan-In\n\nFan-in means waiting for all parallel tasks to complete, then combining their results.\n\n```\n[Process module A]  --+\n                      |\n[Process module B]  --+--> fan-in --> [Create combined output]\n                      |\n[Process module C]  --+\n```\n\nFan-in requires:\n- Waiting for all parallel tasks to finish\n- Reading/collecting all results\n- Synthesizing into a single output\n\n## Core Pattern 3: Dependency Chains\n\nSome tasks have strict ordering. Task B cannot start until Task A completes.\n\n```\n[Install deps] --> [Run build] --> [Run tests on build output]\n```\n\nCannot parallelize across a dependency.\n\n## Mixed Workflows: The Real Pattern\n\nMost real workflows combine all three:\n\n```\n                         +--> [Lint]   --+\n[Install deps] -- then --+               +--> then --> [Deploy]\n                         +--> [Test]  --+\n                         |\n                         +--> [Build] --+\n```\n\nBreaking it down:\n1. **Sequential**: Install deps must complete first (dependency)\n2. **Fan-out**: Lint, Test, Build run in parallel (independent)\n3. **Fan-in**: Wait for all three to complete\n4. **Sequential**: Deploy only after all three succeed\n\n## Designing a Workflow\n\n1. **List all tasks** — everything that needs to happen\n2. **Map dependencies** — for each task: what must complete first?\n3. **Identify parallel groups** — tasks with no arrows between them\n4. **Build execution stages** — Stage 1: no prerequisites, Stage 2: depends on Stage 1, etc.\n5. **Define fan-in points** — where parallel results combine\n\n## Error Handling Strategies\n\n| Strategy | Behavior | When to Use |\n|----------|----------|-------------|\n| **Fail fast** | Stop everything on first failure | Build pipelines, CI/CD |\n| **Collect all** | Let all tasks complete, report all failures | Analysis, auditing |\n| **Retry failed** | Re-run failed tasks, keep successes | Flaky tests, network ops |\n\n## Your Exercise\n\nThis project has 3 independent modules: `modules/auth/`, `modules/api/`, and `modules/data/`. Each module has exported functions that lack JSDoc documentation.\n\n**Your task (fan-out, then fan-in):**\n\n1. **Fan-out**: Add JSDoc comments (`/** ... */` with `@param` and/or `@returns`) to all exported functions in all 3 modules:\n   - `modules/auth/index.js` — hashPassword, verifyPassword, generateToken, verifyToken, register, login\n   - `modules/api/index.js` — createRouter (and its inner functions authenticate, requireRole)\n   - `modules/data/index.js` — findAll, findById, findByEmail, create, update, remove\n\n   These 3 files are independent — they can all be documented in parallel.\n\n2. **Fan-in**: After all 3 modules are documented, create `API-REFERENCE.md` that lists every module's public functions with a brief description of each.\n\nRun `/dojo check` when done.",
   "difficulty": "advanced",
   "xpReward": 300,
   "estimatedMinutes": 15,
-  "skills": ["workflow-orchestration", "dependency-analysis", "fan-out-fan-in", "complex-tasks"],
+  "skills": ["workflow-orchestration", "dependency-analysis", "fan-out-fan-in", "documentation"],
 
   "setup": {
     "workingDir": "~/dojo-workspace/challenge-15-004",
     "initialFiles": [
       {
         "path": "README.md",
-        "content": "# Challenge: Orchestrate Parallel Workflows\n\nCombine everything from the previous challenges -- background execution,\nparallel tool calls, and monitoring -- to design workflows that maximize\nthroughput while respecting dependencies.\n\n---\n\n## Why Orchestration Matters\n\nReal-world development tasks rarely consist of a single step. You often\nneed to analyze multiple modules, run multiple checks, and then combine\nresults. The order matters: some tasks can run simultaneously, while\nothers must wait for prerequisites.\n\nOrchestration is the skill of **planning which tasks run in parallel\nand which must be sequential**, then executing that plan efficiently.\n\n## Core Patterns\n\n### Fan-Out: One Task Spawns Many\n\nFan-out means launching multiple independent tasks from a single point.\nEach task runs in parallel, covering a different part of the work.\n\n```\n                    +--> [Analyze auth module]\n                    |\n[Start] -- fan-out --+--> [Analyze API module]\n                    |\n                    +--> [Analyze utils module]\n```\n\nIn Claude Code, fan-out looks like:\n- Multiple parallel tool calls (e.g., 3 Read calls in one message)\n- Multiple background Bash commands launched together\n- Multiple subagents launched with run_in_background: true\n\n### Fan-In: Many Results Converge\n\nFan-in means waiting for all parallel tasks to complete, then combining\ntheir results into a single output.\n\n```\n[Analyze auth module]  --+\n                         |\n[Analyze API module]   --+--> fan-in --> [Create combined report]\n                         |\n[Analyze utils module] --+\n```\n\nIn Claude Code, fan-in looks like:\n- Reading all output files from background tasks\n- Using TaskOutput(block: true) on each task to collect results\n- Reading multiple parallel results and synthesizing them\n\n### Dependency Chains: Sequential Steps\n\nSome tasks have strict ordering requirements. Task B cannot start\nuntil Task A completes because B needs A's output.\n\n```\n[Install dependencies] --> [Run build] --> [Run tests on build output]\n```\n\nIn Claude Code, dependency chains mean:\n- Wait for the prerequisite to complete (blocking or TaskOutput)\n- Use the result to inform the next step\n- Cannot parallelize across the dependency\n\n### Mixed Workflows: The Real Pattern\n\nMost real workflows combine all three patterns:\n\n```\n                         +--> [Lint]   --+\n[Install deps] -- then --+               +--> then --> [Deploy]\n                         +--> [Test]  --+\n                         |\n                         +--> [Build] --+\n```\n\nBreaking this down:\n1. **Sequential**: Install deps must complete first (everything depends on it)\n2. **Fan-out**: Lint, Test, and Build can run in parallel (independent)\n3. **Fan-in**: Wait for all three to complete\n4. **Sequential**: Deploy only after all three succeed\n\n## Designing a Workflow\n\nFollow these steps to design any orchestrated workflow:\n\n### Step 1: List All Tasks\nIdentify every task that needs to happen.\n\n### Step 2: Map Dependencies\nFor each task, ask: \"What must complete before this can start?\"\nDraw arrows from prerequisites to dependents.\n\n### Step 3: Identify Parallel Groups\nTasks with NO arrows between them can run in parallel.\nTasks connected by arrows must be sequential.\n\n### Step 4: Build the Execution Plan\nOrganize tasks into stages:\n- **Stage 1**: Tasks with no prerequisites (start immediately)\n- **Stage 2**: Tasks whose prerequisites are all in Stage 1\n- **Stage 3**: Tasks whose prerequisites are in Stage 1 or 2\n- Continue until all tasks are staged\n\n### Step 5: Define Fan-In Points\nIdentify where parallel results need to be combined.\n\n## Error Handling in Parallel Workflows\n\nWhat happens when one parallel task fails?\n\n| Strategy | Behavior | When to Use |\n|----------|----------|-------------|\n| **Fail fast** | Stop everything when first task fails | Build pipelines, CI/CD |\n| **Collect all** | Let all tasks complete, report all failures | Analysis, auditing |\n| **Retry failed** | Re-run failed tasks, keep successes | Flaky tests, network ops |\n\nIn Claude Code, you implement these by checking each task's result\n(via TaskOutput or output file) and deciding how to proceed.\n\n## Real-World Example\n\nTask: \"Analyze this 3-module project and create a combined security report.\"\n\n**Workflow plan:**\n```\nStage 1 (parallel - fan-out):\n  - Analyze auth module for security issues\n  - Analyze API module for security issues\n  - Analyze data module for security issues\n\nStage 2 (sequential - fan-in):\n  - Wait for all 3 analyses to complete\n  - Read all results\n  - Create combined security report\n```\n\nThis is faster than analyzing modules one at a time because Stage 1\nruns all three analyses simultaneously.\n\n---\n\n## Your Task\n\nThis project has three independent modules: `auth`, `api`, and `data`.\nEach module has its own source code, tests, and configuration.\n\nDesign a workflow that:\n1. Analyzes all three modules in parallel (what each module does,\n   its dependencies, and any issues you notice)\n2. Combines the findings into a single report\n\nCreate an `orchestration-plan.md` that documents your workflow design.\nThe plan should include:\n\n1. A dependency diagram showing which tasks are parallel vs sequential\n2. The fan-out phase: what independent tasks run simultaneously\n3. The fan-in phase: how results are gathered and combined\n4. The execution stages in order\n5. How you would handle a failure in one of the parallel tasks\n\nThen create a `combined-report.md` that contains the actual analysis\nof all three modules (you can do this analysis yourself or describe\nhow Claude Code would do it).\n\n## Objectives\n1. Create orchestration-plan.md with a workflow design\n2. Plan includes a dependency diagram or stage breakdown\n3. Plan describes the fan-out phase (parallel analysis of modules)\n4. Plan describes the fan-in phase (combining results)\n5. Plan addresses error handling for parallel tasks\n6. Create combined-report.md with findings from all 3 modules\n"
+        "content": "# Multi-Module Project\n\nA project with 3 independent modules (auth, api, data) that need documentation.\n\n## Structure\n\n- `modules/auth/` — Authentication (password hashing, JWT tokens)\n- `modules/api/` — Express API routes and middleware\n- `modules/data/` — Data access layer (CRUD operations)\n"
       },
       {
         "path": "package.json",
-        "content": "{\n  \"name\": \"multi-module-project\",\n  \"version\": \"1.0.0\",\n  \"description\": \"A multi-module project for workflow orchestration practice\",\n  \"scripts\": {\n    \"test\": \"node test/run-all.js\",\n    \"test:auth\": \"node modules/auth/test.js\",\n    \"test:api\": \"node modules/api/test.js\",\n    \"test:data\": \"node modules/data/test.js\",\n    \"lint\": \"echo 'Linting all modules...' && sleep 2 && echo 'Done'\",\n    \"build\": \"echo 'Building...' && sleep 3 && echo 'Build complete'\"\n  }\n}\n"
+        "content": "{\n  \"name\": \"multi-module-project\",\n  \"version\": \"1.0.0\",\n  \"scripts\": {\n    \"test\": \"node test/run-all.js\",\n    \"test:auth\": \"node modules/auth/test.js\",\n    \"test:api\": \"node modules/api/test.js\",\n    \"test:data\": \"node modules/data/test.js\"\n  }\n}\n"
       },
       {
         "path": "modules/auth/index.js",
@@ -33,11 +33,11 @@
       },
       {
         "path": "modules/api/index.js",
-        "content": "const express = require('express');\nconst { verifyToken } = require('../auth');\nconst { findAll, findById, create, update, remove } = require('../data');\n\nfunction createRouter(config) {\n  const router = express.Router();\n\n  // Middleware: authenticate requests\n  function authenticate(req, res, next) {\n    const token = req.headers.authorization?.split(' ')[1];\n    if (!token) return res.status(401).json({ error: 'No token provided' });\n\n    const decoded = verifyToken(token, config.jwtSecret);\n    if (!decoded) return res.status(401).json({ error: 'Invalid token' });\n\n    req.user = decoded;\n    next();\n  }\n\n  // Middleware: check role\n  function requireRole(role) {\n    return (req, res, next) => {\n      if (req.user.role !== role) {\n        return res.status(403).json({ error: 'Insufficient permissions' });\n      }\n      next();\n    };\n  }\n\n  // User routes\n  router.get('/users', authenticate, async (req, res) => {\n    const users = await findAll('users');\n    res.json(users);\n  });\n\n  router.get('/users/:id', authenticate, async (req, res) => {\n    const user = await findById('users', req.params.id);\n    if (!user) return res.status(404).json({ error: 'Not found' });\n    res.json(user);\n  });\n\n  // Product routes\n  router.get('/products', async (req, res) => {\n    const products = await findAll('products');\n    res.json(products);\n  });\n\n  router.post('/products', authenticate, requireRole('admin'), async (req, res) => {\n    const product = await create('products', req.body);\n    res.status(201).json(product);\n  });\n\n  // Order routes\n  router.get('/orders', authenticate, async (req, res) => {\n    const orders = await findAll('orders', { userId: req.user.id });\n    res.json(orders);\n  });\n\n  router.post('/orders', authenticate, async (req, res) => {\n    const order = await create('orders', { ...req.body, userId: req.user.id });\n    res.status(201).json(order);\n  });\n\n  return router;\n}\n\nmodule.exports = { createRouter };\n"
+        "content": "const express = require('express');\nconst { verifyToken } = require('../auth');\nconst { findAll, findById, create, update, remove } = require('../data');\n\nfunction createRouter(config) {\n  const router = express.Router();\n\n  function authenticate(req, res, next) {\n    const token = req.headers.authorization?.split(' ')[1];\n    if (!token) return res.status(401).json({ error: 'No token provided' });\n\n    const decoded = verifyToken(token, config.jwtSecret);\n    if (!decoded) return res.status(401).json({ error: 'Invalid token' });\n\n    req.user = decoded;\n    next();\n  }\n\n  function requireRole(role) {\n    return (req, res, next) => {\n      if (req.user.role !== role) {\n        return res.status(403).json({ error: 'Insufficient permissions' });\n      }\n      next();\n    };\n  }\n\n  router.get('/users', authenticate, async (req, res) => {\n    const users = await findAll('users');\n    res.json(users);\n  });\n\n  router.get('/users/:id', authenticate, async (req, res) => {\n    const user = await findById('users', req.params.id);\n    if (!user) return res.status(404).json({ error: 'Not found' });\n    res.json(user);\n  });\n\n  router.get('/products', async (req, res) => {\n    const products = await findAll('products');\n    res.json(products);\n  });\n\n  router.post('/products', authenticate, requireRole('admin'), async (req, res) => {\n    const product = await create('products', req.body);\n    res.status(201).json(product);\n  });\n\n  router.get('/orders', authenticate, async (req, res) => {\n    const orders = await findAll('orders', { userId: req.user.id });\n    res.json(orders);\n  });\n\n  router.post('/orders', authenticate, async (req, res) => {\n    const order = await create('orders', { ...req.body, userId: req.user.id });\n    res.status(201).json(order);\n  });\n\n  return router;\n}\n\nmodule.exports = { createRouter };\n"
       },
       {
         "path": "modules/api/config.json",
-        "content": "{\n  \"port\": 3000,\n  \"host\": \"0.0.0.0\",\n  \"cors\": {\n    \"origin\": [\"http://localhost:8080\"],\n    \"methods\": [\"GET\", \"POST\", \"PUT\", \"DELETE\"]\n  },\n  \"rateLimit\": {\n    \"windowMs\": 900000,\n    \"max\": 100\n  },\n  \"pagination\": {\n    \"defaultPageSize\": 20,\n    \"maxPageSize\": 100\n  }\n}\n"
+        "content": "{\n  \"port\": 3000,\n  \"host\": \"0.0.0.0\",\n  \"cors\": {\n    \"origin\": [\"http://localhost:8080\"],\n    \"methods\": [\"GET\", \"POST\", \"PUT\", \"DELETE\"]\n  },\n  \"rateLimit\": {\n    \"windowMs\": 900000,\n    \"max\": 100\n  }\n}\n"
       },
       {
         "path": "modules/api/test.js",
@@ -45,7 +45,7 @@
       },
       {
         "path": "modules/data/index.js",
-        "content": "const { validateSchema } = require('./validators');\n\n// Simulated database layer\nconst store = {\n  users: [],\n  products: [],\n  orders: []\n};\n\nasync function findAll(collection, filters = {}) {\n  let results = store[collection] || [];\n  for (const [key, value] of Object.entries(filters)) {\n    results = results.filter(item => item[key] === value);\n  }\n  return results;\n}\n\nasync function findById(collection, id) {\n  return (store[collection] || []).find(item => item.id === id);\n}\n\nasync function findByEmail(email) {\n  return store.users.find(u => u.email === email);\n}\n\nasync function create(collection, data) {\n  const validated = validateSchema(collection, data);\n  const id = (store[collection]?.length || 0) + 1;\n  const record = { id, ...validated, createdAt: new Date().toISOString() };\n  store[collection].push(record);\n  return record;\n}\n\nasync function update(collection, id, data) {\n  const index = store[collection].findIndex(item => item.id === id);\n  if (index === -1) throw new Error('Record not found');\n  store[collection][index] = { ...store[collection][index], ...data };\n  return store[collection][index];\n}\n\nasync function remove(collection, id) {\n  const index = store[collection].findIndex(item => item.id === id);\n  if (index === -1) throw new Error('Record not found');\n  return store[collection].splice(index, 1)[0];\n}\n\nmodule.exports = {\n  findAll, findById, findByEmail, create, update, remove\n};\n"
+        "content": "const { validateSchema } = require('./validators');\n\nconst store = {\n  users: [],\n  products: [],\n  orders: []\n};\n\nasync function findAll(collection, filters = {}) {\n  let results = store[collection] || [];\n  for (const [key, value] of Object.entries(filters)) {\n    results = results.filter(item => item[key] === value);\n  }\n  return results;\n}\n\nasync function findById(collection, id) {\n  return (store[collection] || []).find(item => item.id === id);\n}\n\nasync function findByEmail(email) {\n  return store.users.find(u => u.email === email);\n}\n\nasync function create(collection, data) {\n  const validated = validateSchema(collection, data);\n  const id = (store[collection]?.length || 0) + 1;\n  const record = { id, ...validated, createdAt: new Date().toISOString() };\n  store[collection].push(record);\n  return record;\n}\n\nasync function update(collection, id, data) {\n  const index = store[collection].findIndex(item => item.id === id);\n  if (index === -1) throw new Error('Record not found');\n  store[collection][index] = { ...store[collection][index], ...data };\n  return store[collection][index];\n}\n\nasync function remove(collection, id) {\n  const index = store[collection].findIndex(item => item.id === id);\n  if (index === -1) throw new Error('Record not found');\n  return store[collection].splice(index, 1)[0];\n}\n\nmodule.exports = {\n  findAll, findById, findByEmail, create, update, remove\n};\n"
       },
       {
         "path": "modules/data/validators.js",
@@ -70,56 +70,49 @@
   "objectives": [
     {
       "id": "obj-1",
-      "description": "Create orchestration-plan.md",
-      "type": "file_exists",
-      "target": "orchestration-plan.md",
+      "description": "Auth module has JSDoc comments",
+      "type": "file_contains",
+      "target": "modules/auth/index.js",
+      "pattern": "/\\*\\*|@param|@returns",
       "required": true
     },
     {
       "id": "obj-2",
-      "description": "Plan includes a dependency diagram or stage-by-stage breakdown",
+      "description": "API module has JSDoc comments",
       "type": "file_contains",
-      "target": "orchestration-plan.md",
-      "pattern": "[Ss]tage|[Pp]hase|[Ss]tep|-->|->|[Dd]iagram|[Dd]epend|[Bb]efore.*after|[Oo]rder",
+      "target": "modules/api/index.js",
+      "pattern": "/\\*\\*|@param|@returns",
       "required": true
     },
     {
       "id": "obj-3",
-      "description": "Plan describes fan-out (parallel analysis of multiple modules)",
+      "description": "Data module has JSDoc comments",
       "type": "file_contains",
-      "target": "orchestration-plan.md",
-      "pattern": "[Ff]an.out|[Pp]arallel.*analy|[Ss]imultaneous|[Aa]ll.*module|[Ii]ndependent.*module|auth.*api.*data|[Aa]t the same time",
+      "target": "modules/data/index.js",
+      "pattern": "/\\*\\*|@param|@returns",
       "required": true
     },
     {
       "id": "obj-4",
-      "description": "Plan describes fan-in (gathering and combining results)",
-      "type": "file_contains",
-      "target": "orchestration-plan.md",
-      "pattern": "[Ff]an.in|[Cc]ombine|[Gg]ather|[Mm]erge|[Cc]ollect.*result|[Ww]ait.*all|[Cc]onverge|[Ss]ummar|[Ss]ynthesize|combined.*report",
+      "description": "API reference document exists",
+      "type": "file_exists",
+      "target": "API-REFERENCE.md",
       "required": true
     },
     {
       "id": "obj-5",
-      "description": "Plan addresses error handling for parallel tasks",
+      "description": "API reference lists functions from all modules",
       "type": "file_contains",
-      "target": "orchestration-plan.md",
-      "pattern": "[Ee]rror|[Ff]ail|[Rr]etry|[Ff]all.*back|[Ss]kip|[Cc]ontinue.*despite|[Ff]ail.*fast|[Cc]ollect.*all|[Hh]andle",
+      "target": "API-REFERENCE.md",
+      "pattern": "hashPassword|generateToken|login",
       "required": true
     },
     {
       "id": "obj-6",
-      "description": "Create combined-report.md with analysis of all 3 modules",
-      "type": "file_exists",
-      "target": "combined-report.md",
-      "required": true
-    },
-    {
-      "id": "obj-7",
-      "description": "Combined report covers all 3 modules (auth, api, data)",
+      "description": "API reference includes API and data module functions",
       "type": "file_contains",
-      "target": "combined-report.md",
-      "pattern": "[Aa]uth.*[Aa]pi|[Aa]pi.*[Dd]ata|[Aa]uth.*[Dd]ata|[Aa]uthentication.*[Aa][Pp][Ii]|module",
+      "target": "API-REFERENCE.md",
+      "pattern": "createRouter|findAll|findById",
       "required": true
     }
   ],
@@ -127,18 +120,10 @@
   "bonusObjectives": [
     {
       "id": "bonus-1",
-      "description": "Plan includes a visual dependency diagram using ASCII art or markdown",
+      "description": "Data validators also have JSDoc",
       "type": "file_contains",
-      "target": "orchestration-plan.md",
-      "pattern": "-->|->|\\+-|\\|.*\\||[Ss]tage 1.*[Ss]tage 2|```",
-      "xpBonus": 50
-    },
-    {
-      "id": "bonus-2",
-      "description": "Plan describes timing benefits of parallel vs sequential execution",
-      "type": "file_contains",
-      "target": "orchestration-plan.md",
-      "pattern": "[Tt]ime|[Ff]aster|[Ss]peed|[Ss]aving|[Dd]uration|[Tt]hroughput|[Ee]fficienc",
+      "target": "modules/data/validators.js",
+      "pattern": "/\\*\\*|@param|@returns",
       "xpBonus": 50
     }
   ],
@@ -146,36 +131,36 @@
   "hints": [
     {
       "level": 1,
-      "text": "Look at the project structure: 3 modules (auth, api, data), each with source, config, and tests. Analyzing each module is independent -- perfect for fan-out. Combining the analyses into a report is the fan-in. Design your plan around these stages.",
+      "text": "The 3 module files (modules/auth/index.js, modules/api/index.js, modules/data/index.js) are completely independent. Add JSDoc to all exported functions in each file -- these can be edited in parallel. Then create API-REFERENCE.md listing every public function.",
       "xpCost": 20
     },
     {
       "level": 2,
-      "text": "Your orchestration-plan.md should have at least these stages: Stage 1 (fan-out) -- analyze auth, api, and data modules in parallel. Stage 2 (fan-in) -- gather all analysis results and synthesize. Stage 3 -- create the combined report. For error handling, describe what happens if one module's analysis fails: do you fail everything (fail-fast) or continue with the other two (collect-all)?",
+      "text": "For JSDoc, add /** ... */ blocks before each exported function with @param and @returns tags. For example: /** Hash a password using bcrypt\\n * @param {string} password - The plaintext password\\n * @returns {Promise<string>} The hashed password */. After all 3 files are documented, create API-REFERENCE.md with sections for each module listing its functions and descriptions.",
       "xpCost": 60
     },
     {
       "level": 3,
-      "text": "Create orchestration-plan.md with: (1) Task list -- analyze auth module, analyze API module, analyze data module, combine into report. (2) Dependency diagram showing all 3 analyses are independent (fan-out) and the report depends on all 3 (fan-in). (3) Stage 1: parallel analysis using 3 simultaneous Read/Grep operations or background subagents. (4) Stage 2: gather results from all 3. (5) Stage 3: create combined-report.md. (6) Error strategy: collect-all, so if one module analysis fails you still report on the other two. Then actually analyze the modules and create combined-report.md covering auth (JWT, bcrypt), API (Express routes, middleware), and data (CRUD, validation).",
+      "text": "Ask Claude: 'Add JSDoc comments (with @param and @returns) to all exported functions in modules/auth/index.js, modules/api/index.js, and modules/data/index.js. These are independent files so edit them all. Then create API-REFERENCE.md with a section for each module listing all public functions: Auth (hashPassword, verifyPassword, generateToken, verifyToken, register, login), API (createRouter), Data (findAll, findById, findByEmail, create, update, remove). Include a brief description of each function.'",
       "xpCost": 120
     }
   ],
 
   "solution": {
-    "approach": "Analyze the 3-module project structure to identify independent tasks (analyzing each module) and dependent tasks (combining results). Design a staged workflow plan with fan-out for parallel analysis, fan-in for gathering results, and error handling strategy. Then execute the analysis and create the combined report.",
-    "example": "Create orchestration-plan.md with: Stage 1 (fan-out) -- parallel analysis of auth (JWT/bcrypt functions), api (Express routes/middleware), data (CRUD/validators); Stage 2 (fan-in) -- gather all results; Stage 3 -- create combined-report.md. Error handling: collect-all strategy. Then create combined-report.md with findings from all 3 modules.",
+    "approach": "Fan-out: add JSDoc to all 3 module index.js files in parallel. Fan-in: create API-REFERENCE.md listing all public functions from all modules.",
+    "example": "Edit 3 files in parallel to add JSDoc, then create API-REFERENCE.md with sections for auth (hashPassword, generateToken, login, etc.), api (createRouter), and data (findAll, findById, create, etc.).",
     "alternativeApproaches": [
-      "Use background subagents to analyze each module in parallel, then combine the results when all complete",
-      "Design the plan first with just the dependency diagram, then ask Claude Code to execute it step by step"
+      "Document one module at a time, then combine into the reference",
+      "Use background subagents to analyze each module, then synthesize the reference"
     ]
   },
 
   "learningPoints": [
-    "Fan-out launches multiple independent tasks in parallel -- in this case, analyzing 3 modules simultaneously",
+    "Fan-out launches multiple independent tasks in parallel -- editing 3 independent files simultaneously",
     "Fan-in waits for all parallel tasks to complete and combines their results into a unified output",
-    "Dependency chains define strict ordering: prerequisites must complete before dependents can start",
-    "Real workflows are mixed: some stages are parallel (fan-out), some are sequential (dependency chains), and some combine results (fan-in)",
-    "Always plan your error handling strategy for parallel tasks: fail-fast stops everything on first failure, collect-all continues and reports all results",
+    "Dependency chains define strict ordering: the API reference can only be created after all modules are documented",
+    "Real workflows are mixed: fan-out for independent work, then fan-in to combine, then sequential for the final output",
+    "Always plan your error handling strategy: fail-fast stops on first failure, collect-all continues and reports everything",
     "Designing the workflow before executing it (listing tasks, mapping dependencies, identifying stages) leads to more efficient execution"
   ],
 

@@ -2,18 +2,18 @@
   "id": "12-003",
   "module": "effective-prompting",
   "title": "Context and Constraints",
-  "description": "Learn to provide the right context so Claude Code understands your project's history, conventions, and boundaries. Master the difference between persistent context (CLAUDE.md) and per-prompt context.",
+  "description": "Learn to provide the right context so Claude Code understands your project's conventions, then practice by creating a CLAUDE.md for a real codebase.\n\n## Why Context Matters\n\nClaude Code doesn't know:\n- Your project's history or architecture decisions\n- Your team's coding conventions or style preferences\n- Your business rules or domain constraints\n- Which libraries you've chosen (and rejected)\n- What you've already tried that didn't work\n\nWithout context, Claude makes reasonable guesses. With context, Claude makes informed decisions that match your project.\n\n## 4 Types of Context\n\n### 1. Project Context\nWhat the project is, what it does, who it's for.\n- \"This is an e-commerce admin panel for managing products and orders\"\n- \"This is a medical records system that must comply with HIPAA\"\n\n### 2. Technical Constraints\nTechnologies, versions, and patterns to use (or avoid).\n- \"React 18 with hooks, no class components\"\n- \"TypeScript strict mode -- no `any` types\"\n- \"Use zustand for state, react-query for data fetching\"\n\n### 3. Business Rules\nDomain-specific requirements that affect code.\n- \"Prices are always in cents (integers), never floating-point dollars\"\n- \"Users must be 18+ to create an account\"\n- \"All user actions must be logged for the audit trail\"\n\nBusiness rules are the most commonly forgotten context.\n\n### 4. Team Conventions\nPatterns and styles your team has agreed on.\n- \"We use custom hooks (useProducts, useOrders) for data fetching\"\n- \"Error messages follow: [MODULE] Error: description\"\n- \"All public functions have JSDoc comments\"\n\nReferencing existing files is powerful: \"Follow the same pattern as useProducts.ts\" is worth a thousand words.\n\n## CLAUDE.md vs Per-Prompt Context\n\n| Context Type | Where to Put It | Why |\n|-------------|-----------------|-----|\n| Tech stack, versions | CLAUDE.md | Applies to everything |\n| Coding conventions | CLAUDE.md | Consistency across all work |\n| Build/test commands | CLAUDE.md | Used frequently |\n| Business rules (universal) | CLAUDE.md | Applies everywhere |\n| Task-specific references | In the prompt | Only relevant now |\n| One-time business rule | In the prompt | May not apply elsewhere |\n\nClaude Code reads CLAUDE.md automatically. Anything in it becomes the baseline for every conversation.\n\n## Scope Limitation\n\nTelling Claude what NOT to touch is critical:\n- \"Only modify files in src/api/\" -- prevents changes to shared code\n- \"Do not change the database schema\" -- protects data structures\n- \"Keep the public API unchanged\" -- preserves backwards compatibility\n\n## Negative Constraints\n\nWhat NOT to do is as important as what to do:\n- \"Do NOT add new npm dependencies\"\n- \"Do NOT use `any` or type assertions in TypeScript\"\n- \"Do NOT use inline styles, use CSS modules\"\n\n## Your Exercise\n\nThis workspace contains a **React + TypeScript e-commerce admin panel** with specific patterns and conventions. Study the existing code, then create a `CLAUDE.md` file that captures:\n\n1. **Tech stack**: React, TypeScript, zustand, react-query, and their roles\n2. **Key conventions**: Custom hooks pattern, TypeScript strict mode\n3. **Business rules**: Prices stored in cents (integers), order status flow\n4. **Build commands**: dev, build, test, lint\n\nThis IS a real hands-on skill -- creating a CLAUDE.md is something every developer does when setting up Claude Code for a project.\n\nStudy these files to find the patterns:\n- `package.json` -- tech stack and scripts\n- `tsconfig.json` -- TypeScript strict mode settings\n- `src/types/product.ts` -- prices in cents convention\n- `src/hooks/useProducts.ts` -- custom hook pattern\n- `src/stores/uiStore.ts` -- zustand store pattern\n- `src/api/productApi.ts` -- API pattern\n\nRun `/dojo check` when done.",
   "difficulty": "intermediate",
   "xpReward": 125,
   "estimatedMinutes": 12,
-  "skills": ["context-setting", "constraints", "claude-md-context", "scope-limitation"],
+  "skills": ["context-setting", "claude-md", "project-documentation"],
 
   "setup": {
     "workingDir": "~/dojo-workspace/challenge-12-003",
     "initialFiles": [
       {
         "path": "README.md",
-        "content": "# Challenge: Context and Constraints\n\nLearn to provide context that shapes Claude Code's output to fit your project.\n\n## Why Context Matters\n\nClaude Code doesn't know:\n- Your project's history or architecture decisions\n- Your team's coding conventions or style preferences\n- Your business rules or domain constraints\n- Which libraries you've chosen (and which you've rejected)\n- What you've already tried that didn't work\n\nWithout context, Claude makes reasonable guesses. With context, Claude makes\ninformed decisions that match your project.\n\n## Types of Context\n\n### 1. Project Context\nWhat the project is, what it does, who it's for.\n- \"This is an e-commerce platform for selling handmade goods\"\n- \"This is an internal tool used by our support team\"\n- \"This is a medical records system that must comply with HIPAA\"\n\nProject context shapes the level of care, error handling, and security\nthat Claude applies. A medical records system gets different treatment\nthan a personal todo app.\n\n### 2. Technical Constraints\nWhat technologies, versions, and patterns to use (or avoid).\n- \"We use React 18 with hooks, no class components\"\n- \"This is a TypeScript strict mode project\"\n- \"We use PostgreSQL, not MongoDB\"\n- \"Target Node.js 18+ (use native fetch, no axios)\"\n\nTechnical constraints prevent Claude from introducing incompatible\ntechnologies or patterns that don't fit your stack.\n\n### 3. Business Rules\nDomain-specific requirements that affect the code.\n- \"Users must be 18+ to create an account\"\n- \"Prices are always in cents (integers), never floating point dollars\"\n- \"All user actions must be logged for the audit trail\"\n- \"Passwords must be at least 12 characters with mixed case and numbers\"\n\nBusiness rules are the most commonly forgotten context. Claude can't infer\nthem -- you must state them explicitly.\n\n### 4. Team Conventions\nPatterns and styles your team has agreed on.\n- \"We use the repository pattern for data access\"\n- \"Error messages follow the format: [MODULE] Error: description\"\n- \"All public functions have JSDoc comments\"\n- \"We prefix private methods with an underscore\"\n\nReference existing files: \"Follow the same pattern used in src/api/users.js\"\nis worth a thousand words of description.\n\n## How to Provide Context\n\n### In-Prompt Context (per-conversation)\nInclude context directly in your prompt when it's task-specific:\n- \"Looking at src/auth/middleware.js for the pattern, create similar\n  middleware for rate limiting\"\n- \"This project uses the repository pattern (see src/repos/userRepo.ts).\n  Create a productRepo.ts following the same structure\"\n\n### CLAUDE.md (persistent context)\nPut context in CLAUDE.md when it applies to ALL work in the project:\n- Tech stack and versions\n- Coding conventions\n- Common commands (build, test, lint)\n- Architecture decisions\n- Forbidden patterns or dependencies\n\nClaude Code reads CLAUDE.md automatically. Anything in it becomes the\nbaseline for every conversation.\n\n### When to Use Which\n\n| Context Type | Where to Put It | Why |\n|-------------|-----------------|-----|\n| Tech stack | CLAUDE.md | Applies to everything |\n| Coding conventions | CLAUDE.md | Consistency across all work |\n| Build/test commands | CLAUDE.md | Used frequently |\n| Task-specific requirements | In the prompt | Only relevant now |\n| Reference to existing code | In the prompt | Specific to this task |\n| One-time business rule | In the prompt | May not apply elsewhere |\n| Universal business rules | CLAUDE.md | Applies to everything |\n\n## Scope Limitation\n\nOne of the most important constraints is SCOPE -- telling Claude what NOT\nto touch:\n- \"Only modify files in src/api/\" -- prevents changes to shared code\n- \"Do not change the database schema\" -- protects existing data structures\n- \"Keep the public API unchanged\" -- preserves backwards compatibility\n- \"Only add code, don't modify existing functions\" -- minimizes risk\n\nScope limitation is especially important for:\n- Large codebases (Claude might \"helpfully\" fix unrelated issues)\n- Refactoring (you want controlled, reviewable changes)\n- Bug fixes (changing too much makes it hard to verify the fix)\n\n## Negative Constraints\n\nSometimes what NOT to do is as important as what to do:\n- \"Do NOT add new npm dependencies\"\n- \"Do NOT use any or type assertions in TypeScript\"\n- \"Do NOT change the existing test structure\"\n- \"Do NOT use inline styles, use CSS modules\"\n\nNegative constraints prevent Claude from taking shortcuts that create\ntechnical debt or violate team agreements.\n\n## Common Context Mistakes\n\n1. **Assuming Claude knows your stack**: Always state it. \"This is a React\n   project\" is never redundant -- it prevents Claude from suggesting Vue.\n2. **Forgetting business rules**: Claude will write technically correct code\n   that violates your domain requirements.\n3. **Not referencing existing patterns**: \"Like we do in userService.ts\" is\n   more effective than describing the pattern from scratch.\n4. **Over-constraining**: Don't list 20 constraints for a simple task. Match\n   the constraint level to the task complexity.\n\n## Your Exercise\n\nThis project is a React + TypeScript e-commerce admin panel with specific\npatterns and constraints. Create a context-guide.md documenting:\n\n1. What context to provide for different task types in this project\n2. Example prompts that include appropriate context\n3. What belongs in CLAUDE.md vs what goes in individual prompts\n4. Scope limitation examples for this project\n5. Negative constraints that matter for this codebase\n\nStudy the existing code to understand the patterns, then create your guide.\n"
+        "content": "# E-Commerce Admin Panel\n\nA React + TypeScript admin dashboard for managing products, orders, and customers.\n\n## Files\n\n- `src/types/` — TypeScript interfaces\n- `src/hooks/` — Custom React hooks for data fetching\n- `src/stores/` — Zustand state stores\n- `src/api/` — API client modules\n"
       },
       {
         "path": "package.json",
@@ -50,57 +50,49 @@
   "objectives": [
     {
       "id": "obj-1",
-      "description": "Create context-guide.md",
+      "description": "CLAUDE.md file exists",
       "type": "file_exists",
-      "target": "context-guide.md",
+      "target": "CLAUDE.md",
       "required": true
     },
     {
       "id": "obj-2",
-      "description": "Guide covers project context (what the project is, tech stack)",
+      "description": "Documents the tech stack (React and TypeScript)",
       "type": "file_contains",
-      "target": "context-guide.md",
-      "pattern": "[Pp]roject.*context|[Tt]ech.*stack|[Rr]eact|[Tt]ype[Ss]cript|e.commerce|admin",
+      "target": "CLAUDE.md",
+      "pattern": "[Rr]eact|[Tt]ype[Ss]cript",
       "required": true
     },
     {
       "id": "obj-3",
-      "description": "Guide covers technical constraints (libraries, patterns)",
+      "description": "Documents key libraries (zustand and/or react-query)",
       "type": "file_contains",
-      "target": "context-guide.md",
-      "pattern": "[Tt]echnical.*constraint|[Zz]ustand|react.query|[Hh]ook|[Pp]attern",
+      "target": "CLAUDE.md",
+      "pattern": "[Zz]ustand|react.query",
       "required": true
     },
     {
       "id": "obj-4",
-      "description": "Guide includes example prompts with context",
+      "description": "Documents business rules (prices in cents / integer prices)",
       "type": "file_contains",
-      "target": "context-guide.md",
-      "pattern": "[Ee]xample.*prompt|[Ss]ample.*prompt|[Pp]rompt.*example|[Pp]rompt:",
+      "target": "CLAUDE.md",
+      "pattern": "[Cc]ents|[Pp]rice|integer",
       "required": true
     },
     {
       "id": "obj-5",
-      "description": "Guide distinguishes CLAUDE.md context vs per-prompt context",
+      "description": "Documents TypeScript strict mode",
       "type": "file_contains",
-      "target": "context-guide.md",
-      "pattern": "CLAUDE\\.md|[Pp]ersistent.*context|[Pp]er.prompt|[Ii]nline.*context|[Pp]roject.*config",
+      "target": "CLAUDE.md",
+      "pattern": "[Ss]trict|noImplicit",
       "required": true
     },
     {
       "id": "obj-6",
-      "description": "Guide includes scope limitation examples",
+      "description": "Documents hook patterns (custom hooks like useProducts)",
       "type": "file_contains",
-      "target": "context-guide.md",
-      "pattern": "[Ss]cope|[Oo]nly.*modif|[Dd]o not.*change|[Dd]on't.*touch|[Ll]imit",
-      "required": true
-    },
-    {
-      "id": "obj-7",
-      "description": "Guide includes negative constraints (what NOT to do)",
-      "type": "file_contains",
-      "target": "context-guide.md",
-      "pattern": "[Nn]egative.*constraint|[Dd]o [Nn][Oo][Tt]|[Aa]void|[Nn]ever|[Ff]orbid",
+      "target": "CLAUDE.md",
+      "pattern": "[Hh]ook|use[A-Z]",
       "required": true
     }
   ],
@@ -108,18 +100,10 @@
   "bonusObjectives": [
     {
       "id": "bonus-1",
-      "description": "Guide references specific existing files as pattern examples",
+      "description": "Includes build/test commands (npm run dev, npm run test, etc.)",
       "type": "file_contains",
-      "target": "context-guide.md",
-      "pattern": "productApi|useProducts|uiStore|product\\.ts|order\\.ts",
-      "xpBonus": 25
-    },
-    {
-      "id": "bonus-2",
-      "description": "Guide covers business rules relevant to e-commerce (prices in cents, order statuses)",
-      "type": "file_contains",
-      "target": "context-guide.md",
-      "pattern": "[Cc]ents|[Pp]rice.*integer|[Bb]usiness.*rule|[Oo]rder.*status|[Dd]omain",
+      "target": "CLAUDE.md",
+      "pattern": "npm run|vite|vitest|eslint",
       "xpBonus": 25
     }
   ],
@@ -127,37 +111,37 @@
   "hints": [
     {
       "level": 1,
-      "text": "Start by studying the existing code: look at the types, hooks, API patterns, and store. What conventions do you see? Prices in cents, react-query for data fetching, zustand for UI state, TypeScript strict mode. These are all context a developer would need to share with Claude.",
+      "text": "Read the existing files to understand the project patterns. Look at: package.json for tech stack and scripts, tsconfig.json for strict mode, src/types/ for the prices-in-cents convention, src/hooks/ for the custom hook pattern, src/stores/ for zustand usage.",
       "xpCost": 10
     },
     {
       "level": 2,
-      "text": "Structure your context-guide.md around task types: (1) Adding a new feature (e.g., new API + hook + component) needs tech stack + pattern references, (2) Bug fixing needs scope limits ('only modify X'), (3) Refactoring needs negative constraints ('don't change the API'). For each, write an example prompt that includes the right context.",
+      "text": "Your CLAUDE.md should have sections for: (1) Project overview (React + TypeScript e-commerce admin), (2) Tech stack (React 18, TypeScript strict, zustand for UI state, react-query for data fetching), (3) Conventions (custom hooks pattern like useProducts, prices always in cents as integers), (4) Commands (npm run dev/build/test/lint).",
       "xpCost": 25
     },
     {
       "level": 3,
-      "text": "Your context-guide.md should cover: (1) Project overview for CLAUDE.md (React 18, TypeScript strict, zustand, react-query, prices in cents), (2) Per-prompt context examples like 'Following the pattern in useProducts.ts, create useOrders.ts', (3) Scope limits like 'Only modify files in src/api/', (4) Negative constraints like 'Do NOT add new dependencies, do NOT use class components, do NOT use floating-point for prices', (5) Business rules like 'Prices always stored as integers in cents'.",
+      "text": "Ask Claude: 'Study all the files in this project and create a CLAUDE.md that documents: the tech stack (React 18, TypeScript strict, zustand, react-query), coding conventions (custom hooks for data fetching, zustand stores for UI state), business rules (prices stored as integers in cents, never floating-point), TypeScript settings (strict mode, noImplicitAny), and common commands (dev, build, test, lint from package.json).'",
       "xpCost": 50
     }
   ],
 
   "solution": {
-    "approach": "Study the existing project patterns, then create context-guide.md covering all context types with concrete examples relevant to this e-commerce admin project.",
-    "example": "Document what belongs in CLAUDE.md (stack, conventions) vs prompts (task-specific references). Include example prompts for adding features, fixing bugs, and refactoring with appropriate context and constraints.",
+    "approach": "Study the existing project files to identify patterns, conventions, and business rules, then create a CLAUDE.md that captures all of them for future Claude Code sessions.",
+    "example": "Create CLAUDE.md with: tech stack (React 18, TypeScript strict, zustand, react-query), conventions (custom hooks, prices in cents), and commands (npm run dev/build/test/lint).",
     "alternativeApproaches": [
-      "Create both the context-guide.md AND a sample CLAUDE.md for the project",
-      "Organize the guide by role (junior dev, senior dev, code reviewer) showing what context each would provide"
+      "Ask Claude to explore the codebase first, then create the CLAUDE.md based on findings",
+      "Create CLAUDE.md incrementally: start with tech stack, then add conventions, then business rules"
     ]
   },
 
   "learningPoints": [
-    "Claude Code doesn't know your project's history, conventions, or business rules -- you must provide them",
+    "Claude Code doesn't know your project's conventions or business rules -- you must provide them",
     "Four types of context: project context, technical constraints, business rules, team conventions",
-    "Use CLAUDE.md for persistent context (tech stack, conventions) and inline prompts for task-specific context",
-    "Referencing existing files ('follow the pattern in X') is more effective than describing patterns from scratch",
-    "Scope limitation ('only modify files in src/api/') prevents unintended changes in large codebases",
-    "Negative constraints ('do NOT add dependencies') prevent shortcuts that create technical debt"
+    "Use CLAUDE.md for persistent context (tech stack, conventions) and prompts for task-specific context",
+    "Referencing existing files ('follow the pattern in useProducts.ts') is more effective than describing patterns",
+    "Scope limitation ('only modify src/api/') prevents unintended changes",
+    "Business rules (like prices in cents) are the most commonly forgotten context"
   ],
 
   "nextChallenge": "12-004"
