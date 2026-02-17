@@ -37,7 +37,7 @@
       },
       {
         "path": "productivity-tools/agents/reviewer.md",
-        "content": "---\ndescription: Code review specialist that analyzes code quality\nallowed-tools:\n  - Read\n  - Glob\n  - Grep\n---\n\nYou are an experienced code reviewer. Your job is to:\n\n1. Analyze code for potential bugs and issues\n2. Check for security vulnerabilities\n3. Evaluate code style and best practices\n4. Suggest improvements with specific examples\n\nBe constructive and explain the \"why\" behind each suggestion.\n"
+        "content": "---\ndescription: Code review specialist that analyzes code quality\ntools: Read, Glob, Grep\n---\n\nYou are an experienced code reviewer. Your job is to:\n\n1. Analyze code for potential bugs and issues\n2. Check for security vulnerabilities\n3. Evaluate code style and best practices\n4. Suggest improvements with specific examples\n\nBe constructive and explain the \"why\" behind each suggestion.\n"
       },
       {
         "path": "productivity-tools/commands/quick-test.md",
