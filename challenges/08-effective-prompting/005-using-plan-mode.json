@@ -1,0 +1,132 @@
+{
+  "id": "08-005",
+  "module": "effective-prompting",
+  "title": "Using Plan Mode",
+  "description": "Learn to use Claude Code's plan mode to design implementation approaches before writing code, then practice by planning and starting a feature.\n\n## What Is Plan Mode?\n\nPlan mode is Claude Code's built-in feature for tackling non-trivial tasks. Instead of jumping straight to writing code, plan mode lets you:\n\n1. **Explore the codebase** — read files, search patterns, understand architecture\n2. **Design an approach** — identify files to change, decide on patterns, consider trade-offs\n3. **Get alignment** — present the plan for approval before any code is written\n4. **Execute with confidence** — implement knowing the direction is agreed upon\n\n## When to Use Plan Mode\n\nUse plan mode when ANY of these apply:\n- **New features** that touch multiple files\n- **Multiple valid approaches** exist (caching strategy, auth method, state management)\n- **Architectural decisions** are needed\n- **Requirements are unclear** and need exploration first\n- **You'd otherwise ask clarifying questions** — plan mode lets you explore first, then present options with context\n\nSkip plan mode for: single-line fixes, obvious bugs, tasks with very specific instructions.\n\n## How Plan Mode Works\n\n### Entering Plan Mode\nClaude enters plan mode automatically for complex tasks, or you can trigger it by saying:\n- \"Plan how to implement X before coding\"\n- \"Let's think through the approach first\"\n- \"Design a plan for adding Y\"\n\n### What Happens Inside\nIn plan mode, Claude:\n- Uses **Read**, **Glob**, **Grep** to explore the codebase\n- Identifies existing patterns and conventions\n- Designs an implementation approach\n- Writes the plan for your review\n- Can use **AskUserQuestion** to clarify approaches\n\nCritically, Claude does NOT use **Write** or **Edit** in plan mode — no code changes until the plan is approved.\n\n### The Plan Document\nA good plan includes:\n- **Context**: What exists today and why changes are needed\n- **Files to modify**: Specific paths, not vague references\n- **Ordered steps**: Each step builds on the previous\n- **Trade-offs considered**: Why this approach over alternatives\n\n### Exiting Plan Mode\nAfter approval, Claude exits plan mode and executes the plan step by step.\n\n## Plan Mode vs Manual Decomposition\n\nIn the previous challenge (08-004), you manually decomposed a task. Plan mode automates this:\n\n| Manual Decomposition | Plan Mode |\n|---|---|\n| You identify components | Claude explores and identifies |\n| You find dependencies | Claude traces the code |\n| You order steps | Claude proposes ordered steps |\n| You verify each step | Claude executes and verifies |\n\nPlan mode is the tool; decomposition is the skill. Understanding both makes you effective.\n\n## Your Exercise\n\nThis workspace has a URL shortener API with routes, a database, and tests. A new feature is needed: **link expiration** — users should be able to set an optional expiry time when creating short links, and expired links should return 410 Gone.\n\nYour task has two parts:\n\n### Part 1: Create the Plan\nCreate `PLAN.md` with an implementation plan for the link expiration feature. Your plan must:\n- Reference specific files in the project that need changes\n- Have numbered, ordered implementation steps\n- Each step should describe what to do and why\n\n### Part 2: Implement Step 1\nExecute the first step of your plan by creating the file it describes. This proves the plan is actionable, not just theoretical.\n\nRun `/dojo check` when done.",
+  "difficulty": "intermediate",
+  "xpReward": 150,
+  "estimatedMinutes": 12,
+  "skills": ["plan-mode", "planning", "implementation-design"],
+
+  "setup": {
+    "workingDir": "~/dojo-workspace/challenge-08-005",
+    "initialFiles": [
+      {
+        "path": "README.md",
+        "content": "# URL Shortener API\n\nA simple URL shortener built with Express and SQLite.\n\n## Features\n- Create short links from long URLs\n- Redirect short links to original URLs\n- Track click counts\n- List all links for authenticated users\n\n## Files\n- `src/server.js` — Express app setup\n- `src/routes/links.js` — Link CRUD endpoints\n- `src/routes/redirect.js` — Redirect handler\n- `src/db.js` — SQLite database\n- `src/utils/shortId.js` — Short ID generator\n- `tests/links.test.js` — API tests\n"
+      },
+      {
+        "path": "package.json",
+        "content": "{\n  \"name\": \"url-shortener\",\n  \"version\": \"1.0.0\",\n  \"type\": \"module\",\n  \"dependencies\": {\n    \"express\": \"^4.18.0\",\n    \"better-sqlite3\": \"^9.0.0\"\n  },\n  \"devDependencies\": {\n    \"vitest\": \"^1.0.0\"\n  },\n  \"scripts\": {\n    \"dev\": \"node src/server.js\",\n    \"test\": \"vitest\"\n  }\n}\n"
+      },
+      {
+        "path": "src/server.js",
+        "content": "import express from 'express';\nimport { linkRouter } from './routes/links.js';\nimport { redirectRouter } from './routes/redirect.js';\n\nconst app = express();\napp.use(express.json());\n\napp.use('/api/links', linkRouter);\napp.use('/', redirectRouter);\n\napp.listen(3000, () => {\n  console.log('URL Shortener running on port 3000');\n});\n\nexport default app;\n"
+      },
+      {
+        "path": "src/routes/links.js",
+        "content": "import { Router } from 'express';\nimport db from '../db.js';\nimport { generateShortId } from '../utils/shortId.js';\n\nexport const linkRouter = Router();\n\nlinkRouter.post('/', (req, res) => {\n  const { url } = req.body;\n  if (!url) return res.status(400).json({ error: 'URL is required' });\n\n  const shortId = generateShortId();\n  db.prepare('INSERT INTO links (short_id, original_url) VALUES (?, ?)').run(shortId, url);\n\n  res.status(201).json({ shortId, shortUrl: `http://localhost:3000/${shortId}` });\n});\n\nlinkRouter.get('/', (req, res) => {\n  const links = db.prepare('SELECT * FROM links ORDER BY created_at DESC').all();\n  res.json(links);\n});\n\nlinkRouter.delete('/:shortId', (req, res) => {\n  const result = db.prepare('DELETE FROM links WHERE short_id = ?').run(req.params.shortId);\n  if (result.changes === 0) return res.status(404).json({ error: 'Link not found' });\n  res.json({ message: 'Deleted' });\n});\n"
+      },
+      {
+        "path": "src/routes/redirect.js",
+        "content": "import { Router } from 'express';\nimport db from '../db.js';\n\nexport const redirectRouter = Router();\n\nredirectRouter.get('/:shortId', (req, res) => {\n  const link = db.prepare('SELECT * FROM links WHERE short_id = ?').get(req.params.shortId);\n  if (!link) return res.status(404).json({ error: 'Link not found' });\n\n  db.prepare('UPDATE links SET clicks = clicks + 1 WHERE short_id = ?').run(req.params.shortId);\n  res.redirect(301, link.original_url);\n});\n"
+      },
+      {
+        "path": "src/db.js",
+        "content": "import Database from 'better-sqlite3';\n\nconst db = new Database('shortener.db');\n\ndb.exec(`\n  CREATE TABLE IF NOT EXISTS links (\n    id INTEGER PRIMARY KEY AUTOINCREMENT,\n    short_id TEXT UNIQUE NOT NULL,\n    original_url TEXT NOT NULL,\n    clicks INTEGER DEFAULT 0,\n    created_at TEXT DEFAULT (datetime('now'))\n  )\n`);\n\nexport default db;\n"
+      },
+      {
+        "path": "src/utils/shortId.js",
+        "content": "const CHARS = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';\n\nexport function generateShortId(length = 6) {\n  let result = '';\n  for (let i = 0; i < length; i++) {\n    result += CHARS.charAt(Math.floor(Math.random() * CHARS.length));\n  }\n  return result;\n}\n"
+      },
+      {
+        "path": "tests/links.test.js",
+        "content": "import { describe, it, expect } from 'vitest';\nimport { generateShortId } from '../src/utils/shortId.js';\n\ndescribe('Short ID Generator', () => {\n  it('generates IDs of correct length', () => {\n    const id = generateShortId();\n    expect(id).toHaveLength(6);\n  });\n\n  it('generates unique IDs', () => {\n    const ids = new Set(Array.from({ length: 100 }, () => generateShortId()));\n    expect(ids.size).toBe(100);\n  });\n\n  it('supports custom length', () => {\n    const id = generateShortId(10);\n    expect(id).toHaveLength(10);\n  });\n});\n"
+      }
+    ],
+    "cleanBefore": true
+  },
+
+  "objectives": [
+    {
+      "id": "obj-1",
+      "description": "Implementation plan exists (PLAN.md)",
+      "type": "file_exists",
+      "target": "PLAN.md",
+      "required": true
+    },
+    {
+      "id": "obj-2",
+      "description": "Plan references specific project files to modify",
+      "type": "file_contains",
+      "target": "PLAN.md",
+      "pattern": "src/db\\.js|src/routes/links\\.js|src/routes/redirect\\.js|src/server\\.js",
+      "required": true
+    },
+    {
+      "id": "obj-3",
+      "description": "Plan has numbered, ordered implementation steps",
+      "type": "file_contains",
+      "target": "PLAN.md",
+      "pattern": "[Ss]tep.*[123]|##.*[123]|\\b[123]\\.",
+      "required": true
+    },
+    {
+      "id": "obj-4",
+      "description": "First step implemented (new file created per the plan)",
+      "type": "custom_validation",
+      "validation": "new_file_exists",
+      "description_detail": "At least one new file exists beyond the initial setup files",
+      "required": true
+    }
+  ],
+
+  "bonusObjectives": [
+    {
+      "id": "bonus-1",
+      "description": "Plan discusses trade-offs or alternative approaches",
+      "type": "file_contains",
+      "target": "PLAN.md",
+      "pattern": "[Tt]rade.?off|[Aa]lternative|[Oo]ption|[Cc]ould also|[Aa]nother approach|[Ii]nstead of|[Pp]ros|[Cc]ons",
+      "xpBonus": 25
+    }
+  ],
+
+  "hints": [
+    {
+      "level": 1,
+      "text": "Start by reading through the existing files to understand the codebase. Your plan should address: where to add the expires_at column (db.js), how to accept expiry in the create endpoint (routes/links.js), and how to check expiry on redirect (routes/redirect.js). Number your steps in dependency order.",
+      "xpCost": 10
+    },
+    {
+      "level": 2,
+      "text": "For PLAN.md, structure it as: Step 1 — Add expires_at column to the links table in src/db.js. Step 2 — Update POST /api/links in src/routes/links.js to accept an optional expiresAt parameter. Step 3 — Update the redirect handler in src/routes/redirect.js to check if a link has expired and return 410 Gone. Step 4 — Add tests. Then implement Step 1 by modifying src/db.js or creating a migration file.",
+      "xpCost": 25
+    },
+    {
+      "level": 3,
+      "text": "Ask Claude: '1) Create PLAN.md with a step-by-step implementation plan for adding link expiration to this URL shortener. Reference specific files (src/db.js, src/routes/links.js, src/routes/redirect.js). Include numbered steps in dependency order. Mention trade-offs like soft delete vs hard delete of expired links. 2) Then implement Step 1 of the plan — for example, create src/db/migration-add-expiry.js that adds an expires_at column to the links table.'",
+      "xpCost": 50
+    }
+  ],
+
+  "solution": {
+    "approach": "Create PLAN.md with ordered steps for adding link expiration: database schema change, API update, redirect logic, tests. Then implement the first step (e.g., database migration or schema update).",
+    "example": "Plan: Step 1 add expires_at to DB (src/db.js), Step 2 accept expiresAt in POST endpoint (src/routes/links.js), Step 3 check expiry on redirect (src/routes/redirect.js), Step 4 add tests. Implement Step 1 as a migration file or direct db.js modification.",
+    "alternativeApproaches": [
+      "Modify src/db.js directly to add the column in the CREATE TABLE statement",
+      "Create a separate migration file that ALTERs the existing table",
+      "Start with the redirect logic first, then work backwards to the schema"
+    ]
+  },
+
+  "learningPoints": [
+    "Plan mode explores the codebase before proposing changes — explore first, code second",
+    "Good plans reference specific files and paths, not vague descriptions",
+    "Ordered steps with dependencies prevent building on broken foundations",
+    "Considering trade-offs and alternatives leads to better architectural decisions",
+    "The plan-then-execute workflow catches design mistakes before they become code mistakes"
+  ],
+
+  "nextChallenge": "09-001"
+}

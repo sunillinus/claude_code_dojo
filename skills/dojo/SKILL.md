@@ -69,7 +69,7 @@ QUICK START
   3. Run /dojo check when you think you're done
   4. Earn XP, level up, and explore any module!
 
-MODULES (70 challenges across 16 modules)
+MODULES (71 challenges across 16 modules)
   All modules are open - jump to whatever interests you!
   Recommended order shown, but not required.
 ─────────────────────────────────────────
@@ -83,7 +83,7 @@ MODULES (70 challenges across 16 modules)
 
   Phase 2: Optimize Workflow
   ⚙️ Project Config    (5)   CLAUDE.md and settings
-  💬 Prompting         (4)   Effective communication
+  💬 Prompting         (5)   Effective communication
   🏗️ Code Generation   (4)   Scaffolding and generation
   🌐 Web Research      (4)   Docs, search, APIs
 
@@ -242,7 +242,7 @@ Display formatted stats:
 ║  ████████░░░░░░░░░░░░  83%           ║
 ╠══════════════════════════════════════╣
 ║  🔥 Streak: 3 days                   ║
-║  ✅ Challenges: 12 / 70              ║
+║  ✅ Challenges: 12 / 71              ║
 ║  🏆 Badges: 4                        ║
 ╚══════════════════════════════════════╝
 
@@ -466,7 +466,7 @@ When initializing progress.json:
     "debugging": { "completed": 0, "total": 4 },
     "testing-tdd": { "completed": 0, "total": 5 },
     "project-config": { "completed": 0, "total": 5 },
-    "effective-prompting": { "completed": 0, "total": 4 },
+    "effective-prompting": { "completed": 0, "total": 5 },
     "code-generation": { "completed": 0, "total": 4 },
     "web-research": { "completed": 0, "total": 4 },
     "subagents": { "completed": 0, "total": 4 },

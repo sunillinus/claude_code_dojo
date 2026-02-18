@@ -50,7 +50,7 @@ claude
 | # | Module | Challenges | Description |
 |---|--------|------------|-------------|
 | 7 | Project Configuration | 5 | CLAUDE.md and settings |
-| 8 | Effective Prompting | 4 | Better communication with Claude |
+| 8 | Effective Prompting | 5 | Better communication with Claude |
 | 9 | Code Generation | 4 | Scaffolding and generation |
 | 10 | Web Research | 4 | Docs, search, API research |
 
@@ -70,7 +70,7 @@ claude
 | 15 | MCP Integration | 3 | External tool connections |
 | 16 | Plugin Development | 5 | Build and publish plugins |
 
-**Total: 16 modules, 70 challenges**
+**Total: 16 modules, 71 challenges**
 
 ## Gamification
 

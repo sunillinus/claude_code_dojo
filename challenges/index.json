@@ -1,6 +1,6 @@
 {
   "version": "1.0.0",
-  "totalChallenges": 70,
+  "totalChallenges": 71,
   "modules": [
     {
       "id": "fundamentals",
@@ -109,7 +109,8 @@
         "08-001",
         "08-002",
         "08-003",
-        "08-004"
+        "08-004",
+        "08-005"
       ]
     },
     {
@@ -487,6 +488,11 @@
       "title": "Breaking Down Complex Tasks",
       "difficulty": "intermediate",
       "xpReward": 125
+    },
+    "08-005": {
+      "title": "Using Plan Mode",
+      "difficulty": "intermediate",
+      "xpReward": 150
     },
     "09-001": {
       "title": "Generate a Component",
