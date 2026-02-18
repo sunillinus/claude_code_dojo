@@ -1,0 +1,148 @@
+{
+  "id": "08-003",
+  "module": "effective-prompting",
+  "title": "Context and Constraints",
+  "description": "Learn to provide the right context so Claude Code understands your project's conventions, then practice by creating a CLAUDE.md for a real codebase.\n\n## Why Context Matters\n\nClaude Code doesn't know:\n- Your project's history or architecture decisions\n- Your team's coding conventions or style preferences\n- Your business rules or domain constraints\n- Which libraries you've chosen (and rejected)\n- What you've already tried that didn't work\n\nWithout context, Claude makes reasonable guesses. With context, Claude makes informed decisions that match your project.\n\n## 4 Types of Context\n\n### 1. Project Context\nWhat the project is, what it does, who it's for.\n- \"This is an e-commerce admin panel for managing products and orders\"\n- \"This is a medical records system that must comply with HIPAA\"\n\n### 2. Technical Constraints\nTechnologies, versions, and patterns to use (or avoid).\n- \"React 18 with hooks, no class components\"\n- \"TypeScript strict mode -- no `any` types\"\n- \"Use zustand for state, react-query for data fetching\"\n\n### 3. Business Rules\nDomain-specific requirements that affect code.\n- \"Prices are always in cents (integers), never floating-point dollars\"\n- \"Users must be 18+ to create an account\"\n- \"All user actions must be logged for the audit trail\"\n\nBusiness rules are the most commonly forgotten context.\n\n### 4. Team Conventions\nPatterns and styles your team has agreed on.\n- \"We use custom hooks (useProducts, useOrders) for data fetching\"\n- \"Error messages follow: [MODULE] Error: description\"\n- \"All public functions have JSDoc comments\"\n\nReferencing existing files is powerful: \"Follow the same pattern as useProducts.ts\" is worth a thousand words.\n\n## CLAUDE.md vs Per-Prompt Context\n\n| Context Type | Where to Put It | Why |\n|-------------|-----------------|-----|\n| Tech stack, versions | CLAUDE.md | Applies to everything |\n| Coding conventions | CLAUDE.md | Consistency across all work |\n| Build/test commands | CLAUDE.md | Used frequently |\n| Business rules (universal) | CLAUDE.md | Applies everywhere |\n| Task-specific references | In the prompt | Only relevant now |\n| One-time business rule | In the prompt | May not apply elsewhere |\n\nClaude Code reads CLAUDE.md automatically. Anything in it becomes the baseline for every conversation.\n\n## Scope Limitation\n\nTelling Claude what NOT to touch is critical:\n- \"Only modify files in src/api/\" -- prevents changes to shared code\n- \"Do not change the database schema\" -- protects data structures\n- \"Keep the public API unchanged\" -- preserves backwards compatibility\n\n## Negative Constraints\n\nWhat NOT to do is as important as what to do:\n- \"Do NOT add new npm dependencies\"\n- \"Do NOT use `any` or type assertions in TypeScript\"\n- \"Do NOT use inline styles, use CSS modules\"\n\n## Your Exercise\n\nThis workspace contains a **React + TypeScript e-commerce admin panel** with specific patterns and conventions. Study the existing code, then create a `CLAUDE.md` file that captures:\n\n1. **Tech stack**: React, TypeScript, zustand, react-query, and their roles\n2. **Key conventions**: Custom hooks pattern, TypeScript strict mode\n3. **Business rules**: Prices stored in cents (integers), order status flow\n4. **Build commands**: dev, build, test, lint\n\nThis IS a real hands-on skill -- creating a CLAUDE.md is something every developer does when setting up Claude Code for a project.\n\nStudy these files to find the patterns:\n- `package.json` -- tech stack and scripts\n- `tsconfig.json` -- TypeScript strict mode settings\n- `src/types/product.ts` -- prices in cents convention\n- `src/hooks/useProducts.ts` -- custom hook pattern\n- `src/stores/uiStore.ts` -- zustand store pattern\n- `src/api/productApi.ts` -- API pattern\n\nRun `/dojo check` when done.",
+  "difficulty": "intermediate",
+  "xpReward": 125,
+  "estimatedMinutes": 12,
+  "skills": ["context-setting", "claude-md", "project-documentation"],
+
+  "setup": {
+    "workingDir": "~/dojo-workspace/challenge-08-003",
+    "initialFiles": [
+      {
+        "path": "README.md",
+        "content": "# E-Commerce Admin Panel\n\nA React + TypeScript admin dashboard for managing products, orders, and customers.\n\n## Files\n\n- `src/types/` — TypeScript interfaces\n- `src/hooks/` — Custom React hooks for data fetching\n- `src/stores/` — Zustand state stores\n- `src/api/` — API client modules\n"
+      },
+      {
+        "path": "package.json",
+        "content": "{\n  \"name\": \"ecommerce-admin\",\n  \"version\": \"2.1.0\",\n  \"dependencies\": {\n    \"react\": \"^18.2.0\",\n    \"react-dom\": \"^18.2.0\",\n    \"zustand\": \"^4.4.0\",\n    \"react-query\": \"^3.39.0\",\n    \"react-router-dom\": \"^6.0.0\"\n  },\n  \"devDependencies\": {\n    \"typescript\": \"^5.3.0\",\n    \"vitest\": \"^1.0.0\",\n    \"@testing-library/react\": \"^14.0.0\"\n  },\n  \"scripts\": {\n    \"dev\": \"vite\",\n    \"build\": \"tsc && vite build\",\n    \"test\": \"vitest\",\n    \"lint\": \"eslint src/\"\n  }\n}\n"
+      },
+      {
+        "path": "tsconfig.json",
+        "content": "{\n  \"compilerOptions\": {\n    \"strict\": true,\n    \"noImplicitAny\": true,\n    \"target\": \"ES2020\",\n    \"module\": \"ESNext\",\n    \"jsx\": \"react-jsx\",\n    \"moduleResolution\": \"bundler\"\n  },\n  \"include\": [\"src\"]\n}\n"
+      },
+      {
+        "path": "src/types/product.ts",
+        "content": "export interface Product {\n  id: string;\n  name: string;\n  description: string;\n  priceInCents: number;  // Always store prices as integers (cents)\n  category: string;\n  stockCount: number;\n  isActive: boolean;\n  createdAt: string;\n  updatedAt: string;\n}\n\nexport interface ProductFormData {\n  name: string;\n  description: string;\n  priceInCents: number;\n  category: string;\n  stockCount: number;\n}\n\nexport type ProductSortField = 'name' | 'priceInCents' | 'createdAt' | 'stockCount';\n"
+      },
+      {
+        "path": "src/types/order.ts",
+        "content": "export interface Order {\n  id: string;\n  customerId: string;\n  items: OrderItem[];\n  totalInCents: number;\n  status: OrderStatus;\n  createdAt: string;\n}\n\nexport interface OrderItem {\n  productId: string;\n  productName: string;\n  quantity: number;\n  unitPriceInCents: number;\n}\n\nexport type OrderStatus = 'pending' | 'confirmed' | 'shipped' | 'delivered' | 'cancelled';\n"
+      },
+      {
+        "path": "src/hooks/useProducts.ts",
+        "content": "import { useQuery, useMutation, useQueryClient } from 'react-query';\nimport { productApi } from '../api/productApi';\nimport type { Product, ProductFormData } from '../types/product';\n\nexport function useProducts() {\n  return useQuery<Product[]>('products', productApi.getAll);\n}\n\nexport function useProduct(id: string) {\n  return useQuery<Product>(['product', id], () => productApi.getById(id));\n}\n\nexport function useCreateProduct() {\n  const queryClient = useQueryClient();\n  return useMutation(\n    (data: ProductFormData) => productApi.create(data),\n    { onSuccess: () => queryClient.invalidateQueries('products') }\n  );\n}\n"
+      },
+      {
+        "path": "src/api/productApi.ts",
+        "content": "import type { Product, ProductFormData } from '../types/product';\n\nconst BASE_URL = '/api/products';\n\nexport const productApi = {\n  async getAll(): Promise<Product[]> {\n    const response = await fetch(BASE_URL);\n    if (!response.ok) throw new Error(`Failed to fetch products: ${response.status}`);\n    return response.json();\n  },\n\n  async getById(id: string): Promise<Product> {\n    const response = await fetch(`${BASE_URL}/${id}`);\n    if (!response.ok) throw new Error(`Failed to fetch product ${id}: ${response.status}`);\n    return response.json();\n  },\n\n  async create(data: ProductFormData): Promise<Product> {\n    const response = await fetch(BASE_URL, {\n      method: 'POST',\n      headers: { 'Content-Type': 'application/json' },\n      body: JSON.stringify(data),\n    });\n    if (!response.ok) throw new Error(`Failed to create product: ${response.status}`);\n    return response.json();\n  },\n};\n"
+      },
+      {
+        "path": "src/stores/uiStore.ts",
+        "content": "import { create } from 'zustand';\n\ninterface UIState {\n  sidebarOpen: boolean;\n  theme: 'light' | 'dark';\n  toasts: Toast[];\n  toggleSidebar: () => void;\n  setTheme: (theme: 'light' | 'dark') => void;\n  addToast: (message: string, type: 'success' | 'error' | 'info') => void;\n  removeToast: (id: string) => void;\n}\n\ninterface Toast {\n  id: string;\n  message: string;\n  type: 'success' | 'error' | 'info';\n}\n\nexport const useUIStore = create<UIState>((set) => ({\n  sidebarOpen: true,\n  theme: 'light',\n  toasts: [],\n  toggleSidebar: () => set((state) => ({ sidebarOpen: !state.sidebarOpen })),\n  setTheme: (theme) => set({ theme }),\n  addToast: (message, type) =>\n    set((state) => ({\n      toasts: [...state.toasts, { id: crypto.randomUUID(), message, type }],\n    })),\n  removeToast: (id) =>\n    set((state) => ({ toasts: state.toasts.filter((t) => t.id !== id) })),\n}));\n"
+      }
+    ],
+    "cleanBefore": true
+  },
+
+  "objectives": [
+    {
+      "id": "obj-1",
+      "description": "CLAUDE.md file exists",
+      "type": "file_exists",
+      "target": "CLAUDE.md",
+      "required": true
+    },
+    {
+      "id": "obj-2",
+      "description": "Documents the tech stack (React and TypeScript)",
+      "type": "file_contains",
+      "target": "CLAUDE.md",
+      "pattern": "[Rr]eact|[Tt]ype[Ss]cript",
+      "required": true
+    },
+    {
+      "id": "obj-3",
+      "description": "Documents key libraries (zustand and/or react-query)",
+      "type": "file_contains",
+      "target": "CLAUDE.md",
+      "pattern": "[Zz]ustand|react.query",
+      "required": true
+    },
+    {
+      "id": "obj-4",
+      "description": "Documents business rules (prices in cents / integer prices)",
+      "type": "file_contains",
+      "target": "CLAUDE.md",
+      "pattern": "[Cc]ents|[Pp]rice|integer",
+      "required": true
+    },
+    {
+      "id": "obj-5",
+      "description": "Documents TypeScript strict mode",
+      "type": "file_contains",
+      "target": "CLAUDE.md",
+      "pattern": "[Ss]trict|noImplicit",
+      "required": true
+    },
+    {
+      "id": "obj-6",
+      "description": "Documents hook patterns (custom hooks like useProducts)",
+      "type": "file_contains",
+      "target": "CLAUDE.md",
+      "pattern": "[Hh]ook|use[A-Z]",
+      "required": true
+    }
+  ],
+
+  "bonusObjectives": [
+    {
+      "id": "bonus-1",
+      "description": "Includes build/test commands (npm run dev, npm run test, etc.)",
+      "type": "file_contains",
+      "target": "CLAUDE.md",
+      "pattern": "npm run|vite|vitest|eslint",
+      "xpBonus": 25
+    }
+  ],
+
+  "hints": [
+    {
+      "level": 1,
+      "text": "Read the existing files to understand the project patterns. Look at: package.json for tech stack and scripts, tsconfig.json for strict mode, src/types/ for the prices-in-cents convention, src/hooks/ for the custom hook pattern, src/stores/ for zustand usage.",
+      "xpCost": 10
+    },
+    {
+      "level": 2,
+      "text": "Your CLAUDE.md should have sections for: (1) Project overview (React + TypeScript e-commerce admin), (2) Tech stack (React 18, TypeScript strict, zustand for UI state, react-query for data fetching), (3) Conventions (custom hooks pattern like useProducts, prices always in cents as integers), (4) Commands (npm run dev/build/test/lint).",
+      "xpCost": 25
+    },
+    {
+      "level": 3,
+      "text": "Ask Claude: 'Study all the files in this project and create a CLAUDE.md that documents: the tech stack (React 18, TypeScript strict, zustand, react-query), coding conventions (custom hooks for data fetching, zustand stores for UI state), business rules (prices stored as integers in cents, never floating-point), TypeScript settings (strict mode, noImplicitAny), and common commands (dev, build, test, lint from package.json).'",
+      "xpCost": 50
+    }
+  ],
+
+  "solution": {
+    "approach": "Study the existing project files to identify patterns, conventions, and business rules, then create a CLAUDE.md that captures all of them for future Claude Code sessions.",
+    "example": "Create CLAUDE.md with: tech stack (React 18, TypeScript strict, zustand, react-query), conventions (custom hooks, prices in cents), and commands (npm run dev/build/test/lint).",
+    "alternativeApproaches": [
+      "Ask Claude to explore the codebase first, then create the CLAUDE.md based on findings",
+      "Create CLAUDE.md incrementally: start with tech stack, then add conventions, then business rules"
+    ]
+  },
+
+  "learningPoints": [
+    "Claude Code doesn't know your project's conventions or business rules -- you must provide them",
+    "Four types of context: project context, technical constraints, business rules, team conventions",
+    "Use CLAUDE.md for persistent context (tech stack, conventions) and prompts for task-specific context",
+    "Referencing existing files ('follow the pattern in useProducts.ts') is more effective than describing patterns",
+    "Scope limitation ('only modify src/api/') prevents unintended changes",
+    "Business rules (like prices in cents) are the most commonly forgotten context"
+  ],
+
+  "nextChallenge": "08-004"
+}

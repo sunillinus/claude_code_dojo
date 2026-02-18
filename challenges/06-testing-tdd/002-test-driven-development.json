@@ -1,0 +1,213 @@
+{
+  "id": "06-002",
+  "module": "testing-tdd",
+  "title": "Test-Driven Development",
+  "description": "Learn the Red-Green-Refactor cycle of TDD. Write tests FIRST from a specification, then implement the code to make them pass.",
+  "difficulty": "intermediate",
+  "xpReward": 200,
+  "estimatedMinutes": 20,
+  "skills": ["tdd", "red-green-refactor", "specification-to-tests", "design-from-tests"],
+
+  "setup": {
+    "workingDir": "~/dojo-workspace/challenge-06-002",
+    "initialFiles": [
+      {
+        "path": "README.md",
+        "content": "# Challenge: Test-Driven Development\n\nLearn the discipline of TDD: write tests FIRST, then write just enough\ncode to make them pass.\n\n## What is TDD?\n\nTest-Driven Development is a software development discipline where you\nwrite a failing test BEFORE writing any production code. It is NOT\n\"write code, then add tests\" -- that is just regular testing.\n\nThe key insight: tests drive the design of your code. When you write\ntests first, you think about HOW your code will be used before you\nthink about HOW it will be implemented. This produces better APIs,\nsimpler designs, and more testable code.\n\n## The Red-Green-Refactor Cycle\n\nTDD follows a strict three-step cycle:\n\n### Step 1: RED - Write a Failing Test\n\nWrite a test for behavior that does not exist yet. Run it. Watch it\nFAIL. This is important -- if the test passes without you writing\ncode, either the test is wrong or the feature already exists.\n\n```javascript\n// RED: This test fails because ShoppingCart doesn't exist yet\ntest('new cart should have zero items', () => {\n  const cart = new ShoppingCart();\n  assert.strictEqual(cart.getItemCount(), 0);\n});\n```\n\nRunning this gives: `Error: ShoppingCart is not defined` -- RED!\n\n### Step 2: GREEN - Write Minimum Code to Pass\n\nWrite the SIMPLEST code that makes the test pass. Not elegant code.\nNot complete code. Just enough to turn the test green.\n\n```javascript\n// GREEN: Simplest implementation that passes\nclass ShoppingCart {\n  getItemCount() {\n    return 0;\n  }\n}\n```\n\nThis is intentionally simple. It returns a hardcoded 0. That is fine\nbecause more tests will force us to make it smarter.\n\n### Step 3: REFACTOR - Clean Up\n\nNow that tests pass, clean up the code. Remove duplication, improve\nnames, simplify logic. Run tests after each change to make sure\neverything still passes.\n\nThen go back to Step 1 and write the NEXT failing test.\n\n## A Complete TDD Cycle Example\n\nLet us walk through building `addItem` step by step:\n\n**Cycle 1 - RED**: Write test for adding an item\n```javascript\ntest('addItem should increase item count', () => {\n  const cart = new ShoppingCart();\n  cart.addItem('Apple', 1.50, 1);\n  assert.strictEqual(cart.getItemCount(), 1);\n});\n```\nRun: FAILS (addItem is not a function)\n\n**Cycle 1 - GREEN**: Implement minimally\n```javascript\nclass ShoppingCart {\n  constructor() {\n    this.items = [];\n  }\n  addItem(name, price, quantity) {\n    this.items.push({ name, price, quantity });\n  }\n  getItemCount() {\n    return this.items.reduce((sum, item) => sum + item.quantity, 0);\n  }\n}\n```\nRun: PASSES!\n\n**Cycle 1 - REFACTOR**: Code is clean enough for now.\n\n**Cycle 2 - RED**: Write test for adding multiple items\n```javascript\ntest('addItem should accumulate quantities', () => {\n  const cart = new ShoppingCart();\n  cart.addItem('Apple', 1.50, 2);\n  cart.addItem('Banana', 0.75, 3);\n  assert.strictEqual(cart.getItemCount(), 5);\n});\n```\nRun: PASSES! (our implementation already handles this)\n\nWhen a new test passes immediately, that means the implementation was\nalready sufficient. Move on to the next test.\n\n## The Discipline: Rules of TDD\n\n1. **Never write production code without a failing test.** If all tests\n   pass, write a new test before writing more code.\n2. **Write only enough test to fail.** Don't write 10 tests at once.\n   Write one, see it fail, make it pass, then write the next.\n3. **Write only enough code to pass the test.** Don't anticipate future\n   needs. Let the next test drive the next feature.\n\n## Benefits of TDD\n\n- **Drives design**: You think about the API before implementation\n- **Prevents over-engineering**: You only build what tests require\n- **Ensures testability**: Code written to pass tests is inherently testable\n- **Creates documentation**: Tests show exactly how the code should be used\n- **Gives confidence**: Refactoring is safe when tests cover behavior\n\n## When NOT to Use TDD\n\n- Exploratory/prototype code (throwaway experiments)\n- Pure UI layout (visual testing is better)\n- One-off scripts that will not be maintained\n- Learning a new API (write tests after you understand it)\n\n## Your Task\n\nYou are given a SPECIFICATION for a ShoppingCart class. There is NO\nimplementation and NO tests. You must:\n\n1. Read the specification in `SPEC.md`\n2. Write tests FIRST in `shopping-cart.test.js`\n3. Then implement the class in `shopping-cart.js`\n4. Follow the TDD cycle: write one test, run it (RED), implement\n   just enough code (GREEN), refactor if needed, repeat\n\nThe `shopping-cart.js` file is empty on purpose. Do NOT peek at\nsolutions. Let the tests guide your implementation.\n\n## Objectives\n1. Write tests in `shopping-cart.test.js` for ALL 5 methods in the spec\n2. Implement `ShoppingCart` in `shopping-cart.js` to pass all tests\n3. Tests should cover edge cases (empty cart, removing non-existent item)\n4. All tests pass when you run `npm test`\n"
+      },
+      {
+        "path": "SPEC.md",
+        "content": "# ShoppingCart Specification\n\nImplement a `ShoppingCart` class with the following methods:\n\n## Constructor\n- Creates an empty shopping cart with no items\n\n## addItem(name, price, quantity)\n- Adds an item to the cart\n- `name` (string): the item name\n- `price` (number): the price per unit (must be positive)\n- `quantity` (number): how many to add (must be a positive integer)\n- If an item with the same name already exists, increase its quantity\n- Should throw an Error if price <= 0\n- Should throw an Error if quantity <= 0 or is not an integer\n\n## removeItem(name)\n- Removes an item completely from the cart by name\n- If the item does not exist, do nothing (no error)\n- Returns `true` if the item was removed, `false` if it was not found\n\n## getTotal()\n- Returns the total price of all items (price * quantity for each, summed)\n- Returns 0 for an empty cart\n- Result should be rounded to 2 decimal places\n\n## getItemCount()\n- Returns the total number of items in the cart (sum of all quantities)\n- Returns 0 for an empty cart\n\n## applyDiscount(percentage)\n- Takes a discount percentage (0 to 100)\n- Returns the discounted total (does NOT modify cart state)\n- Should throw an Error if percentage < 0 or > 100\n- Example: if total is $100 and discount is 20, returns $80\n\n## Example Usage\n\n```javascript\nconst cart = new ShoppingCart();\ncart.addItem('Apple', 1.50, 3);     // 3 apples at $1.50\ncart.addItem('Banana', 0.75, 2);    // 2 bananas at $0.75\ncart.getItemCount();                 // 5\ncart.getTotal();                     // 6.00\ncart.applyDiscount(10);              // 5.40\ncart.removeItem('Apple');            // true\ncart.getTotal();                     // 1.50\ncart.removeItem('Orange');           // false (not in cart)\n```\n"
+      },
+      {
+        "path": "package.json",
+        "content": "{\n  \"name\": \"tdd-challenge\",\n  \"version\": \"1.0.0\",\n  \"scripts\": {\n    \"test\": \"node --test\"\n  }\n}\n"
+      },
+      {
+        "path": "shopping-cart.js",
+        "content": "// ShoppingCart - implement this using TDD\n// Read SPEC.md for the requirements\n// Write your tests FIRST in shopping-cart.test.js\n// Then implement the class here to make the tests pass\n\nclass ShoppingCart {\n  // Your implementation goes here\n}\n\nmodule.exports = { ShoppingCart };\n"
+      }
+    ],
+    "cleanBefore": true
+  },
+
+  "objectives": [
+    {
+      "id": "obj-1",
+      "description": "Create a test file for the ShoppingCart",
+      "type": "file_exists",
+      "target": "shopping-cart.test.js",
+      "required": true
+    },
+    {
+      "id": "obj-2",
+      "description": "Tests import node:test and node:assert",
+      "type": "file_contains",
+      "target": "shopping-cart.test.js",
+      "pattern": "require\\(['\"]node:test['\"]\\)",
+      "required": true
+    },
+    {
+      "id": "obj-3",
+      "description": "Tests cover the addItem method",
+      "type": "file_contains",
+      "target": "shopping-cart.test.js",
+      "pattern": "addItem",
+      "required": true
+    },
+    {
+      "id": "obj-4",
+      "description": "Tests cover the removeItem method",
+      "type": "file_contains",
+      "target": "shopping-cart.test.js",
+      "pattern": "removeItem",
+      "required": true
+    },
+    {
+      "id": "obj-5",
+      "description": "Tests cover the getTotal method",
+      "type": "file_contains",
+      "target": "shopping-cart.test.js",
+      "pattern": "getTotal",
+      "required": true
+    },
+    {
+      "id": "obj-6",
+      "description": "Tests cover the getItemCount method",
+      "type": "file_contains",
+      "target": "shopping-cart.test.js",
+      "pattern": "getItemCount",
+      "required": true
+    },
+    {
+      "id": "obj-7",
+      "description": "Tests cover the applyDiscount method",
+      "type": "file_contains",
+      "target": "shopping-cart.test.js",
+      "pattern": "applyDiscount",
+      "required": true
+    },
+    {
+      "id": "obj-8",
+      "description": "Tests verify edge case: empty cart behavior",
+      "type": "file_contains",
+      "target": "shopping-cart.test.js",
+      "pattern": "empty|0\\)|strictEqual.*0",
+      "required": true
+    },
+    {
+      "id": "obj-9",
+      "description": "Tests verify error cases using assert.throws",
+      "type": "file_contains",
+      "target": "shopping-cart.test.js",
+      "pattern": "assert\\.throws",
+      "required": true
+    },
+    {
+      "id": "obj-10",
+      "description": "Implementation has a constructor",
+      "type": "file_contains",
+      "target": "shopping-cart.js",
+      "pattern": "constructor",
+      "required": true
+    },
+    {
+      "id": "obj-11",
+      "description": "Implementation has addItem method",
+      "type": "file_contains",
+      "target": "shopping-cart.js",
+      "pattern": "addItem\\s*\\(",
+      "required": true
+    },
+    {
+      "id": "obj-12",
+      "description": "Implementation has getTotal method",
+      "type": "file_contains",
+      "target": "shopping-cart.js",
+      "pattern": "getTotal\\s*\\(",
+      "required": true
+    },
+    {
+      "id": "obj-13",
+      "description": "Implementation has applyDiscount method",
+      "type": "file_contains",
+      "target": "shopping-cart.js",
+      "pattern": "applyDiscount\\s*\\(",
+      "required": true
+    },
+    {
+      "id": "obj-14",
+      "description": "All tests pass",
+      "type": "command_output_contains",
+      "command": "cd ~/dojo-workspace/challenge-06-002 && npm test 2>&1",
+      "pattern": "pass|ok",
+      "required": true
+    }
+  ],
+
+  "bonusObjectives": [
+    {
+      "id": "bonus-1",
+      "description": "Test that adding duplicate items merges quantities",
+      "type": "file_contains",
+      "target": "shopping-cart.test.js",
+      "pattern": "duplicate|same name|already exists|merge|existing",
+      "xpBonus": 30
+    },
+    {
+      "id": "bonus-2",
+      "description": "Test that removeItem returns false for non-existent item",
+      "type": "file_contains",
+      "target": "shopping-cart.test.js",
+      "pattern": "false|not found|non.existent|does not exist",
+      "xpBonus": 30
+    },
+    {
+      "id": "bonus-3",
+      "description": "Test invalid inputs (negative price, zero quantity, invalid discount)",
+      "type": "file_contains",
+      "target": "shopping-cart.test.js",
+      "pattern": "invalid|negative|throws.*-|throws.*0",
+      "xpBonus": 40
+    }
+  ],
+
+  "hints": [
+    {
+      "level": 1,
+      "text": "Read SPEC.md carefully. Start with the simplest test: 'new cart has zero items'. Write that test, run it (it will fail because ShoppingCart has no methods), then add just enough code in shopping-cart.js to pass. Then write the next test for addItem. Work through each method one at a time.",
+      "xpCost": 15
+    },
+    {
+      "level": 2,
+      "text": "For each method in the spec, write 2-4 tests: one for normal behavior, one for edge cases, one for error cases. For addItem: test adding one item, adding duplicate (quantities merge), invalid price. For removeItem: test removing existing item (returns true), non-existent item (returns false). For getTotal: test with items, empty cart returns 0. For applyDiscount: test valid discount, test invalid percentages throw.",
+      "xpCost": 40
+    },
+    {
+      "level": 3,
+      "text": "Ask Claude: 'I need to TDD a ShoppingCart class. Read SPEC.md for requirements. First, create shopping-cart.test.js with comprehensive tests for all 5 methods (addItem, removeItem, getTotal, getItemCount, applyDiscount). Test normal cases, edge cases (empty cart, duplicate items, removing non-existent), and error cases (invalid price, invalid quantity, invalid discount percentage). Then implement the ShoppingCart class in shopping-cart.js to make all tests pass.'",
+      "xpCost": 80
+    }
+  ],
+
+  "solution": {
+    "approach": "Read the spec, write tests for each method (normal, edge, error cases), then implement the ShoppingCart class method by method to pass each test. Follow Red-Green-Refactor: write one test group, see it fail, implement, verify green, move to next method.",
+    "example": "TDD the ShoppingCart: write tests from the spec first, then implement to make them pass",
+    "alternativeApproaches": [
+      "Write all tests at once from the spec, then implement everything (batch TDD)",
+      "Write one test at a time, implement, write next test (strict TDD)",
+      "Group tests by method and implement one method at a time"
+    ]
+  },
+
+  "learningPoints": [
+    "TDD means writing tests FIRST, before any implementation code",
+    "The Red-Green-Refactor cycle: write failing test (RED), make it pass (GREEN), clean up (REFACTOR)",
+    "Tests drive the design - you think about the API before the implementation",
+    "Write only enough code to pass the current test - don't over-engineer",
+    "Specifications translate directly into test cases",
+    "Edge cases and error cases should be tested alongside happy paths"
+  ],
+
+  "nextChallenge": "06-003"
+}

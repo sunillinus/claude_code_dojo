@@ -1,0 +1,130 @@
+{
+  "id": "10-002",
+  "module": "web-research",
+  "title": "Search for Solutions",
+  "description": "Learn to use the WebSearch tool to find answers to technical questions, filter results by domain, and combine WebSearch with WebFetch for a complete research workflow.",
+  "difficulty": "intermediate",
+  "xpReward": 175,
+  "estimatedMinutes": 15,
+  "skills": ["web-search", "domain-filtering", "research-workflow", "source-citation"],
+
+  "setup": {
+    "workingDir": "~/dojo-workspace/challenge-10-002",
+    "initialFiles": [
+      {
+        "path": "README.md",
+        "content": "# Challenge: Search for Solutions with WebSearch\n\nLearn how Claude Code searches the live web, filters results by domain,\nand chains WebSearch with WebFetch for thorough technical research.\n\n---\n\n## What Is WebSearch?\n\nWebSearch is a built-in Claude Code tool that performs a web search and\nreturns result summaries with links. Unlike WebFetch (which reads a\nspecific URL), WebSearch discovers content you do not already have a\nURL for.\n\nThink of it this way:\n- **WebSearch** = \"Find me pages about X\" (discovery)\n- **WebFetch** = \"Read this specific page and extract Y\" (extraction)\n\nUsed together, they form a powerful research pipeline.\n\n## WebSearch Parameters\n\n| Parameter | Required | Description |\n|-----------|----------|-------------|\n| `query` | Yes | The search string. Must be at least 2 characters. |\n| `allowed_domains` | No | Array of domains to restrict results to. |\n| `blocked_domains` | No | Array of domains to exclude from results. |\n\n## Writing Effective Search Queries\n\nSearch quality depends heavily on query construction. Here are key\ntechniques:\n\n### 1. Include the Year\nClaude's training data has a knowledge cutoff. Including the current\nyear ensures you get current results:\n```\nGood:  \"React Server Components best practices 2026\"\nBad:   \"React Server Components best practices\"\n```\n\n### 2. Include Technology Names\nBe explicit about the technology stack:\n```\nGood:  \"Node.js 22 fs module breaking changes\"\nBad:   \"file system changes\"\n```\n\n### 3. Use Error Messages as Queries\nError messages are already highly specific -- they make excellent search\nqueries:\n```\nGood:  \"TypeError: Cannot read properties of undefined (reading 'map') React\"\nBad:   \"map function not working\"\n```\n\n### 4. Add Context Words\nInclude words that indicate the type of result you want:\n```\n\"tutorial\" -- step-by-step guides\n\"example\" -- working code samples\n\"migration guide\" -- upgrade instructions\n\"vs\" -- comparison articles\n\"best practices\" -- recommended patterns\n```\n\n## Domain Filtering\n\nDomain filtering is one of WebSearch's most powerful features. Use it to\nfocus on high-quality sources or exclude noisy ones.\n\n**Restrict to trusted sources:**\n```\nquery: \"React useEffect cleanup\"\nallowed_domains: [\"react.dev\", \"stackoverflow.com\", \"github.com\"]\n```\nThis returns results ONLY from those three domains.\n\n**Exclude low-quality sources:**\n```\nquery: \"JavaScript array methods\"\nblocked_domains: [\"w3schools.com\", \"geeksforgeeks.org\"]\n```\nThis excludes results from those domains.\n\nYou can use `allowed_domains` OR `blocked_domains`, but using both at\nthe same time is unusual. Pick the one that fits your need:\n- Few trusted sources? Use `allowed_domains`.\n- Mostly good results with some noise? Use `blocked_domains`.\n\n## The Research Workflow: WebSearch + WebFetch\n\nThe most effective research combines both tools in a pipeline:\n\n```\n1. WebSearch (discover)    --> Find relevant pages\n2. Scan results            --> Identify the most promising links\n3. WebFetch (deep read)    --> Extract details from best pages\n4. Synthesize              --> Combine findings into documentation\n5. Cite sources            --> Include URLs for every claim\n```\n\nThis mirrors how a skilled developer researches: search broadly, then\nread deeply.\n\n## Always Cite Sources\n\nWebSearch returns URLs with every result. When you document your\nfindings, ALWAYS include source URLs. This:\n- Lets others verify your claims\n- Provides links for deeper reading\n- Shows your research methodology\n- Distinguishes researched facts from assumptions\n\nFormat citations like this:\n```markdown\nReact 19 introduced the `use` hook for reading resources in render\n([source](https://react.dev/blog/2024/12/05/react-19)).\n```\n\n---\n\n## Your Task\n\nYou are debugging a Node.js Express application that has a memory leak\nin production. The server's memory usage grows steadily until it crashes.\nYou need to research how to diagnose and fix Node.js memory leaks.\n\n### The Problem\nThe application in `server.js` has several potential memory leak\npatterns. Your job is to research the topic thoroughly and create a\ndiagnostic guide.\n\n### Steps:\n1. Use WebSearch to find current information about Node.js memory leak\n   diagnosis (use domain filtering to focus on quality sources)\n2. Use WebFetch on the most promising result to get detailed techniques\n3. Review `server.js` and identify the potential memory leak patterns\n4. Create `research-findings.md` documenting:\n   - Common causes of memory leaks in Node.js\n   - Diagnostic tools and techniques\n   - Which patterns in server.js are problematic and why\n   - Recommended fixes\n   - All sources cited with URLs\n\n## Objectives\n1. Create research-findings.md with memory leak research\n2. Document common memory leak causes in Node.js\n3. Identify problematic patterns in server.js\n4. Cite sources with URLs\n5. Include diagnostic tools or techniques\n"
+      },
+      {
+        "path": "package.json",
+        "content": "{\n  \"name\": \"leaky-server\",\n  \"version\": \"1.0.0\",\n  \"type\": \"module\",\n  \"scripts\": {\n    \"start\": \"node server.js\"\n  },\n  \"dependencies\": {\n    \"express\": \"^4.18.0\"\n  }\n}\n"
+      },
+      {
+        "path": "server.js",
+        "content": "import express from 'express';\n\nconst app = express();\n\n// Pattern 1: Global array that grows without bound\nconst requestLog = [];\n\napp.use((req, res, next) => {\n  // Every request adds to this array but nothing ever removes entries\n  requestLog.push({\n    method: req.method,\n    url: req.url,\n    timestamp: new Date(),\n    headers: req.headers,  // Storing full headers object\n    body: req.body\n  });\n  next();\n});\n\n// Pattern 2: Event listeners added on every request\napp.get('/stream', (req, res) => {\n  const onData = (chunk) => res.write(chunk);\n  process.stdin.on('data', onData);\n  // Missing: cleanup when response ends\n  // Should have: res.on('close', () => process.stdin.off('data', onData));\n  res.on('close', () => {\n    // Listener is never actually removed from process.stdin\n  });\n});\n\n// Pattern 3: Closures retaining large objects\napp.get('/report', async (req, res) => {\n  const hugeDataset = await loadLargeDataset();\n  \n  // This closure captures hugeDataset and keeps it in memory\n  const formatter = (row) => {\n    return {\n      ...row,\n      meta: hugeDataset.metadata  // Keeps entire hugeDataset alive\n    };\n  };\n  \n  const results = hugeDataset.rows.map(formatter);\n  res.json(results);\n  // hugeDataset should be eligible for GC here, but the closure\n  // in formatter may prevent it depending on engine optimization\n});\n\n// Pattern 4: Caching without eviction\nconst cache = {};\n\napp.get('/user/:id', async (req, res) => {\n  const { id } = req.params;\n  if (!cache[id]) {\n    cache[id] = await fetchUserFromDB(id);\n    // Cache grows forever -- no TTL, no max size, no eviction\n  }\n  res.json(cache[id]);\n});\n\nasync function loadLargeDataset() {\n  return {\n    metadata: { generated: new Date(), version: '1.0' },\n    rows: Array.from({ length: 10000 }, (_, i) => ({ id: i, value: Math.random() }))\n  };\n}\n\nasync function fetchUserFromDB(id) {\n  return { id, name: `User ${id}`, email: `user${id}@example.com` };\n}\n\napp.listen(3000, () => console.log('Server running on port 3000'));\n"
+      }
+    ],
+    "cleanBefore": true
+  },
+
+  "objectives": [
+    {
+      "id": "obj-1",
+      "description": "Create research-findings.md with memory leak research",
+      "type": "file_exists",
+      "target": "research-findings.md",
+      "required": true
+    },
+    {
+      "id": "obj-2",
+      "description": "Document common causes of Node.js memory leaks (global arrays, event listeners, closures, caches)",
+      "type": "file_contains",
+      "target": "research-findings.md",
+      "pattern": "[Mm]emory leak|[Gg]lobal|[Ee]vent listener|[Cc]losure|[Cc]ache|[Gg]arbage collect",
+      "required": true
+    },
+    {
+      "id": "obj-3",
+      "description": "Identify at least 2 problematic patterns from server.js",
+      "type": "file_contains",
+      "target": "research-findings.md",
+      "pattern": "requestLog|cache|listener|stdin|hugeDataset|eviction|unbounded",
+      "required": true
+    },
+    {
+      "id": "obj-4",
+      "description": "Cite sources with URLs from research",
+      "type": "file_contains",
+      "target": "research-findings.md",
+      "pattern": "https?://|\\[.*\\]\\(.*\\)|[Ss]ource|[Rr]eference",
+      "required": true
+    },
+    {
+      "id": "obj-5",
+      "description": "Include diagnostic tools or techniques (heap snapshot, --inspect, clinic.js, etc.)",
+      "type": "file_contains",
+      "target": "research-findings.md",
+      "pattern": "heap|--inspect|[Pp]rofil|[Dd]iagnostic|clinic|[Cc]hrome DevTools|process\\.memoryUsage|[Ss]napshot",
+      "required": true
+    }
+  ],
+
+  "bonusObjectives": [
+    {
+      "id": "bonus-1",
+      "description": "Propose specific fixes for each pattern in server.js",
+      "type": "file_contains",
+      "target": "research-findings.md",
+      "pattern": "[Ff]ix|[Ss]olution|[Rr]ecommend|[Rr]eplace.*with|[Uu]se.*instead|LRU|TTL|[Cc]leanup|removeListener",
+      "xpBonus": 40
+    },
+    {
+      "id": "bonus-2",
+      "description": "Document the WebSearch query and domain filters used in the research",
+      "type": "file_contains",
+      "target": "research-findings.md",
+      "pattern": "[Ss]earch.*query|[Dd]omain.*filter|allowed_domains|WebSearch|[Mm]ethodology",
+      "xpBonus": 35
+    }
+  ],
+
+  "hints": [
+    {
+      "level": 1,
+      "text": "Start with a WebSearch query like 'Node.js memory leak diagnosis production 2026'. Use allowed_domains to focus on nodejs.org, stackoverflow.com, and github.com. Then look at the results to pick a page to WebFetch for deeper reading.",
+      "xpCost": 10
+    },
+    {
+      "level": 2,
+      "text": "After searching, use WebFetch on the most promising result URL to get detailed techniques. Then review server.js -- it has 4 classic memory leak patterns: unbounded global array, event listener accumulation, closures retaining large objects, and caching without eviction.",
+      "xpCost": 35
+    },
+    {
+      "level": 3,
+      "text": "Ask Claude: 'Search for Node.js memory leak diagnosis techniques using WebSearch with allowed_domains for nodejs.org and stackoverflow.com. Then WebFetch the best result for details. Review server.js for memory leak patterns. Create research-findings.md covering: common causes, diagnostic tools (heap snapshots, --inspect flag), the 4 leak patterns in server.js, fixes for each, and cite all sources with URLs.'",
+      "xpCost": 70
+    }
+  ],
+
+  "solution": {
+    "approach": "Use WebSearch with domain filtering to find high-quality articles on Node.js memory leaks, WebFetch the best result for detailed techniques, analyze the provided server.js for leak patterns, and synthesize everything into a cited research document.",
+    "example": "WebSearch 'Node.js memory leak diagnosis 2026' with allowed_domains ['nodejs.org', 'stackoverflow.com'], WebFetch the top result, then create research-findings.md mapping each server.js pattern to known leak causes with fixes and citations.",
+    "alternativeApproaches": [
+      "Search separately for each leak pattern: 'Node.js global array memory leak', 'Node.js event listener leak', etc.",
+      "Search for 'Node.js memory profiling tools' first to learn diagnostic techniques, then apply them to identify patterns",
+      "Use blocked_domains to exclude low-quality SEO content and search broadly"
+    ]
+  },
+
+  "learningPoints": [
+    "WebSearch discovers content you don't have URLs for -- use it for open-ended questions",
+    "Including the year in search queries ensures current results beyond Claude's knowledge cutoff",
+    "Domain filtering with allowed_domains focuses results on trusted sources like official docs and Stack Overflow",
+    "The WebSearch -> WebFetch pipeline mirrors expert research: search broadly, then read deeply",
+    "Error messages and specific technical terms make the best search queries",
+    "Always cite sources with URLs -- it makes your research verifiable and your documentation trustworthy",
+    "Combine research findings with code analysis to produce actionable recommendations"
+  ],
+
+  "nextChallenge": "10-003"
+}

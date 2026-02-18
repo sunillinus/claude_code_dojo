@@ -1,0 +1,210 @@
+{
+  "id": "07-005",
+  "module": "project-config",
+  "title": "Team Configuration",
+  "description": "Learn to set up a complete team configuration: shared settings committed to git, personal overrides in local files, CLAUDE.md with team conventions, and .gitignore for local-only files. This is the capstone for project configuration.",
+  "difficulty": "intermediate",
+  "xpReward": 200,
+  "estimatedMinutes": 15,
+  "skills": ["team-setup", "shared-configuration", "local-overrides", "onboarding"],
+
+  "setup": {
+    "workingDir": "~/dojo-workspace/challenge-07-005",
+    "initialFiles": [
+      {
+        "path": "README.md",
+        "content": "# Challenge: Team Configuration\n\nSet up a complete Claude Code configuration for a team project,\nincluding shared settings, local overrides, and team conventions.\n\n## The Full Configuration Picture\n\nA well-configured team project uses multiple configuration files\nthat work together. Here is the complete picture:\n\n```\nmy-project/\n  .claude/\n    settings.json          <-- Shared team settings (in git)\n    settings.local.json    <-- Personal overrides (NOT in git)\n  CLAUDE.md                <-- Team conventions (in git)\n  .gitignore               <-- Must exclude local settings\n```\n\nPlus, on each developer's machine:\n```\n~/.claude/\n  settings.json            <-- Global personal settings\n  CLAUDE.md                <-- Global personal instructions\n```\n\n## What to Share vs Keep Personal\n\nThis is the key question for team configuration. Getting it wrong\nmeans either sharing too much (personal preferences forced on everyone)\nor too little (each developer configures from scratch).\n\n### Share (commit to git):\n\n| File | Contents |\n|------|----------|\n| `.claude/settings.json` | Tool permissions the team agreed on |\n| `CLAUDE.md` | Coding conventions, architecture, commands |\n\nExamples of shared settings:\n- allowedTools for project npm scripts\n- blockedTools for dangerous operations\n- MCP server configs everyone needs\n\nExamples of shared CLAUDE.md content:\n- \"Use conventional commits\"\n- \"All components go in src/components/\"\n- \"Run `npm test` before committing\"\n\n### Keep Personal (NOT in git):\n\n| File | Contents |\n|------|----------|\n| `.claude/settings.local.json` | Personal permission overrides |\n| `~/.claude/settings.json` | Global personal preferences |\n| `~/.claude/CLAUDE.md` | Personal instructions |\n\nExamples of personal settings:\n- Additional allowedTools you personally want\n- MCP servers only you use (personal database, etc.)\n\nExamples of personal CLAUDE.md content:\n- \"My name is Sarah, refer to me by name\"\n- \"I prefer verbose explanations\"\n- \"Always suggest tests for new code\"\n\n## The Local Override File\n\nThe `.claude/settings.local.json` file is special:\n- It has the same format as `settings.json`\n- It is merged ON TOP of the shared settings\n- It must be in `.gitignore` to stay personal\n- It lets developers customize without affecting the team\n\nExample: the shared settings allow `Bash(npm run *)`. A developer\nwho also wants to allow Docker commands adds a local override:\n\n```json\n{\n  \"permissions\": {\n    \"allowedTools\": [\n      \"Bash(docker compose *)\",\n      \"Bash(docker build *)\"\n    ]\n  }\n}\n```\n\nTheir final permissions are the shared ones PLUS their personal ones.\n\n## Onboarding: Why This Matters\n\nWhen a new team member joins:\n\n1. They clone the repo\n2. They immediately get:\n   - CLAUDE.md with all team conventions\n   - .claude/settings.json with agreed permissions\n3. They optionally create:\n   - .claude/settings.local.json for personal tweaks\n4. They are productive with Claude Code immediately\n\nNo setup wiki to follow. No \"ask Bob how to configure Claude.\"\nThe configuration IS the documentation, and it lives with the code.\n\n## CLAUDE.md as Team Documentation\n\nFor teams, CLAUDE.md serves double duty:\n1. It configures Claude Code's behavior\n2. It documents team conventions for humans too\n\nA developer reading CLAUDE.md learns the same things Claude Code\nlearns: what the project does, how to build it, what conventions\nto follow. This makes CLAUDE.md the most up-to-date documentation\nin the project (because if it is wrong, Claude Code behaves wrong,\nso the team keeps it current).\n\n## Version Controlling Configuration\n\nTreat `.claude/settings.json` and `CLAUDE.md` like code:\n- Review changes in PRs\n- Discuss convention changes as a team\n- Keep a changelog if the team is large\n- Update CLAUDE.md whenever conventions change\n\nDo NOT version control:\n- `.claude/settings.local.json` (personal)\n- Any file with credentials or API keys\n- `~/.claude/` (global personal)\n\n## Your Task\n\nThis workspace has a Next.js team project. Set up the complete\nteam configuration:\n\n1. **CLAUDE.md** - Team conventions, architecture, commands,\n   coding standards, commit message format, onboarding steps\n\n2. **`.claude/settings.json`** - Shared team permissions\n   (allowedTools for npm scripts and safe commands,\n   blockedTools for dangerous operations)\n\n3. **`.claude/settings.local.json`** - Example personal overrides\n   (demonstrate how a developer would add their own tools)\n\n4. **`.gitignore`** - Must exclude `.claude/settings.local.json`\n   and other local-only files\n\nThis is the capstone: bring together everything from challenges\n07-001 through 07-004 into one complete configuration.\n"
+      },
+      {
+        "path": "package.json",
+        "content": "{\n  \"name\": \"team-dashboard\",\n  \"version\": \"1.0.0\",\n  \"scripts\": {\n    \"dev\": \"next dev\",\n    \"build\": \"next build\",\n    \"start\": \"next start\",\n    \"test\": \"jest --passWithNoTests\",\n    \"test:watch\": \"jest --watch\",\n    \"test:coverage\": \"jest --coverage\",\n    \"lint\": \"next lint\",\n    \"lint:fix\": \"next lint --fix\",\n    \"type-check\": \"tsc --noEmit\",\n    \"db:migrate\": \"prisma migrate dev\",\n    \"db:seed\": \"prisma db seed\",\n    \"db:studio\": \"prisma studio\",\n    \"storybook\": \"storybook dev -p 6006\",\n    \"build-storybook\": \"storybook build\"\n  },\n  \"dependencies\": {\n    \"next\": \"^14.0.0\",\n    \"react\": \"^18.2.0\",\n    \"react-dom\": \"^18.2.0\",\n    \"@prisma/client\": \"^5.0.0\",\n    \"@tanstack/react-query\": \"^5.0.0\",\n    \"zustand\": \"^4.4.0\",\n    \"zod\": \"^3.22.0\",\n    \"date-fns\": \"^3.0.0\",\n    \"tailwindcss\": \"^3.4.0\"\n  },\n  \"devDependencies\": {\n    \"typescript\": \"^5.3.0\",\n    \"jest\": \"^29.7.0\",\n    \"@testing-library/react\": \"^14.0.0\",\n    \"eslint\": \"^8.50.0\",\n    \"prisma\": \"^5.0.0\",\n    \"@storybook/react\": \"^7.6.0\"\n  }\n}\n"
+      },
+      {
+        "path": "tsconfig.json",
+        "content": "{\n  \"compilerOptions\": {\n    \"target\": \"ES2017\",\n    \"lib\": [\"dom\", \"dom.iterable\", \"esnext\"],\n    \"allowJs\": true,\n    \"skipLibCheck\": true,\n    \"strict\": true,\n    \"noEmit\": true,\n    \"esModuleInterop\": true,\n    \"module\": \"esnext\",\n    \"moduleResolution\": \"bundler\",\n    \"resolveJsonModule\": true,\n    \"isolatedModules\": true,\n    \"jsx\": \"preserve\",\n    \"incremental\": true,\n    \"paths\": {\n      \"@/*\": [\"./src/*\"]\n    }\n  }\n}\n"
+      },
+      {
+        "path": ".eslintrc.json",
+        "content": "{\n  \"extends\": [\"next/core-web-vitals\"],\n  \"rules\": {\n    \"no-console\": \"warn\",\n    \"@typescript-eslint/no-explicit-any\": \"error\",\n    \"@typescript-eslint/no-unused-vars\": [\"error\", { \"argsIgnorePattern\": \"^_\" }],\n    \"react/self-closing-comp\": \"error\",\n    \"import/order\": [\"error\", {\n      \"groups\": [\"builtin\", \"external\", \"internal\", \"parent\", \"sibling\"],\n      \"newlines-between\": \"always\"\n    }]\n  }\n}\n"
+      },
+      {
+        "path": ".gitignore",
+        "content": "node_modules/\n.next/\ndist/\n.env\n.env.local\ncoverage/\n*.tsbuildinfo\n"
+      },
+      {
+        "path": "src/app/page.tsx",
+        "content": "import { DashboardHeader } from '@/components/DashboardHeader';\nimport { MetricsGrid } from '@/components/MetricsGrid';\nimport { RecentActivity } from '@/components/RecentActivity';\n\nexport default function Home() {\n  return (\n    <main className=\"container mx-auto px-4 py-8\">\n      <DashboardHeader />\n      <MetricsGrid />\n      <RecentActivity />\n    </main>\n  );\n}\n"
+      },
+      {
+        "path": "src/app/layout.tsx",
+        "content": "import type { Metadata } from 'next';\nimport { Providers } from '@/components/Providers';\nimport './globals.css';\n\nexport const metadata: Metadata = {\n  title: 'Team Dashboard',\n  description: 'Internal team dashboard'\n};\n\nexport default function RootLayout({ children }: { children: React.ReactNode }) {\n  return (\n    <html lang=\"en\">\n      <body>\n        <Providers>{children}</Providers>\n      </body>\n    </html>\n  );\n}\n"
+      },
+      {
+        "path": "src/components/DashboardHeader.tsx",
+        "content": "export const DashboardHeader = () => {\n  return (\n    <header className=\"mb-8\">\n      <h1 className=\"text-3xl font-bold\">Team Dashboard</h1>\n      <p className=\"text-gray-600\">Welcome back</p>\n    </header>\n  );\n};\n"
+      },
+      {
+        "path": "src/lib/api.ts",
+        "content": "const BASE_URL = process.env.NEXT_PUBLIC_API_URL || '/api';\n\nexport const api = {\n  get: async <T>(path: string): Promise<T> => {\n    const res = await fetch(`${BASE_URL}${path}`);\n    if (!res.ok) throw new Error(`API error: ${res.status}`);\n    return res.json();\n  },\n  post: async <T>(path: string, body: unknown): Promise<T> => {\n    const res = await fetch(`${BASE_URL}${path}`, {\n      method: 'POST',\n      headers: { 'Content-Type': 'application/json' },\n      body: JSON.stringify(body)\n    });\n    if (!res.ok) throw new Error(`API error: ${res.status}`);\n    return res.json();\n  }\n};\n"
+      },
+      {
+        "path": "src/hooks/useMetrics.ts",
+        "content": "import { useQuery } from '@tanstack/react-query';\nimport { api } from '@/lib/api';\n\ninterface Metric {\n  id: string;\n  name: string;\n  value: number;\n  change: number;\n}\n\nexport const useMetrics = () => {\n  return useQuery<Metric[]>({\n    queryKey: ['metrics'],\n    queryFn: () => api.get('/metrics')\n  });\n};\n"
+      },
+      {
+        "path": "prisma/schema.prisma",
+        "content": "generator client {\n  provider = \"prisma-client-js\"\n}\n\ndatasource db {\n  provider = \"postgresql\"\n  url      = env(\"DATABASE_URL\")\n}\n\nmodel User {\n  id        String   @id @default(uuid())\n  email     String   @unique\n  name      String\n  role      String   @default(\"member\")\n  createdAt DateTime @default(now())\n}\n\nmodel Metric {\n  id        String   @id @default(uuid())\n  name      String\n  value     Float\n  change    Float\n  updatedAt DateTime @updatedAt\n}\n\nmodel Activity {\n  id        String   @id @default(uuid())\n  type      String\n  message   String\n  userId    String\n  createdAt DateTime @default(now())\n}\n"
+      },
+      {
+        "path": ".env.example",
+        "content": "DATABASE_URL=postgresql://user:pass@localhost:5432/dashboard_dev\nNEXT_PUBLIC_API_URL=http://localhost:3000/api\nJWT_SECRET=change-me-in-production\n"
+      }
+    ],
+    "cleanBefore": true
+  },
+
+  "objectives": [
+    {
+      "id": "obj-1",
+      "description": "Create CLAUDE.md with team conventions and project documentation",
+      "type": "file_exists",
+      "target": "CLAUDE.md",
+      "required": true
+    },
+    {
+      "id": "obj-2",
+      "description": "CLAUDE.md includes project overview or description",
+      "type": "file_contains",
+      "target": "CLAUDE.md",
+      "pattern": "[Dd]ashboard|[Tt]eam|[Pp]roject|[Oo]verview|[Nn]ext\\.?js",
+      "required": true
+    },
+    {
+      "id": "obj-3",
+      "description": "CLAUDE.md documents available commands (npm scripts)",
+      "type": "file_contains",
+      "target": "CLAUDE.md",
+      "pattern": "npm run (dev|build|test|lint)",
+      "required": true
+    },
+    {
+      "id": "obj-4",
+      "description": "CLAUDE.md includes coding standards or conventions",
+      "type": "file_contains",
+      "target": "CLAUDE.md",
+      "pattern": "[Cc]onvention|[Ss]tandard|[Ss]tyle|[Rr]ule|[Tt]ype[Ss]cript|eslint|[Ll]int",
+      "required": true
+    },
+    {
+      "id": "obj-5",
+      "description": "CLAUDE.md includes setup or onboarding instructions",
+      "type": "file_contains",
+      "target": "CLAUDE.md",
+      "pattern": "[Ss]etup|[Oo]nboard|[Gg]etting [Ss]tarted|npm install|[Cc]lone",
+      "required": true
+    },
+    {
+      "id": "obj-6",
+      "description": "Create shared team settings file",
+      "type": "file_exists",
+      "target": ".claude/settings.json",
+      "required": true
+    },
+    {
+      "id": "obj-7",
+      "description": "Shared settings include allowedTools",
+      "type": "file_contains",
+      "target": ".claude/settings.json",
+      "pattern": "allowedTools",
+      "required": true
+    },
+    {
+      "id": "obj-8",
+      "description": "Create local override settings file",
+      "type": "file_exists",
+      "target": ".claude/settings.local.json",
+      "required": true
+    },
+    {
+      "id": "obj-9",
+      "description": ".gitignore excludes the local settings file",
+      "type": "file_contains",
+      "target": ".gitignore",
+      "pattern": "settings\\.local|settings.local",
+      "required": true
+    }
+  ],
+
+  "bonusObjectives": [
+    {
+      "id": "bonus-1",
+      "description": "CLAUDE.md includes commit message conventions (conventional commits, branch naming)",
+      "type": "file_contains",
+      "target": "CLAUDE.md",
+      "pattern": "[Cc]ommit|[Bb]ranch|[Cc]onventional|feat:|fix:|PR|[Pp]ull [Rr]equest",
+      "xpBonus": 30
+    },
+    {
+      "id": "bonus-2",
+      "description": "Shared settings include blockedTools for safety",
+      "type": "file_contains",
+      "target": ".claude/settings.json",
+      "pattern": "blockedTools",
+      "xpBonus": 30
+    },
+    {
+      "id": "bonus-3",
+      "description": "CLAUDE.md includes architecture or project structure documentation",
+      "type": "file_contains",
+      "target": "CLAUDE.md",
+      "pattern": "[Aa]rchitecture|[Ss]tructure|src/|app/|components/|hooks/|lib/",
+      "xpBonus": 30
+    },
+    {
+      "id": "bonus-4",
+      "description": "Local settings file demonstrates personal overrides with additional tools",
+      "type": "file_contains",
+      "target": ".claude/settings.local.json",
+      "pattern": "allowedTools|permissions",
+      "xpBonus": 30
+    }
+  ],
+
+  "hints": [
+    {
+      "level": 1,
+      "text": "Think about the four pieces you need to create: 1) CLAUDE.md for team conventions and project docs, 2) .claude/settings.json for shared permissions, 3) .claude/settings.local.json as an example personal override, 4) Updated .gitignore to exclude the local file. Start with whichever feels most natural.",
+      "xpCost": 15
+    },
+    {
+      "level": 2,
+      "text": "For CLAUDE.md, look at the existing project files for context: it is a Next.js 14 dashboard app with React Query, Zustand, Prisma, Tailwind, Storybook, and Jest. Include sections for: project overview, tech stack, getting started (clone, npm install, copy .env.example, prisma migrate, npm run dev), all commands, coding conventions (from .eslintrc.json), and commit format. For settings.json, allow npm run commands, prisma, and tsc. For the local file, show an example of adding docker or storybook commands.",
+      "xpCost": 40
+    },
+    {
+      "level": 3,
+      "text": "Ask Claude Code: 'Set up complete team configuration for this Next.js dashboard project: 1) Create CLAUDE.md with: project overview (Next.js 14 team dashboard), tech stack (React, React Query, Zustand, Prisma, Tailwind, Jest, Storybook), getting started steps (clone, npm install, copy .env.example to .env, npx prisma migrate dev, npm run dev), all npm scripts documented, coding standards (from .eslintrc.json: no console.log, no any type, import ordering), conventional commit format, project structure (src/app, src/components, src/hooks, src/lib) 2) Create .claude/settings.json with allowedTools for npm run commands, prisma, tsc, Edit, Write; blockedTools for force push, rm -rf, npm publish 3) Create .claude/settings.local.json with example personal allowedTools (docker, storybook) 4) Add settings.local.json to .gitignore'",
+      "xpCost": 75
+    }
+  ],
+
+  "solution": {
+    "approach": "Create the complete team configuration: CLAUDE.md with comprehensive documentation, shared settings, local override example, and updated .gitignore.",
+    "example": "Set up all four configuration files: CLAUDE.md for conventions, .claude/settings.json for shared permissions, .claude/settings.local.json for personal overrides, and .gitignore for exclusions",
+    "alternativeApproaches": [
+      "Ask Claude Code to examine the project and generate all configuration files at once",
+      "Build each file incrementally, starting with CLAUDE.md then adding settings"
+    ]
+  },
+
+  "learningPoints": [
+    ".claude/settings.json is shared (committed to git) - use for team-agreed permissions",
+    ".claude/settings.local.json is personal (in .gitignore) - use for individual overrides",
+    "Always add settings.local.json to .gitignore so personal settings stay personal",
+    "CLAUDE.md serves as both Claude Code configuration AND team documentation for humans",
+    "A new team member gets productive immediately: clone the repo and all conventions are there",
+    "Treat configuration files like code: review changes in PRs, discuss as a team"
+  ],
+
+  "nextChallenge": "08-001"
+}

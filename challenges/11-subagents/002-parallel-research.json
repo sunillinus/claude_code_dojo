@@ -1,0 +1,136 @@
+{
+  "id": "11-002",
+  "module": "subagents",
+  "title": "Parallel Research",
+  "description": "Learn to run multiple subagents simultaneously and use them to investigate and fix bugs across independent areas of a codebase.\n\n## Running Subagents in Parallel\n\nWhen you have independent tasks, Claude Code can spawn **multiple subagents at the same time**. Each runs in its own context, and all execute simultaneously:\n\n```\nYou: \"Research the auth, database, and API areas simultaneously\"\n\nClaude Code spawns:\n  [Explore Agent 1] -> researching auth\n  [Explore Agent 2] -> researching database   (all run at same time)\n  [Explore Agent 3] -> researching API\n```\n\nThis is much faster than doing them one at a time. If each investigation takes 10 seconds, sequential takes 30 seconds but parallel takes ~10.\n\n## How to Trigger Parallel Subagents\n\nYou can guide Claude Code to use parallel subagents by:\n- Requesting multiple independent investigations in one prompt\n- Being explicit: \"investigate these 3 areas simultaneously\"\n- Phrasing as a list: \"research: 1) auth system, 2) database layer, 3) API routes\"\n\nClaude Code recognizes that the tasks are independent and launches them in parallel.\n\n## Background Subagents\n\nSubagents can also run in the background using `run_in_background: true` on the Task tool. Background subagents:\n- Return immediately with a task ID and output file path\n- Continue running while you do other work\n- Can be checked on later with TaskOutput or by reading the output file\n\nThis is useful for longer research tasks where you want to keep working.\n\n## Resuming Agents\n\nEvery subagent gets an **agent ID** when it finishes. You can resume it later:\n- \"Resume that explore agent to dig deeper into the auth module\"\n- The agent picks up with its full previous context preserved\n- No need to re-explain what it already found\n\n## Your Exercise\n\nThis project has **3 independent areas** (auth, database, API routes), each with a specific bug:\n\n1. **`src/auth/service.js`**: The token expiry is hardcoded to `'24h'` instead of using the `TOKEN_EXPIRY` value from `src/auth/config.js`\n2. **`src/db/connection.js`**: The `connectDB()` function has no error handling -- if the database connection fails, the app crashes with an unhandled error\n3. **`src/routes/users.js`**: The `/register` endpoint accepts any input with no validation -- it should check that `email` and `password` are provided before creating a user\n\n**Use parallel Explore subagents to investigate all 3 areas, identify the bugs, then fix them.**\n\nSuggested approach:\n1. Ask Claude to \"use 3 parallel explore agents to investigate: 1) the auth service for configuration issues, 2) the database connection for error handling, 3) the user registration for validation\"\n2. Review the findings from all 3 agents\n3. Fix all 3 bugs\n\nRun `/dojo check` when done.",
+  "difficulty": "intermediate",
+  "xpReward": 250,
+  "estimatedMinutes": 15,
+  "skills": ["parallel-subagents", "bug-fixing", "code-investigation"],
+
+  "setup": {
+    "workingDir": "~/dojo-workspace/challenge-11-002",
+    "initialFiles": [
+      {
+        "path": "README.md",
+        "content": "# Web Application\n\nAn Express web application with authentication, database, and user management.\n\n## Structure\n\n- `src/auth/` — Authentication (middleware, service, config)\n- `src/db/` — Database connection and models\n- `src/routes/` — API route handlers\n"
+      },
+      {
+        "path": "src/index.js",
+        "content": "const express = require('express');\nconst { authMiddleware } = require('./auth/middleware');\nconst { connectDB } = require('./db/connection');\nconst routes = require('./routes');\n\nconst app = express();\n\napp.use(express.json());\napp.use('/api', authMiddleware, routes);\n\nconnectDB().then(() => {\n  app.listen(3000, () => console.log('Server running'));\n});\n\nmodule.exports = app;\n"
+      },
+      {
+        "path": "src/auth/middleware.js",
+        "content": "const jwt = require('jsonwebtoken');\nconst { SECRET } = require('./config');\n\nfunction authMiddleware(req, res, next) {\n  const token = req.headers.authorization?.split(' ')[1];\n  if (!token) return res.status(401).json({ error: 'No token' });\n  \n  try {\n    req.user = jwt.verify(token, SECRET);\n    next();\n  } catch {\n    res.status(401).json({ error: 'Invalid token' });\n  }\n}\n\nmodule.exports = { authMiddleware };\n"
+      },
+      {
+        "path": "src/auth/config.js",
+        "content": "module.exports = {\n  SECRET: process.env.JWT_SECRET || 'dev-secret',\n  TOKEN_EXPIRY: '24h'\n};\n"
+      },
+      {
+        "path": "src/auth/service.js",
+        "content": "const jwt = require('jsonwebtoken');\nconst { SECRET } = require('./config');\nconst { User } = require('../db/models/User');\n\nasync function login(email, password) {\n  const user = await User.findByEmail(email);\n  if (!user || !user.checkPassword(password)) {\n    throw new Error('Invalid credentials');\n  }\n  return jwt.sign({ id: user.id, email }, SECRET, { expiresIn: '24h' });\n}\n\nmodule.exports = { login };\n"
+      },
+      {
+        "path": "src/db/connection.js",
+        "content": "const { Pool } = require('pg');\n\nconst pool = new Pool({\n  host: process.env.DB_HOST || 'localhost',\n  database: process.env.DB_NAME || 'app',\n  user: process.env.DB_USER || 'postgres',\n  password: process.env.DB_PASS || 'postgres'\n});\n\nasync function connectDB() {\n  await pool.connect();\n  console.log('Database connected');\n}\n\nasync function query(sql, params) {\n  return pool.query(sql, params);\n}\n\nmodule.exports = { connectDB, query, pool };\n"
+      },
+      {
+        "path": "src/db/models/User.js",
+        "content": "const { query } = require('../connection');\nconst bcrypt = require('bcrypt');\n\nclass User {\n  constructor(data) {\n    Object.assign(this, data);\n  }\n\n  static async findByEmail(email) {\n    const result = await query('SELECT * FROM users WHERE email = $1', [email]);\n    return result.rows[0] ? new User(result.rows[0]) : null;\n  }\n\n  static async create(data) {\n    const hash = await bcrypt.hash(data.password, 10);\n    const result = await query(\n      'INSERT INTO users (email, password_hash) VALUES ($1, $2) RETURNING *',\n      [data.email, hash]\n    );\n    return new User(result.rows[0]);\n  }\n\n  checkPassword(password) {\n    return bcrypt.compareSync(password, this.password_hash);\n  }\n}\n\nmodule.exports = { User };\n"
+      },
+      {
+        "path": "src/db/models/Product.js",
+        "content": "const { query } = require('../connection');\n\nclass Product {\n  constructor(data) {\n    Object.assign(this, data);\n  }\n\n  static async findAll() {\n    const result = await query('SELECT * FROM products');\n    return result.rows.map(r => new Product(r));\n  }\n\n  static async findById(id) {\n    const result = await query('SELECT * FROM products WHERE id = $1', [id]);\n    return result.rows[0] ? new Product(result.rows[0]) : null;\n  }\n}\n\nmodule.exports = { Product };\n"
+      },
+      {
+        "path": "src/routes/index.js",
+        "content": "const router = require('express').Router();\nrouter.use('/users', require('./users'));\nrouter.use('/products', require('./products'));\nmodule.exports = router;\n"
+      },
+      {
+        "path": "src/routes/users.js",
+        "content": "const router = require('express').Router();\nconst { User } = require('../db/models/User');\nconst { login } = require('../auth/service');\n\nrouter.post('/login', async (req, res) => {\n  try {\n    const token = await login(req.body.email, req.body.password);\n    res.json({ token });\n  } catch (e) {\n    res.status(401).json({ error: e.message });\n  }\n});\n\nrouter.post('/register', async (req, res) => {\n  const user = await User.create(req.body);\n  res.json({ id: user.id, email: user.email });\n});\n\nmodule.exports = router;\n"
+      },
+      {
+        "path": "src/routes/products.js",
+        "content": "const router = require('express').Router();\nconst { Product } = require('../db/models/Product');\n\nrouter.get('/', async (req, res) => {\n  const products = await Product.findAll();\n  res.json(products);\n});\n\nrouter.get('/:id', async (req, res) => {\n  const product = await Product.findById(req.params.id);\n  if (!product) return res.status(404).json({ error: 'Not found' });\n  res.json(product);\n});\n\nmodule.exports = router;\n"
+      }
+    ],
+    "cleanBefore": true
+  },
+
+  "objectives": [
+    {
+      "id": "obj-1",
+      "description": "Auth service uses config value for token expiry instead of hardcoded string",
+      "type": "file_contains",
+      "target": "src/auth/service.js",
+      "pattern": "TOKEN_EXPIRY|config.*expir|expiry",
+      "required": true
+    },
+    {
+      "id": "obj-2",
+      "description": "Database connection has error handling (try/catch)",
+      "type": "file_contains",
+      "target": "src/db/connection.js",
+      "pattern": "try|catch",
+      "required": true
+    },
+    {
+      "id": "obj-3",
+      "description": "User registration has input validation (checks for email/password)",
+      "type": "file_contains",
+      "target": "src/routes/users.js",
+      "pattern": "!.*email|!.*password|valid|400|[Mm]issing",
+      "required": true
+    }
+  ],
+
+  "bonusObjectives": [
+    {
+      "id": "bonus-1",
+      "description": "Auth service imports TOKEN_EXPIRY from config module",
+      "type": "file_contains",
+      "target": "src/auth/service.js",
+      "pattern": "require.*config.*TOKEN_EXPIRY|TOKEN_EXPIRY.*require.*config|\\{ SECRET, TOKEN_EXPIRY \\}|\\{.*TOKEN_EXPIRY.*\\}.*config",
+      "xpBonus": 50
+    }
+  ],
+
+  "hints": [
+    {
+      "level": 1,
+      "text": "Ask Claude to investigate all 3 areas simultaneously: 'Use 3 parallel explore agents to check: 1) src/auth/service.js for hardcoded values that should come from config, 2) src/db/connection.js for missing error handling, 3) src/routes/users.js for missing input validation.'",
+      "xpCost": 20
+    },
+    {
+      "level": 2,
+      "text": "The 3 bugs: (1) In src/auth/service.js, the jwt.sign call uses '24h' directly instead of TOKEN_EXPIRY from ./config. Fix: import TOKEN_EXPIRY and use it. (2) In src/db/connection.js, connectDB() calls pool.connect() with no try/catch. Fix: wrap in try/catch. (3) In src/routes/users.js, the /register route creates a user from req.body with no validation. Fix: check that email and password exist.",
+      "xpCost": 50
+    },
+    {
+      "level": 3,
+      "text": "Fix 1: Change 'const { SECRET } = require(\"./config\")' to 'const { SECRET, TOKEN_EXPIRY } = require(\"./config\")' and change expiresIn: '24h' to expiresIn: TOKEN_EXPIRY. Fix 2: Wrap pool.connect() in try/catch with console.error and throw. Fix 3: Add before User.create: if (!req.body.email || !req.body.password) return res.status(400).json({ error: 'Missing email or password' });",
+      "xpCost": 95
+    }
+  ],
+
+  "solution": {
+    "approach": "Use 3 parallel Explore subagents to investigate auth/service.js (hardcoded config), db/connection.js (missing error handling), and routes/users.js (missing validation). Then fix all 3 bugs.",
+    "example": "Request parallel investigation, then fix: import TOKEN_EXPIRY in auth/service.js, add try/catch in db/connection.js, add email/password validation in routes/users.js.",
+    "alternativeApproaches": [
+      "Fix all 3 bugs without using parallel agents (less efficient but works)",
+      "Use a single general-purpose subagent to find and fix all 3 bugs"
+    ]
+  },
+
+  "learningPoints": [
+    "Claude Code can spawn multiple subagents simultaneously for independent tasks",
+    "Parallel execution is faster than sequential for independent investigations",
+    "Background subagents return immediately and let you continue working",
+    "Each subagent gets an ID you can use to resume it later with full context preserved",
+    "Parallel subagents are ideal for investigating independent areas of a codebase"
+  ],
+
+  "nextChallenge": "11-003"
+}

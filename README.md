@@ -25,7 +25,7 @@ claude
 
 > /dojo                    # Show available commands
 > /dojo start              # Begin or continue learning
-> /dojo challenge 01-001   # Start a specific challenge
+> /dojo start 01-001       # Start a specific challenge
 > /dojo hint               # Get a hint (costs XP)
 > /dojo check              # Verify completion
 > /dojo progress           # Show your stats

@@ -1,0 +1,164 @@
+{
+  "id": "07-004",
+  "module": "project-config",
+  "title": "Settings and Permissions",
+  "description": "Learn how Claude Code's settings system works: .claude/settings.json for project-level configuration, allowedTools and blockedTools for permission control, and how to configure what Claude Code can do without asking.",
+  "difficulty": "intermediate",
+  "xpReward": 200,
+  "estimatedMinutes": 12,
+  "skills": ["settings-management", "permissions", "tool-control"],
+
+  "setup": {
+    "workingDir": "~/dojo-workspace/challenge-07-004",
+    "initialFiles": [
+      {
+        "path": "README.md",
+        "content": "# Challenge: Settings and Permissions\n\nLearn how to configure Claude Code's behavior through settings files,\ncontrolling which tools it can use and what permissions it has.\n\n## Claude Code Settings Files\n\nClaude Code uses JSON settings files to control its behavior. There\nare two locations:\n\n### 1. Project Settings: `.claude/settings.json`\n\nThis file lives inside your project, in the `.claude/` directory:\n\n```\nmy-project/\n  .claude/\n    settings.json    <-- Project settings (committed to git)\n  src/\n  package.json\n```\n\nProject settings are **committed to git** and shared with the entire\nteam. When someone clones the repo, they get these settings\nautomatically. Use this for:\n- Tool permissions the whole team should have\n- Project-specific allowed commands\n- MCP server configurations everyone needs\n\n### 2. User Settings: `~/.claude/settings.json`\n\nThis file lives in your home directory and applies to ALL projects:\n\n```\n~/.claude/\n  settings.json      <-- Personal settings (not in any repo)\n  CLAUDE.md           <-- Personal instructions (also here)\n```\n\nUser settings are **personal** and never committed to any repo. Use\nthis for:\n- Your personal tool preferences\n- Global defaults you want everywhere\n\n## Settings File Structure\n\nThe settings file is JSON with specific keys:\n\n```json\n{\n  \"permissions\": {\n    \"allowedTools\": [],\n    \"blockedTools\": []\n  }\n}\n```\n\n## Controlling Tool Permissions\n\nThe most important settings control which tools Claude Code can use\nwithout asking for your confirmation.\n\n### allowedTools\n\nA list of tools Claude Code can use WITHOUT asking permission each\ntime. By default, Claude Code asks before running most tools\n(especially Bash commands, file writes, etc.). Adding tools here\nskips the confirmation prompt.\n\n```json\n{\n  \"permissions\": {\n    \"allowedTools\": [\n      \"Bash(npm run test)\",\n      \"Bash(npm run lint)\",\n      \"Bash(npm run build)\",\n      \"Bash(npx tsc --noEmit)\",\n      \"Bash(npx prisma migrate dev)\",\n      \"Edit\",\n      \"Write\"\n    ]\n  }\n}\n```\n\nTool permission patterns:\n- `\"Edit\"` - Allow the Edit tool (no restrictions)\n- `\"Write\"` - Allow the Write tool\n- `\"Bash(npm run test)\"` - Allow this EXACT bash command\n- `\"Bash(npm run *)\"` - Allow any bash command starting with `npm run`\n- `\"Bash(git *)\"` - Allow any git command\n- `\"mcp__server-name__tool-name\"` - Allow a specific MCP tool\n\n### blockedTools\n\nA list of tools Claude Code must NEVER use, even if asked:\n\n```json\n{\n  \"permissions\": {\n    \"blockedTools\": [\n      \"Bash(rm -rf *)\",\n      \"Bash(git push --force)\",\n      \"Bash(docker rm *)\"\n    ]\n  }\n}\n```\n\nblockedTools takes precedence over allowedTools. If a tool matches\nboth lists, it is blocked.\n\n## Practical Permission Patterns\n\nHere are common permission setups for different project types:\n\n**Node.js API project:**\n```json\n{\n  \"permissions\": {\n    \"allowedTools\": [\n      \"Bash(npm run *)\",\n      \"Bash(npx prisma *)\",\n      \"Bash(npx tsc --noEmit)\",\n      \"Edit\",\n      \"Write\"\n    ]\n  }\n}\n```\n\n**Security-sensitive project:**\n```json\n{\n  \"permissions\": {\n    \"allowedTools\": [\n      \"Bash(npm test)\",\n      \"Bash(npm run lint)\"\n    ],\n    \"blockedTools\": [\n      \"Bash(curl *)\",\n      \"Bash(wget *)\",\n      \"Bash(npm publish *)\"\n    ]\n  }\n}\n```\n\n**Full trust (use with caution):**\n```json\n{\n  \"permissions\": {\n    \"allowedTools\": [\n      \"Bash\",\n      \"Edit\",\n      \"Write\"\n    ]\n  }\n}\n```\n\nNote: allowing bare `\"Bash\"` means ANY bash command runs without\nconfirmation. This is convenient but risky.\n\n## MCP Server Configuration\n\nSettings can also configure MCP (Model Context Protocol) servers:\n\n```json\n{\n  \"mcpServers\": {\n    \"my-database\": {\n      \"command\": \"npx\",\n      \"args\": [\"-y\", \"@my/mcp-server\"],\n      \"env\": {\n        \"DB_URL\": \"postgresql://localhost/mydb\"\n      }\n    }\n  }\n}\n```\n\nMCP servers defined in project settings are available to everyone\nwho clones the repo.\n\n## How Settings Are Merged\n\nWhen both project and user settings exist, they are merged:\n1. Project `.claude/settings.json` loads first\n2. User `~/.claude/settings.json` overlays on top\n3. For arrays (like allowedTools), items from both are combined\n4. User settings can add to but not remove project settings\n\n## Your Task\n\nThis workspace has a Node.js API project. Configure the settings:\n\n1. Create `.claude/settings.json` with:\n   - allowedTools: permit common dev commands (npm scripts, tsc,\n     prisma commands, Edit, Write)\n   - blockedTools: block dangerous operations (force push,\n     recursive delete, npm publish)\n\n2. Update CLAUDE.md with:\n   - Security guidelines (protected files, sensitive data rules)\n   - Reference to the settings configuration\n"
+      },
+      {
+        "path": "CLAUDE.md",
+        "content": "# Secure Banking API\n\nA financial services API with strict security requirements.\nBuilt with Node.js, Express, TypeScript, and PostgreSQL.\n\n## Commands\n- `npm run dev` - Development server\n- `npm run build` - Compile TypeScript\n- `npm run test` - Run test suite\n- `npm run lint` - Run ESLint\n- `npx prisma migrate dev` - Run migrations\n- `npx prisma db seed` - Seed test data\n"
+      },
+      {
+        "path": "package.json",
+        "content": "{\n  \"name\": \"banking-api\",\n  \"version\": \"3.0.0\",\n  \"scripts\": {\n    \"dev\": \"tsx watch src/index.ts\",\n    \"build\": \"tsc\",\n    \"start\": \"node dist/index.js\",\n    \"test\": \"vitest\",\n    \"test:watch\": \"vitest --watch\",\n    \"lint\": \"eslint src/ --ext .ts\",\n    \"lint:fix\": \"eslint src/ --ext .ts --fix\",\n    \"db:migrate\": \"prisma migrate dev\",\n    \"db:seed\": \"prisma db seed\"\n  },\n  \"dependencies\": {\n    \"express\": \"^4.18.0\",\n    \"@prisma/client\": \"^5.0.0\",\n    \"zod\": \"^3.22.0\",\n    \"jsonwebtoken\": \"^9.0.0\",\n    \"bcrypt\": \"^5.1.0\",\n    \"helmet\": \"^7.0.0\",\n    \"cors\": \"^2.8.0\"\n  },\n  \"devDependencies\": {\n    \"typescript\": \"^5.3.0\",\n    \"tsx\": \"^4.0.0\",\n    \"vitest\": \"^1.0.0\",\n    \"eslint\": \"^8.50.0\",\n    \"prisma\": \"^5.0.0\"\n  }\n}\n"
+      },
+      {
+        "path": "src/index.ts",
+        "content": "import express from 'express';\nimport helmet from 'helmet';\nimport cors from 'cors';\nimport { accountRoutes } from './routes/accounts';\nimport { transactionRoutes } from './routes/transactions';\nimport { authRoutes } from './routes/auth';\nimport { errorHandler } from './middleware/errorHandler';\nimport { authMiddleware } from './middleware/auth';\nimport { rateLimiter } from './middleware/rateLimiter';\n\nconst app = express();\n\napp.use(helmet());\napp.use(cors({ origin: process.env.ALLOWED_ORIGINS?.split(',') }));\napp.use(express.json({ limit: '10kb' }));\napp.use(rateLimiter);\n\napp.use('/api/auth', authRoutes);\napp.use('/api/accounts', authMiddleware, accountRoutes);\napp.use('/api/transactions', authMiddleware, transactionRoutes);\napp.use(errorHandler);\n\nconst PORT = process.env.PORT || 3000;\napp.listen(PORT);\n"
+      },
+      {
+        "path": "src/routes/accounts.ts",
+        "content": "import { Router } from 'express';\nimport { z } from 'zod';\nimport { prisma } from '../lib/prisma';\n\nexport const accountRoutes = Router();\n\naccountRoutes.get('/', async (req, res) => {\n  try {\n    const accounts = await prisma.account.findMany({\n      where: { userId: req.user.id }\n    });\n    res.json(accounts);\n  } catch (error) {\n    res.status(500).json({ error: 'Failed to fetch accounts' });\n  }\n});\n\naccountRoutes.get('/:id/balance', async (req, res) => {\n  try {\n    const account = await prisma.account.findFirst({\n      where: { id: req.params.id, userId: req.user.id }\n    });\n    if (!account) return res.status(404).json({ error: 'Account not found' });\n    res.json({ balance: account.balance });\n  } catch (error) {\n    res.status(500).json({ error: 'Failed to fetch balance' });\n  }\n});\n"
+      },
+      {
+        "path": "config/production.json",
+        "content": "{\n  \"database\": {\n    \"host\": \"prod-db.banking-internal.net\",\n    \"port\": 5432,\n    \"ssl\": true,\n    \"poolSize\": 20\n  },\n  \"security\": {\n    \"rateLimit\": 100,\n    \"maxPayloadSize\": \"10kb\",\n    \"jwtExpiry\": \"15m\"\n  }\n}\n"
+      },
+      {
+        "path": ".env.example",
+        "content": "DATABASE_URL=postgresql://user:pass@localhost:5432/banking_dev\nJWT_SECRET=your-secret-here\nALLOWED_ORIGINS=http://localhost:3001\nSTRIPE_SECRET_KEY=sk_test_xxx\nENCRYPTION_KEY=your-encryption-key\n"
+      },
+      {
+        "path": ".gitignore",
+        "content": "node_modules/\ndist/\n.env\n.env.local\ncoverage/\n"
+      }
+    ],
+    "cleanBefore": true
+  },
+
+  "objectives": [
+    {
+      "id": "obj-1",
+      "description": "Create .claude/settings.json file",
+      "type": "file_exists",
+      "target": ".claude/settings.json",
+      "required": true
+    },
+    {
+      "id": "obj-2",
+      "description": "Settings include allowedTools with permitted commands",
+      "type": "file_contains",
+      "target": ".claude/settings.json",
+      "pattern": "allowedTools",
+      "required": true
+    },
+    {
+      "id": "obj-3",
+      "description": "Allow safe npm/dev commands in allowedTools",
+      "type": "file_contains",
+      "target": ".claude/settings.json",
+      "pattern": "Bash\\(npm|Bash\\(npx|Edit|Write",
+      "required": true
+    },
+    {
+      "id": "obj-4",
+      "description": "Settings include blockedTools to prevent dangerous operations",
+      "type": "file_contains",
+      "target": ".claude/settings.json",
+      "pattern": "blockedTools",
+      "required": true
+    },
+    {
+      "id": "obj-5",
+      "description": "Block dangerous commands (force push, rm -rf, or npm publish)",
+      "type": "file_contains",
+      "target": ".claude/settings.json",
+      "pattern": "force|rm -rf|publish|--force",
+      "required": true
+    },
+    {
+      "id": "obj-6",
+      "description": "CLAUDE.md includes security guidelines about protected files or sensitive data",
+      "type": "file_contains",
+      "target": "CLAUDE.md",
+      "pattern": "[Ss]ecur|[Pp]rotect|[Ss]ensitive|[Nn]ever.*(edit|modify|commit)|[Dd]o not.*(edit|modify|commit)|\\.env|config/production",
+      "required": true
+    }
+  ],
+
+  "bonusObjectives": [
+    {
+      "id": "bonus-1",
+      "description": "Settings file is valid JSON with proper structure",
+      "type": "file_contains",
+      "target": ".claude/settings.json",
+      "pattern": "\"permissions\"",
+      "xpBonus": 25
+    },
+    {
+      "id": "bonus-2",
+      "description": "CLAUDE.md references the settings configuration",
+      "type": "file_contains",
+      "target": "CLAUDE.md",
+      "pattern": "\\.claude|settings\\.json|[Pp]ermission|[Aa]llowed[Tt]ool|[Bb]locked[Tt]ool",
+      "xpBonus": 25
+    },
+    {
+      "id": "bonus-3",
+      "description": "Block network-related commands (curl, wget)",
+      "type": "file_contains",
+      "target": ".claude/settings.json",
+      "pattern": "curl|wget",
+      "xpBonus": 25
+    }
+  ],
+
+  "hints": [
+    {
+      "level": 1,
+      "text": "Think about what commands are safe to run automatically in a banking project. Test commands, linting, and type-checking are safe. Publishing, force-pushing, and deleting files are dangerous. The settings file goes in .claude/settings.json and uses allowedTools and blockedTools arrays.",
+      "xpCost": 15
+    },
+    {
+      "level": 2,
+      "text": "The settings.json structure has a 'permissions' key with 'allowedTools' and 'blockedTools' arrays inside. Tool entries look like 'Bash(npm run test)' for specific commands, 'Bash(npm run *)' for wildcards, or just 'Edit' for the edit tool. Also update CLAUDE.md with security rules about .env files and config/production.json.",
+      "xpCost": 40
+    },
+    {
+      "level": 3,
+      "text": "Ask Claude Code: 'For this banking API, create .claude/settings.json with: allowedTools - Bash(npm run *), Bash(npx prisma *), Bash(npx tsc --noEmit), Edit, Write; blockedTools - Bash(rm -rf *), Bash(git push --force*), Bash(npm publish*), Bash(curl *), Bash(wget *). Then update CLAUDE.md to add security guidelines: never edit config/production.json, never commit .env files, never log sensitive data, reference the .claude/settings.json permissions.'",
+      "xpCost": 75
+    }
+  ],
+
+  "solution": {
+    "approach": "Create .claude/settings.json with carefully chosen allowedTools and blockedTools, then update CLAUDE.md with security guidelines.",
+    "example": "Create settings file with permitted npm/prisma commands and blocked dangerous operations, then add security rules to CLAUDE.md",
+    "alternativeApproaches": [
+      "Ask Claude Code to analyze the project and suggest appropriate permission settings",
+      "Start with restrictive settings (minimal allowedTools) and expand as needed"
+    ]
+  },
+
+  "learningPoints": [
+    ".claude/settings.json controls project-level permissions and is committed to git for team sharing",
+    "~/.claude/settings.json is personal and applies to all projects on your machine",
+    "allowedTools lets specific tools or commands run without confirmation prompts",
+    "blockedTools prevents tools from running even if explicitly requested - it takes precedence over allowedTools",
+    "Tool patterns support wildcards: 'Bash(npm run *)' allows any npm run command",
+    "For security-sensitive projects, use blockedTools to prevent dangerous operations like force push or npm publish"
+  ],
+
+  "nextChallenge": "07-005"
+}

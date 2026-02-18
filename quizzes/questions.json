@@ -293,7 +293,7 @@
     },
     "testing-tdd": {
       "name": "Testing & TDD",
-      "moduleDir": "11-testing-tdd",
+      "moduleDir": "06-testing-tdd",
       "questions": [
         {
           "id": "test-1",
@@ -364,7 +364,7 @@
     },
     "project-config": {
       "name": "Project Configuration",
-      "moduleDir": "10-project-config",
+      "moduleDir": "07-project-config",
       "questions": [
         {
           "id": "config-1",
@@ -435,7 +435,7 @@
     },
     "effective-prompting": {
       "name": "Effective Prompting",
-      "moduleDir": "12-effective-prompting",
+      "moduleDir": "08-effective-prompting",
       "questions": [
         {
           "id": "prompt-1",
@@ -506,7 +506,7 @@
     },
     "code-generation": {
       "name": "Code Generation",
-      "moduleDir": "13-code-generation",
+      "moduleDir": "09-code-generation",
       "questions": [
         {
           "id": "codegen-1",
@@ -577,7 +577,7 @@
     },
     "web-research": {
       "name": "Web Research Tools",
-      "moduleDir": "14-web-research",
+      "moduleDir": "10-web-research",
       "questions": [
         {
           "id": "web-1",
@@ -648,7 +648,7 @@
     },
     "subagents": {
       "name": "Subagents",
-      "moduleDir": "06-subagents",
+      "moduleDir": "11-subagents",
       "questions": [
         {
           "id": "sub-1",
@@ -719,7 +719,7 @@
     },
     "background-tasks": {
       "name": "Background Tasks",
-      "moduleDir": "15-background-tasks",
+      "moduleDir": "12-background-tasks",
       "questions": [
         {
           "id": "bg-1",
@@ -790,7 +790,7 @@
     },
     "agentic-loops": {
       "name": "Agentic Loops (Ralph Loop)",
-      "moduleDir": "16-agentic-loops",
+      "moduleDir": "13-agentic-loops",
       "questions": [
         {
           "id": "loop-1",
@@ -861,7 +861,7 @@
     },
     "skills-hooks": {
       "name": "Skills & Hooks",
-      "moduleDir": "07-skills-hooks",
+      "moduleDir": "14-skills-hooks",
       "questions": [
         {
           "id": "skill-1",
@@ -932,7 +932,7 @@
     },
     "mcp-integration": {
       "name": "MCP Integration",
-      "moduleDir": "08-mcp-integration",
+      "moduleDir": "15-mcp-integration",
       "questions": [
         {
           "id": "mcp-1",
@@ -1003,7 +1003,7 @@
     },
     "plugin-development": {
       "name": "Plugin Development",
-      "moduleDir": "09-plugin-development",
+      "moduleDir": "16-plugin-development",
       "questions": [
         {
           "id": "plugin-1",

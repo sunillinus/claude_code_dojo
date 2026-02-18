@@ -1,0 +1,158 @@
+{
+  "id": "14-004",
+  "module": "skills-hooks",
+  "title": "Auto-format with Hooks",
+  "description": "Learn how PostToolUse hooks automate actions after tool execution. Create a hook that automatically formats JavaScript files with Prettier after Claude edits them.",
+  "difficulty": "advanced",
+  "xpReward": 375,
+  "estimatedMinutes": 18,
+  "skills": ["posttooluse-hooks", "automation", "code-formatting"],
+
+  "setup": {
+    "workingDir": "~/dojo-workspace/challenge-14-004",
+    "initialFiles": [
+      {
+        "path": "README.md",
+        "content": "# Challenge: Auto-format with Hooks\n\nLearn how PostToolUse hooks can automate tasks after Claude edits files,\nand build an auto-formatting workflow.\n\n---\n\n## What Are PostToolUse Hooks?\n\nIn the previous challenge, you learned about PreToolUse hooks that run\n**before** a tool executes and can block it. PostToolUse hooks are the\nother side of the coin: they run **after** a tool completes and let you\nreact to what just happened.\n\n```\nPreToolUse:   [Hook fires] --> [Tool runs] --> [Result returned]\nPostToolUse:  [Tool runs] --> [Result returned] --> [Hook fires]\n```\n\nPostToolUse hooks **cannot block** the tool (it already ran), but they\ncan:\n- Run a formatter on a file that was just written or edited\n- Run a linter to check the changes\n- Trigger related tests\n- Log what happened for auditing\n- Send notifications\n\n## The Auto-Format Pattern\n\nOne of the most practical uses for PostToolUse hooks is auto-formatting.\nHere is how it works:\n\n1. Claude edits a JavaScript file using the Write or Edit tool\n2. The PostToolUse hook fires because it matched the tool\n3. The hook script reads the tool input to find which file was modified\n4. The script runs Prettier (or another formatter) on that file\n5. The file is now properly formatted, automatically\n\nThis means every file Claude touches is formatted consistently, without\nyou having to ask Claude to format it or run a formatter manually.\n\n## Hook Script Input for PostToolUse\n\nPostToolUse hooks receive the same JSON on stdin as PreToolUse hooks,\nbut now the tool has already completed. The JSON includes:\n\n```json\n{\n  \"tool_name\": \"Write\",\n  \"tool_input\": {\n    \"file_path\": \"/path/to/project/src/app.js\",\n    \"content\": \"... the file content ...\"\n  }\n}\n```\n\nFor the Edit tool, the input looks like:\n```json\n{\n  \"tool_name\": \"Edit\",\n  \"tool_input\": {\n    \"file_path\": \"/path/to/project/src/app.js\",\n    \"old_string\": \"...\",\n    \"new_string\": \"...\"\n  }\n}\n```\n\nThe key field you need is `tool_input.file_path` -- this tells you\nwhich file was modified.\n\n## Configuring a PostToolUse Hook\n\nThe configuration in `.claude/settings.json` follows the same structure\nas PreToolUse, but under the `PostToolUse` key:\n\n```json\n{\n  \"hooks\": {\n    \"PostToolUse\": [\n      {\n        \"matcher\": \"Write\",\n        \"command\": \".claude/hooks/auto-format.sh\"\n      },\n      {\n        \"matcher\": \"Edit\",\n        \"command\": \".claude/hooks/auto-format.sh\"\n      }\n    ]\n  }\n}\n```\n\nNotice you can register the **same script** for multiple matchers.\nHere, the auto-format hook fires after both Write and Edit operations.\n\n## Writing the Format Hook Script\n\nA practical auto-format hook needs to:\n1. Read JSON from stdin to get the file path\n2. Check if the file is a type that should be formatted (e.g., .js, .ts)\n3. Run the formatter only on that specific file\n4. Exit cleanly (PostToolUse exit codes do not block anything)\n\nHere is a template:\n\n```bash\n#!/bin/bash\n\n# Read the tool invocation data\ninput=$(cat)\n\n# Extract the file path from the tool input\nfile_path=$(echo \"$input\" | jq -r '.tool_input.file_path // empty')\n\n# If no file path, nothing to format\nif [ -z \"$file_path\" ]; then\n  exit 0\nfi\n\n# Only format JavaScript and TypeScript files\ncase \"$file_path\" in\n  *.js|*.jsx|*.ts|*.tsx)\n    npx prettier --write \"$file_path\" 2>/dev/null\n    ;;\nesac\n\nexit 0\n```\n\n## Making Hooks Idempotent\n\nAn important principle: **hooks should be idempotent**. Running a hook\ntwice on the same input should produce the same result. This is\nnaturally true for formatting -- running Prettier twice on a file\nproduces the same output as running it once.\n\nWhy does this matter? Because hooks might fire multiple times if Claude\nmakes several edits to the same file. If your hook is not idempotent,\nyou could end up with corrupted files or cascading side effects.\n\n## More PostToolUse Patterns\n\nBeyond auto-formatting, here are other practical PostToolUse hooks:\n\n### Auto-Lint After Changes\n```bash\n#!/bin/bash\ninput=$(cat)\nfile_path=$(echo \"$input\" | jq -r '.tool_input.file_path // empty')\ncase \"$file_path\" in\n  *.js|*.ts)\n    npx eslint --fix \"$file_path\" 2>/dev/null\n    ;;\nesac\n```\n\n### Run Related Tests\n```bash\n#!/bin/bash\ninput=$(cat)\nfile_path=$(echo \"$input\" | jq -r '.tool_input.file_path // empty')\n# Convert src/foo.js to test/foo.test.js\ntest_file=$(echo \"$file_path\" | sed 's|src/|test/|;s|\\.js$|.test.js|')\nif [ -f \"$test_file\" ]; then\n  npx jest \"$test_file\" --silent 2>/dev/null\nfi\n```\n\n### Log All Tool Usage\n```bash\n#!/bin/bash\ninput=$(cat)\ntool=$(echo \"$input\" | jq -r '.tool_name')\nfile=$(echo \"$input\" | jq -r '.tool_input.file_path // \"N/A\"')\necho \"$(date -Iseconds) | $tool | $file\" >> .claude/tool-usage.log\n```\n\n## Comparing PreToolUse vs PostToolUse\n\n| Aspect | PreToolUse | PostToolUse |\n|--------|-----------|-------------|\n| When | Before tool runs | After tool completes |\n| Can block? | Yes (exit 1) | No |\n| Common use | Validation, safety | Formatting, linting, logging |\n| Input data | Planned operation | Completed operation |\n| Risk level | High (gates access) | Low (post-processing) |\n\n---\n\n## Your Task\n\nBuild an auto-format workflow with three pieces:\n\n### 1. Hook Script: `.claude/hooks/auto-format.sh`\nA bash script that:\n- Reads JSON from stdin to extract the modified file path\n- Checks if the file is a JavaScript/TypeScript file (.js, .jsx, .ts, .tsx)\n- Runs `npx prettier --write` on the file if it matches\n- Exits 0 regardless (PostToolUse hooks should not fail loudly)\n\n### 2. Settings File: `.claude/settings.json`\nHook configuration that registers the script for PostToolUse on both\nWrite and Edit tools.\n\n### 3. Prettier Config: Verify `package.json` and `.prettierrc`\nThe project already has these files set up. Your hook should use the\nexisting prettier configuration.\n\n## Objectives\n1. Create `.claude/hooks/auto-format.sh` -- the formatting hook script\n2. Create `.claude/settings.json` with PostToolUse hook configuration\n3. The script should extract the file path and run prettier\n4. The settings should register the hook for Write and/or Edit tools\n"
+      },
+      {
+        "path": "package.json",
+        "content": "{\n  \"name\": \"formatted-project\",\n  \"version\": \"1.0.0\",\n  \"description\": \"A project with auto-formatting via Claude Code hooks\",\n  \"scripts\": {\n    \"format\": \"prettier --write 'src/**/*.{js,ts}'\",\n    \"format:check\": \"prettier --check 'src/**/*.{js,ts}'\"\n  },\n  \"devDependencies\": {\n    \"prettier\": \"^3.0.0\"\n  }\n}\n"
+      },
+      {
+        "path": ".prettierrc",
+        "content": "{\n  \"semi\": true,\n  \"singleQuote\": true,\n  \"tabWidth\": 2,\n  \"trailingComma\": \"es5\",\n  \"printWidth\": 80\n}\n"
+      },
+      {
+        "path": "src/app.js",
+        "content": "const express = require('express')\n\nfunction createApp() {\nconst app = express()\n  app.get('/api/health', (req,res) => {\n      res.json({status: 'ok', timestamp: new Date().toISOString()})\n  })\n  app.post('/api/data', (req,res) => {\n    const {name,value} = req.body\n    if(!name || !value) {\n      return res.status(400).json({error: 'Missing fields'})\n    }\n    res.status(201).json({name,value,created: true})\n  })\n  return app\n}\n\nmodule.exports = {createApp}\n"
+      },
+      {
+        "path": "src/utils.js",
+        "content": "function formatCurrency(amount,currency='USD') {\n  return new Intl.NumberFormat('en-US',{style:'currency',currency}).format(amount)\n}\n\nfunction debounce(fn,delay) {\nlet timer\nreturn function(...args) {\n    clearTimeout(timer)\n    timer = setTimeout(() => fn.apply(this,args),delay)\n  }\n}\n\nfunction deepClone(obj) {\n    return JSON.parse(JSON.stringify(obj))\n}\n\nmodule.exports = {formatCurrency,debounce,deepClone}\n"
+      }
+    ],
+    "cleanBefore": true
+  },
+
+  "objectives": [
+    {
+      "id": "obj-1",
+      "description": "Create the auto-format hook script at .claude/hooks/auto-format.sh",
+      "type": "file_exists",
+      "target": ".claude/hooks/auto-format.sh",
+      "required": true
+    },
+    {
+      "id": "obj-2",
+      "description": "Create the settings file at .claude/settings.json",
+      "type": "file_exists",
+      "target": ".claude/settings.json",
+      "required": true
+    },
+    {
+      "id": "obj-3",
+      "description": "Hook script extracts the file path from stdin JSON input",
+      "type": "file_contains",
+      "target": ".claude/hooks/auto-format.sh",
+      "pattern": "file_path|jq|tool_input|cat",
+      "required": true
+    },
+    {
+      "id": "obj-4",
+      "description": "Hook script runs prettier on the file",
+      "type": "file_contains",
+      "target": ".claude/hooks/auto-format.sh",
+      "pattern": "prettier|npx prettier|format",
+      "required": true
+    },
+    {
+      "id": "obj-5",
+      "description": "Hook script checks for JavaScript/TypeScript file extensions",
+      "type": "file_contains",
+      "target": ".claude/hooks/auto-format.sh",
+      "pattern": "\\.js|\\.ts|\\.jsx|\\.tsx|javascript|typescript",
+      "required": true
+    },
+    {
+      "id": "obj-6",
+      "description": "Settings file registers the hook for PostToolUse event",
+      "type": "file_contains",
+      "target": ".claude/settings.json",
+      "pattern": "PostToolUse",
+      "required": true
+    },
+    {
+      "id": "obj-7",
+      "description": "Settings file registers the hook for Write or Edit tool",
+      "type": "file_contains",
+      "target": ".claude/settings.json",
+      "pattern": "Write|Edit",
+      "required": true
+    }
+  ],
+
+  "bonusObjectives": [
+    {
+      "id": "bonus-1",
+      "description": "Hook script has a shebang line (#!/bin/bash or similar)",
+      "type": "file_contains",
+      "target": ".claude/hooks/auto-format.sh",
+      "pattern": "#!/bin/bash|#!/usr/bin/env bash|#!/bin/sh",
+      "xpBonus": 25
+    },
+    {
+      "id": "bonus-2",
+      "description": "Settings registers the hook for BOTH Write and Edit tools",
+      "type": "file_contains",
+      "target": ".claude/settings.json",
+      "pattern": "Write.*Edit|Edit.*Write",
+      "xpBonus": 40
+    },
+    {
+      "id": "bonus-3",
+      "description": "Hook script handles the case where file_path is empty (exits gracefully)",
+      "type": "file_contains",
+      "target": ".claude/hooks/auto-format.sh",
+      "pattern": "-z.*file_path|empty|no.*file|exit 0",
+      "xpBonus": 30
+    }
+  ],
+
+  "hints": [
+    {
+      "level": 1,
+      "text": "You need two files: .claude/hooks/auto-format.sh (the hook script) and .claude/settings.json (the configuration). The script reads JSON from stdin, extracts the file path with jq, checks if it is a .js/.ts file, and runs 'npx prettier --write' on it. The settings register the script under PostToolUse for Write and Edit matchers.",
+      "xpCost": 25
+    },
+    {
+      "level": 2,
+      "text": "The hook script structure: (1) input=$(cat) to read stdin, (2) file_path=$(echo \"$input\" | jq -r '.tool_input.file_path // empty') to extract the path, (3) Check if empty and exit 0 if so, (4) Use a case statement to match *.js|*.jsx|*.ts|*.tsx, (5) Run npx prettier --write \"$file_path\" inside the case match. For settings: {\"hooks\": {\"PostToolUse\": [{\"matcher\": \"Write\", \"command\": \".claude/hooks/auto-format.sh\"}, {\"matcher\": \"Edit\", \"command\": \".claude/hooks/auto-format.sh\"}]}}",
+      "xpCost": 75
+    },
+    {
+      "level": 3,
+      "text": "Create .claude/hooks/auto-format.sh: #!/bin/bash, input=$(cat), file_path=$(echo \"$input\" | jq -r '.tool_input.file_path // empty'), if [ -z \"$file_path\" ]; then exit 0; fi, case \"$file_path\" in *.js|*.jsx|*.ts|*.tsx) npx prettier --write \"$file_path\" 2>/dev/null ;; esac, exit 0. Create .claude/settings.json: {\"hooks\": {\"PostToolUse\": [{\"matcher\": \"Write\", \"command\": \".claude/hooks/auto-format.sh\"}, {\"matcher\": \"Edit\", \"command\": \".claude/hooks/auto-format.sh\"}]}}. Run chmod +x on the script.",
+      "xpCost": 140
+    }
+  ],
+
+  "solution": {
+    "approach": "Create a PostToolUse hook script that reads JSON stdin, extracts the file path, checks for JS/TS extensions, and runs prettier. Register it in .claude/settings.json for both Write and Edit tools.",
+    "example": "Create .claude/hooks/auto-format.sh that extracts file_path with jq, filters for .js/.ts files, runs npx prettier --write. Create .claude/settings.json with PostToolUse hooks for Write and Edit matchers pointing to the script.",
+    "alternativeApproaches": [
+      "Use eslint --fix instead of prettier for combined linting and formatting",
+      "Register for all tools with matcher '*' and filter by tool name in the script itself"
+    ]
+  },
+
+  "learningPoints": [
+    "PostToolUse hooks fire after a tool completes -- they cannot block but can automate follow-up actions",
+    "The auto-format pattern: Claude edits a file, the hook fires, the script runs prettier on the edited file automatically",
+    "Hook scripts receive JSON on stdin with tool_input.file_path indicating which file was modified",
+    "The same hook script can be registered for multiple tool matchers (Write and Edit) in the settings",
+    "Hooks should be idempotent -- running them multiple times on the same input produces the same result"
+  ],
+
+  "nextChallenge": "15-001"
+}

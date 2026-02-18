@@ -1,0 +1,116 @@
+{
+  "id": "08-001",
+  "module": "effective-prompting",
+  "title": "Specific vs General Requests",
+  "description": "Learn how the specificity of your prompts controls the quality and predictability of Claude Code's output, then prove it by making precise improvements to a messy function.\n\n## The Specificity Spectrum\n\nEvery prompt falls somewhere on a spectrum from vague to precise:\n\n| Level | Example | What You Get |\n|-------|---------|-------------|\n| **Vague** | \"Fix this code\" | Claude guesses what's wrong and applies random improvements |\n| **Directional** | \"Fix the error handling\" | Claude focuses on the right area but chooses its own approach |\n| **Specific** | \"Add try-catch blocks to all async functions, logging errors with our logger\" | Claude knows what to do and mostly how |\n| **Precise** | \"Wrap fetchUser on line 15 in try-catch that catches NetworkError, logs with logger.error, and returns a default user\" | Nearly identical output every time |\n\nMore specific is not always better. The right level depends on your task.\n\n## The 5 Dimensions of Specificity\n\nEvery prompt can be specific along five dimensions -- think of them as knobs you can turn:\n\n### 1. WHAT (Action)\n- Vague: \"Fix this\"\n- Specific: \"Refactor to use async/await instead of callbacks\"\n\n### 2. WHERE (Scope/Files)\n- Vague: \"Update the project\"\n- Specific: \"Only modify src/api/users.js, lines 20-45\"\n\n### 3. HOW (Approach/Style)\n- Vague: \"Make it better\"\n- Specific: \"Use the repository pattern matching src/api/products.js\"\n\n### 4. CONSTRAINTS (Limits/Rules)\n- Vague: (no constraints)\n- Specific: \"Do not add new dependencies. Keep the public API unchanged.\"\n\n### 5. OUTPUT (Format/Structure)\n- Vague: \"Give me some tests\"\n- Specific: \"Create a test file using Jest with describe/it blocks, one test per public method\"\n\n## When Vagueness Is Acceptable\n\nDon't over-specify when:\n- **Exploring**: \"What does this codebase do?\" -- let Claude roam\n- **Brainstorming**: \"How could we improve performance?\" -- you want ideas\n- **Learning**: \"Explain how this auth middleware works\" -- you want judgment\n\n## When Specificity Is Critical\n\nAlways be specific when:\n- **Production code changes**: You need predictable, reviewable output\n- **Refactoring**: Vague refactoring prompts can break things\n- **Bug fixes**: \"Fix the bug\" wastes time; \"Fix the null reference on line 42\" saves time\n- **Following patterns**: \"Use the same pattern as X\" prevents style drift\n\n## The Claude Code Tax\n\nVague prompts cost you:\n- **More back-and-forth**: \"That's not what I meant\" corrections\n- **Wasted context window**: Each correction consumes tokens\n- **Inconsistent results**: Same vague prompt gives different results each time\n- **More review time**: You must carefully check if Claude guessed your intent\n\nA 30-second investment in a specific prompt saves minutes of correction.\n\n## Your Exercise\n\nThe file `data-processor.js` has a function that works but is messy: generic name (`process`), uses `var`, uses a for-loop instead of modern array methods, no documentation.\n\n**Practice being specific by making these exact improvements:**\n1. Rename the function from `process` to something descriptive (e.g., `filterActiveAdults`)\n2. Replace all `var` with `const`\n3. Convert the for-loop to use `.filter()` and `.map()` (modern array methods)\n4. Add a JSDoc comment (`/** ... */`) documenting the function\n\nThe teaching point: a specific prompt like \"rename process to filterActiveAdults, replace var with const, convert the for-loop to filter/map, and add JSDoc\" produces predictable results. A vague prompt like \"clean this up\" produces unpredictable results.\n\nRun `/dojo check` when done.",
+  "difficulty": "beginner",
+  "xpReward": 125,
+  "estimatedMinutes": 12,
+  "skills": ["prompt-specificity", "code-cleanup", "modern-javascript"],
+
+  "setup": {
+    "workingDir": "~/dojo-workspace/challenge-08-001",
+    "initialFiles": [
+      {
+        "path": "README.md",
+        "content": "# Data Processor\n\nA small utility module for filtering and transforming user data.\n\n## Files\n\n- `data-processor.js` — Main data processing function\n"
+      },
+      {
+        "path": "data-processor.js",
+        "content": "function process(d) {\n  var r = [];\n  for (var i = 0; i < d.length; i++) {\n    if (d[i].status == 'active' && d[i].age > 18) {\n      r.push({\n        n: d[i].firstName + ' ' + d[i].lastName,\n        e: d[i].email,\n        a: d[i].age\n      });\n    }\n  }\n  return r;\n}\n\nmodule.exports = { process };\n"
+      }
+    ],
+    "cleanBefore": true
+  },
+
+  "objectives": [
+    {
+      "id": "obj-1",
+      "description": "No var declarations remain (replaced with const/let)",
+      "type": "file_not_contains",
+      "target": "data-processor.js",
+      "pattern": "var ",
+      "required": true
+    },
+    {
+      "id": "obj-2",
+      "description": "Function renamed from generic 'process' to something descriptive",
+      "type": "file_not_contains",
+      "target": "data-processor.js",
+      "pattern": "function process\\(",
+      "required": true
+    },
+    {
+      "id": "obj-3",
+      "description": "Uses const declarations",
+      "type": "file_contains",
+      "target": "data-processor.js",
+      "pattern": "const ",
+      "required": true
+    },
+    {
+      "id": "obj-4",
+      "description": "Uses modern array methods (filter and/or map)",
+      "type": "file_contains",
+      "target": "data-processor.js",
+      "pattern": "\\.filter|\\.map",
+      "required": true
+    },
+    {
+      "id": "obj-5",
+      "description": "JSDoc comment added",
+      "type": "file_contains",
+      "target": "data-processor.js",
+      "pattern": "/\\*\\*",
+      "required": true
+    }
+  ],
+
+  "bonusObjectives": [
+    {
+      "id": "bonus-1",
+      "description": "JSDoc includes @param and @returns tags",
+      "type": "file_contains",
+      "target": "data-processor.js",
+      "pattern": "@param|@returns|@return",
+      "xpBonus": 25
+    }
+  ],
+
+  "hints": [
+    {
+      "level": 1,
+      "text": "Be specific in your prompt. Instead of 'clean up this file', try: 'In data-processor.js, rename the process function to filterActiveAdults, replace var with const, convert the for-loop to use .filter() and .map(), and add a JSDoc comment.'",
+      "xpCost": 10
+    },
+    {
+      "level": 2,
+      "text": "The function filters users who are active AND over 18, then maps them to objects with name, email, age. A descriptive name might be filterActiveAdults, getActiveAdultUsers, or extractActiveUsers. The for-loop can become: data.filter(d => d.status === 'active' && d.age > 18).map(d => ({ name: ..., email: ..., age: ... }))",
+      "xpCost": 25
+    },
+    {
+      "level": 3,
+      "text": "Ask Claude: 'In data-processor.js: (1) Rename function process to filterActiveAdults, (2) Replace all var with const, (3) Convert the for-loop to use .filter(item => item.status === \"active\" && item.age > 18).map(item => ({ name, email, age })), (4) Add a JSDoc comment with @param {Array} and @returns {Array}. Use descriptive parameter and variable names.'",
+      "xpCost": 50
+    }
+  ],
+
+  "solution": {
+    "approach": "Give Claude a specific prompt covering all 4 changes: rename function, replace var with const, convert to filter/map, add JSDoc. The specificity ensures predictable output.",
+    "example": "Prompt: 'Rename process to filterActiveAdults, change var to const, replace the for-loop with .filter().map(), and add JSDoc with @param and @returns.'",
+    "alternativeApproaches": [
+      "Make changes one at a time with 4 separate specific prompts",
+      "Use a vague prompt first to see what Claude does, then a specific prompt to compare results"
+    ]
+  },
+
+  "learningPoints": [
+    "Prompt specificity has 5 dimensions: WHAT, WHERE, HOW, CONSTRAINTS, and OUTPUT",
+    "Vague prompts are fine for exploration but waste time for production code changes",
+    "Specific prompts produce predictable, reviewable results with less back-and-forth",
+    "The 'Claude Code tax' of vague prompts is wasted context, extra iterations, and inconsistent results",
+    "Match your specificity level to the task: explore loosely, build precisely"
+  ],
+
+  "nextChallenge": "08-002"
+}

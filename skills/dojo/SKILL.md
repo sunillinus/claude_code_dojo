@@ -14,13 +14,13 @@ An interactive learning system for mastering Claude Code through progressive cha
 Parse the user's input to determine which command they want:
 
 - **help** - Show this help guide and available commands
-- **start [query]** - Begin learning, or jump to a module/challenge by name or ID (e.g., `start plugin`, `start 09-001`, `start debugging`)
-- **challenge <id>** - Start a specific challenge by ID (e.g., `challenge 01-001`)
+- **start [query]** - Begin learning, or jump to a module/challenge by name or ID (e.g., `start plugin`, `start 16-001`, `start debugging`)
 - **hint** - Get a hint for the current challenge (costs XP)
 - **check** - Verify if current challenge objectives are complete
 - **skip** - Skip the current challenge (no XP awarded)
 - **progress** - Display your stats, XP, level, and streak
 - **dashboard** - Open the web dashboard for visual progress
+- **details <id|module>** - Preview a challenge or module without starting it
 - **list [module]** - List available challenges, optionally filtered by module
 - **quiz [module]** - Take a quiz to test your Claude Code knowledge
 - **reset** - Reset all progress (requires confirmation)
@@ -50,11 +50,12 @@ COMMANDS
 ────────
   /dojo help              Show this help guide
   /dojo start [query]     Begin learning, or jump by name/ID
-  /dojo challenge <id>    Start a specific challenge (e.g., 01-001)
   /dojo hint              Get a hint for current challenge (costs XP)
   /dojo check             Verify if objectives are complete
   /dojo skip              Skip current challenge (no XP awarded)
   /dojo progress          Display your stats, XP, level, and streak
+  /dojo details <id>      Preview a challenge (teaches, exercise, objectives)
+  /dojo details <module>  Preview a module overview
   /dojo dashboard         Open the visual web dashboard
   /dojo list [module]     List challenges (optionally by module)
   /dojo quiz              Diagnostic quiz (15 questions, 1 per module)
@@ -119,24 +120,97 @@ If no query is provided:
 3. If no active challenge: find next uncompleted challenge and offer to start it
 4. If all challenges complete: celebrate and show final stats!
 
-If a query IS provided (e.g., `/dojo start plugin`, `/dojo start debugging`, `/dojo start 09-001`):
+If a query IS provided (e.g., `/dojo start plugin`, `/dojo start debugging`, `/dojo start 16-001`):
 1. Read index.json to find a match. Try matching in this order:
-   a. Exact challenge ID (e.g., "09-001")
+   a. Exact challenge ID (e.g., "16-001")
    b. Module ID (e.g., "plugin-development", "debugging")
    c. Fuzzy match on module name (e.g., "plugin" matches "Plugin Development", "git" matches "Git Basics")
    d. Fuzzy match on challenge title (e.g., "first skill" matches "Create Your First Skill")
 2. If a **module** is matched: start the first uncompleted challenge in that module. If all are completed, show the module as done and suggest another.
-3. If a **challenge** is matched: load and start that specific challenge (same as `/dojo challenge <id>`).
+3. If a **challenge** is matched: load and start that challenge using the steps below.
 4. If no match: show a helpful message listing available modules and suggest close matches.
 
-### /dojo challenge <id>
-
+**Starting a challenge** (used whenever a specific challenge is identified — by ID, module match, or next-uncompleted):
 1. Load challenge from challenges/<module>/<id>.json
 2. Create/update session.json with challenge state
 3. Set up workspace directory as specified in challenge setup
 4. Display challenge title, description, and objectives
 5. Show estimated time and XP reward
 6. If the challenge has a recommended prerequisite that hasn't been completed, show a brief note like: "💡 Tip: This builds on [prerequisite module]. You can still proceed, but that module may help." Always allow the user to proceed regardless.
+
+### /dojo details <id | module>
+
+Preview a challenge or module without starting it. Shows what the lesson teaches, what the exercise involves, and what objectives must be met. No workspace setup, no session state changes — purely informational.
+
+**If argument matches a challenge ID (e.g., "13-002"):**
+
+1. Load challenge JSON from challenges/<module>/<id>.json (use index.json to find the module directory — the challenge ID prefix maps to the directory number, e.g. "13-002" → "13-agentic-loops/002-*.json")
+2. Display a header box:
+```
+╔══════════════════════════════════════════════════════════════════╗
+║  13-002: Crafting Completion Promises                            ║
+║  Module: Agentic Loops  •  Intermediate  •  225 XP  •  ~15 min  ║
+╚══════════════════════════════════════════════════════════════════╝
+```
+3. **TEACHES section**: Read the challenge's `description` field. Extract the teaching content (everything before the exercise/task section, typically before "## Your Exercise" or "## Your Task" or similar). Summarize as 3-6 bullet points covering the key concepts taught.
+```
+TEACHES
+───────
+  - Bullet point summarizing key concept 1
+  - Bullet point summarizing key concept 2
+  ...
+```
+4. **EXERCISE section**: Extract the exercise/task portion from the description (typically after "## Your Exercise" or "## Your Task"). Summarize the concrete task in 2-4 sentences. If the exercise lists specific items (TODOs, files to create, steps), list them.
+```
+EXERCISE
+────────
+  Concise summary of what the user needs to do...
+
+  Specific items if applicable:
+  - item 1
+  - item 2
+```
+5. **OBJECTIVES section**: List all required objective descriptions from the `objectives` array. Show the count.
+```
+OBJECTIVES (N required)
+───────────────────────
+  - objective description 1
+  - objective description 2
+```
+6. **BONUS section**: List bonus objective descriptions with total bonus XP from `bonusObjectives` array. Omit this section entirely if there are no bonus objectives.
+```
+BONUS (+XX XP)
+──────────────
+  - bonus objective description 1
+  - bonus objective description 2
+```
+7. **SKILLS line**: Show the `skills` array as comma-separated tags.
+```
+SKILLS: skill-1, skill-2, skill-3
+```
+8. **Footer**: `Run /dojo start <id> to start!`
+
+**If argument matches a module name (fuzzy match, same logic as /dojo start):**
+
+1. Load index.json, find matching module using fuzzy matching (e.g., "agentic" matches "Agentic Loops (Ralph Loop)", "plugin" matches "Plugin Development")
+2. Read ~/.claude/dojo/progress.json for completion status
+3. Display a header box:
+```
+╔══════════════════════════════════════════════════════════════════╗
+║  AGENTIC LOOPS (Ralph Loop)                                      ║
+║  4 challenges  •  0/4 completed  •  1,050 total XP               ║
+╚══════════════════════════════════════════════════════════════════╝
+```
+4. List all challenges in the module with: ID, title, difficulty, XP. Mark completed challenges with ✅.
+```
+  13-001  Your First Ralph Loop           Intermediate  200 XP
+  13-002  Crafting Completion Promises     Intermediate  225 XP  ✅
+  13-003  Multi-Phase Loops               Advanced      275 XP
+  13-004  Complex Iterative Task          Advanced      350 XP
+```
+5. Footer: `Run /dojo details <first-incomplete-challenge-id> for challenge details.`
+
+**If argument matches neither:** Show a helpful error message listing available modules and suggest close matches.
 
 ### /dojo hint
 

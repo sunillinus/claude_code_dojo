@@ -1,0 +1,150 @@
+{
+  "id": "14-002",
+  "module": "skills-hooks",
+  "title": "Skill with Tool Restrictions",
+  "description": "Learn how to restrict which tools a skill can use with the allowedTools frontmatter field. Create read-only analysis skills and write-only documentation skills to practice the principle of least privilege.",
+  "difficulty": "advanced",
+  "xpReward": 325,
+  "estimatedMinutes": 15,
+  "skills": ["skill-security", "tool-restrictions", "least-privilege"],
+
+  "setup": {
+    "workingDir": "~/dojo-workspace/challenge-14-002",
+    "initialFiles": [
+      {
+        "path": "README.md",
+        "content": "# Challenge: Skill with Tool Restrictions\n\nLearn how to limit the tools a skill can access, and why this matters.\n\n---\n\n## Why Restrict Tools?\n\nBy default, a skill has access to every tool Claude Code can use: Read,\nWrite, Edit, Bash, Glob, Grep, WebFetch, WebSearch, Task, and more.\nThat is a lot of power. A skill that is supposed to analyze code\ncould accidentally edit it. A skill meant to generate documentation\ncould inadvertently run shell commands.\n\nTool restrictions solve this by applying the **principle of least\nprivilege**: give each skill only the minimum set of tools it needs\nto accomplish its task. This provides three benefits:\n\n1. **Safety** -- A review skill cannot modify files even if the prompt\n   is unclear or ambiguous\n2. **Focus** -- Restricting tools prevents scope creep; the skill stays\n   on task\n3. **Trust** -- You can share restricted skills with confidence that they\n   will not do unexpected damage\n\n## The `allowedTools` Field\n\nIn the SKILL.md frontmatter, use `allowedTools` to declare which tools\nthe skill may use:\n\n```markdown\n---\ndescription: Analyze code quality metrics\nallowedTools: Read, Glob, Grep\n---\n\nAnalyze the codebase and report on quality metrics...\n```\n\nThe value is a **comma-separated list** of tool names. When this skill\nruns, Claude Code will only have access to Read, Glob, and Grep. If\nthe skill's prompt tries to use Edit, Write, Bash, or any other tool,\nthe request will be blocked.\n\n## Available Tool Names\n\nHere are the tools you can allow or withhold:\n\n| Tool | What It Does |\n|------|--------------|\n| `Read` | Read file contents |\n| `Write` | Create or overwrite files |\n| `Edit` | Make targeted edits to existing files |\n| `Bash` | Run shell commands |\n| `Glob` | Find files by name pattern |\n| `Grep` | Search file contents with regex |\n| `WebFetch` | Fetch content from a URL |\n| `WebSearch` | Search the web |\n| `Task` | Spawn subagents |\n| `NotebookEdit` | Edit Jupyter notebooks |\n\n## Common Restriction Patterns\n\nDifferent skill purposes call for different tool sets:\n\n### Read-Only Analysis\n```yaml\nallowedTools: Read, Glob, Grep\n```\nCan explore the entire codebase but cannot modify a single file or run\nany command. Perfect for code review, architecture analysis, dependency\naudits, and security scanning.\n\n### Documentation Generation\n```yaml\nallowedTools: Read, Write\n```\nCan read existing code and create new documentation files, but cannot\nedit existing code or run shell commands. Safe for generating docs\nwithout risking code changes.\n\n### Research Only\n```yaml\nallowedTools: Read, WebFetch, WebSearch\n```\nCan read local code and research online, but cannot modify anything.\nIdeal for finding solutions, checking documentation, or comparing\napproaches.\n\n### Format and Fix\n```yaml\nallowedTools: Read, Edit\n```\nCan read files and make edits, but cannot create new files, delete\nfiles, or run commands. Good for formatting, renaming, and targeted\nfixes.\n\n### Full Access (default)\n```yaml\n# omit allowedTools entirely\n```\nWhen you do not specify allowedTools, the skill has access to\neverything. Use this for general-purpose skills where you need\nmaximum flexibility.\n\n## Thinking About Restrictions\n\nWhen designing a skill, ask:\n1. What does this skill need to READ? (Read, Glob, Grep)\n2. Does it need to MODIFY files? (Edit, Write)\n3. Does it need to RUN commands? (Bash)\n4. Does it need EXTERNAL information? (WebFetch, WebSearch)\n5. Does it need to DELEGATE work? (Task)\n\nOnly include tools where the answer is yes.\n\n## Example: Comparing Two Skills\n\n**Unrestricted skill (risky):**\n```markdown\n---\ndescription: Review code for issues\n---\nReview the code and fix any issues you find.\n```\nThis skill could read, edit, delete, run commands -- anything.\nIf the prompt says \"fix issues\", it might start editing files.\n\n**Restricted skill (safe):**\n```markdown\n---\ndescription: Review code for issues\nallowedTools: Read, Glob, Grep\n---\nReview the code and report any issues you find.\nDo NOT modify any files. Output a report only.\n```\nThis skill can only observe. Even if it wanted to edit, it cannot.\n\n---\n\n## Your Task\n\nCreate **two** skills with different tool restrictions:\n\n### Skill 1: Code Analysis (`skills/analyze/SKILL.md`)\nA read-only code analysis skill that examines code quality but\ncannot modify anything.\n- **allowedTools**: `Read, Glob, Grep` (read-only)\n- Should analyze code for quality issues, patterns, complexity\n- Must NOT be able to edit, write, or run commands\n\n### Skill 2: Generate Docs (`skills/generate-docs/SKILL.md`)\nA documentation generation skill that can read code and write\ndoc files, but cannot run commands or edit existing code.\n- **allowedTools**: `Read, Write` (read + create, no edit or bash)\n- Should read source files and generate markdown documentation\n- Must NOT be able to edit code files or run shell commands\n\n## Objectives\n1. Create `skills/analyze/SKILL.md` with read-only tool restrictions\n2. Create `skills/generate-docs/SKILL.md` with read+write restrictions\n3. Both skills should have descriptions and meaningful prompt bodies\n4. Verify that neither skill allows tools beyond what is needed\n"
+      },
+      {
+        "path": "plugin.json",
+        "content": "{\n  \"name\": \"review-tools\",\n  \"version\": \"1.0.0\",\n  \"description\": \"Code review and documentation utilities with safety restrictions\"\n}\n"
+      },
+      {
+        "path": "src/user-service.js",
+        "content": "const bcrypt = require('bcrypt');\n\nclass UserService {\n  constructor(db) {\n    this.db = db;\n  }\n\n  async createUser(name, email, password) {\n    const hash = await bcrypt.hash(password, 10);\n    return this.db.query(\n      'INSERT INTO users (name, email, password_hash) VALUES ($1, $2, $3)',\n      [name, email, hash]\n    );\n  }\n\n  async findByEmail(email) {\n    const result = await this.db.query(\n      'SELECT * FROM users WHERE email = $1',\n      [email]\n    );\n    return result.rows[0];\n  }\n\n  async updatePassword(userId, newPassword) {\n    const hash = await bcrypt.hash(newPassword, 10);\n    return this.db.query(\n      'UPDATE users SET password_hash = $1 WHERE id = $2',\n      [hash, userId]\n    );\n  }\n\n  async deleteUser(userId) {\n    return this.db.query('DELETE FROM users WHERE id = $1', [userId]);\n  }\n}\n\nmodule.exports = { UserService };\n"
+      },
+      {
+        "path": "src/auth-middleware.js",
+        "content": "const jwt = require('jsonwebtoken');\n\nfunction authenticate(secret) {\n  return (req, res, next) => {\n    const token = req.headers.authorization?.split(' ')[1];\n    if (!token) {\n      return res.status(401).json({ error: 'Authentication required' });\n    }\n    try {\n      req.user = jwt.verify(token, secret);\n      next();\n    } catch (err) {\n      return res.status(401).json({ error: 'Invalid token' });\n    }\n  };\n}\n\nfunction authorize(...roles) {\n  return (req, res, next) => {\n    if (!roles.includes(req.user?.role)) {\n      return res.status(403).json({ error: 'Insufficient permissions' });\n    }\n    next();\n  };\n}\n\nmodule.exports = { authenticate, authorize };\n"
+      },
+      {
+        "path": "src/validator.js",
+        "content": "function validateEmail(email) {\n  const re = /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/;\n  return re.test(email);\n}\n\nfunction validatePassword(password) {\n  if (password.length < 8) return { valid: false, reason: 'Too short' };\n  if (!/[A-Z]/.test(password)) return { valid: false, reason: 'No uppercase' };\n  if (!/[0-9]/.test(password)) return { valid: false, reason: 'No number' };\n  return { valid: true };\n}\n\nfunction sanitizeInput(input) {\n  return input.replace(/[<>\"'&]/g, '');\n}\n\nmodule.exports = { validateEmail, validatePassword, sanitizeInput };\n"
+      }
+    ],
+    "cleanBefore": true
+  },
+
+  "objectives": [
+    {
+      "id": "obj-1",
+      "description": "Create the code analysis skill at skills/analyze/SKILL.md",
+      "type": "file_exists",
+      "target": "skills/analyze/SKILL.md",
+      "required": true
+    },
+    {
+      "id": "obj-2",
+      "description": "Analysis skill has allowedTools restricted to read-only tools (Read, Glob, Grep)",
+      "type": "file_contains",
+      "target": "skills/analyze/SKILL.md",
+      "pattern": "allowedTools:.*Read.*Glob.*Grep|allowedTools:.*Read.*Grep.*Glob|allowedTools:.*Glob.*Read.*Grep|allowedTools:.*Glob.*Grep.*Read|allowedTools:.*Grep.*Read.*Glob|allowedTools:.*Grep.*Glob.*Read",
+      "required": true
+    },
+    {
+      "id": "obj-3",
+      "description": "Analysis skill does NOT allow Edit, Write, or Bash in allowedTools",
+      "type": "file_not_contains",
+      "target": "skills/analyze/SKILL.md",
+      "pattern": "allowedTools:.*Edit|allowedTools:.*Write|allowedTools:.*Bash",
+      "required": true
+    },
+    {
+      "id": "obj-4",
+      "description": "Create the documentation generation skill at skills/generate-docs/SKILL.md",
+      "type": "file_exists",
+      "target": "skills/generate-docs/SKILL.md",
+      "required": true
+    },
+    {
+      "id": "obj-5",
+      "description": "Documentation skill has allowedTools including Read and Write",
+      "type": "file_contains",
+      "target": "skills/generate-docs/SKILL.md",
+      "pattern": "allowedTools:.*Read.*Write|allowedTools:.*Write.*Read",
+      "required": true
+    },
+    {
+      "id": "obj-6",
+      "description": "Documentation skill does NOT allow Bash or Edit in allowedTools",
+      "type": "file_not_contains",
+      "target": "skills/generate-docs/SKILL.md",
+      "pattern": "allowedTools:.*Bash|allowedTools:.*Edit",
+      "required": true
+    }
+  ],
+
+  "bonusObjectives": [
+    {
+      "id": "bonus-1",
+      "description": "Both skills have meaningful description fields in frontmatter",
+      "type": "file_contains",
+      "target": "skills/analyze/SKILL.md",
+      "pattern": "description:.*[a-zA-Z]{10,}",
+      "xpBonus": 40
+    },
+    {
+      "id": "bonus-2",
+      "description": "Analysis skill includes specific review criteria (quality, patterns, complexity, etc.)",
+      "type": "file_contains",
+      "target": "skills/analyze/SKILL.md",
+      "pattern": "qualit|complex|pattern|code smell|best practice|performance|security",
+      "xpBonus": 40
+    },
+    {
+      "id": "bonus-3",
+      "description": "Documentation skill specifies markdown output format",
+      "type": "file_contains",
+      "target": "skills/generate-docs/SKILL.md",
+      "pattern": "markdown|[Mm][Dd]|\\.md|documentation|API doc|README",
+      "xpBonus": 40
+    }
+  ],
+
+  "hints": [
+    {
+      "level": 1,
+      "text": "Each skill needs a SKILL.md with YAML frontmatter containing 'allowedTools'. The analysis skill should only list Read, Glob, Grep. The docs skill should only list Read, Write. Think about what each skill needs to DO, then grant only those tools.",
+      "xpCost": 25
+    },
+    {
+      "level": 2,
+      "text": "For skills/analyze/SKILL.md: frontmatter with 'allowedTools: Read, Glob, Grep' and a body that instructs Claude to find and read files, then analyze them for quality issues. For skills/generate-docs/SKILL.md: frontmatter with 'allowedTools: Read, Write' and a body that instructs Claude to read source files and create new documentation files.",
+      "xpCost": 65
+    },
+    {
+      "level": 3,
+      "text": "Create both skill files. skills/analyze/SKILL.md: frontmatter with description: 'Analyze code quality and report issues' and allowedTools: Read, Glob, Grep. Body should instruct analysis of code for complexity, patterns, best practices. skills/generate-docs/SKILL.md: frontmatter with description: 'Generate markdown documentation from source code' and allowedTools: Read, Write. Body should instruct reading source files and creating a docs/ markdown file with API documentation.",
+      "xpCost": 120
+    }
+  ],
+
+  "solution": {
+    "approach": "Create two skills with different allowedTools restrictions. The analysis skill gets read-only tools (Read, Glob, Grep), the docs skill gets Read and Write only.",
+    "example": "Create skills/analyze/SKILL.md with allowedTools: Read, Glob, Grep and skills/generate-docs/SKILL.md with allowedTools: Read, Write. Each skill has a description and instructions appropriate to its permitted tools.",
+    "alternativeApproaches": [
+      "Create the analysis skill first, verify it cannot write, then model the docs skill after it with different restrictions",
+      "Start by listing what each skill needs to do, derive the tool list from the requirements, then write the SKILL.md files"
+    ]
+  },
+
+  "learningPoints": [
+    "The allowedTools frontmatter field restricts which tools a skill can use, enforcing the principle of least privilege",
+    "Read-only skills (Read, Glob, Grep) are safe for analysis and review -- they can explore but never modify",
+    "Different skill purposes need different tool sets: analysis needs search tools, docs need write tools, research needs web tools",
+    "When a tool is not listed in allowedTools, the skill simply cannot use it -- the restriction is enforced by Claude Code",
+    "Omitting allowedTools entirely gives the skill access to all tools -- only do this when maximum flexibility is truly needed"
+  ],
+
+  "nextChallenge": "14-003"
+}

@@ -1,0 +1,180 @@
+{
+  "id": "09-002",
+  "module": "code-generation",
+  "title": "Scaffold Project Structure",
+  "description": "Learn to scaffold complete project structures from a specification. Understand the difference between scaffolding and bootstrapping, and how to describe directory trees and file purposes to Claude Code.",
+  "difficulty": "intermediate",
+  "xpReward": 200,
+  "estimatedMinutes": 15,
+  "skills": ["project-scaffolding", "architecture", "specification-communication"],
+
+  "setup": {
+    "workingDir": "~/dojo-workspace/challenge-09-002",
+    "initialFiles": [
+      {
+        "path": "README.md",
+        "content": "# Challenge: Scaffold Project Structure\n\nLearn to describe a complete project to Claude Code and have it scaffold\nthe entire structure with proper files, configuration, and cross-file consistency.\n\n## What Is Scaffolding?\n\nScaffolding means creating the initial directory structure and starter files\nfor a project. Think of it like framing a house - you are building the\nskeleton that everything else hangs on. A well-scaffolded project has all\nthe directories, configuration files, and entry points in place before any\nreal feature development begins.\n\nScaffolding is one of Claude Code's strongest capabilities because it can\ncreate many interconnected files at once while keeping the references\nbetween them consistent.\n\n## Scaffolding vs. Bootstrapping\n\nThese terms are often confused, but they mean different things:\n\n| Term | What It Creates | Example |\n|------|----------------|---------|\n| **Scaffold** | Directory structure, stub files, config | Folders, placeholder modules, package.json |\n| **Bootstrap** | Runnable starting point with basic functionality | Working hello-world app, passing test suite |\n\nScaffolding gives you the shape of the project. Bootstrapping makes it run.\nFor this challenge, we focus on scaffolding - creating the right structure\nwith the right files in the right places. You can always fill in the\nimplementation details later.\n\n## The Scaffold Prompt Pattern\n\nA good scaffold prompt has five parts:\n\n1. **Project name and purpose**: \"A CLI tool called 'logwatch' for monitoring log files\"\n2. **Tech stack**: \"Node.js, Commander.js for CLI, chalk for colors\"\n3. **Directory structure**: The folder layout you want\n4. **Key files and their purposes**: What each important file does\n5. **Configuration needs**: package.json scripts, .gitignore rules, etc.\n\nExample prompt structure:\n```\nScaffold a project called 'logwatch' - a Node.js CLI tool.\n\nStructure:\n  src/\n    index.js     - Entry point, sets up Commander\n    commands/     - One file per CLI command\n    utils/        - Shared helper functions\n  tests/\n    unit/         - Unit tests mirroring src/ structure\n  package.json   - With bin field pointing to src/index.js\n  .gitignore     - Node defaults\n  README.md      - Usage instructions\n```\n\nNotice how the structure uses indentation to show nesting and includes\na brief purpose annotation for each file. This format is easy for both\nhumans and Claude Code to parse.\n\n## What to Scaffold\n\nEvery project benefits from having these scaffolded:\n\n- **Directory tree**: The folder organization that separates concerns\n- **Entry point**: The main file that starts everything\n- **Configuration**: package.json, tsconfig.json, .eslintrc, etc.\n- **Test setup**: Test directory, test config, at least one sample test\n- **Documentation**: README with project description and setup instructions\n- **Git setup**: .gitignore with appropriate rules for the tech stack\n\nA common mistake is scaffolding only the source directories and forgetting\nconfiguration and tests. A complete scaffold includes everything a developer\nneeds to start working immediately.\n\n## Convention-Based vs. Custom Scaffolding\n\nYou can scaffold two ways:\n\n**Convention-based**: \"Scaffold a standard Express API project\"\n- Claude Code knows common conventions and will use them\n- Good for well-known project types (Express APIs, React apps, CLI tools)\n- Risk: conventions vary, you might get different results each time\n- Best for quick prototypes or personal projects\n\n**Custom**: Specify the exact structure you want\n- More work upfront but more predictable results\n- Better for teams with established conventions\n- Include a directory tree in your prompt\n- Best for production projects and team codebases\n\nFor production projects, always prefer custom scaffolding with explicit\nstructure descriptions. The time you spend writing the structure description\nis saved many times over in consistency.\n\n## Cross-File Consistency\n\nThe hardest part of scaffolding is making sure files reference each other\ncorrectly. When you scaffold, every import must resolve to a real file:\n\n- Imports in one file must point to files that actually exist\n- package.json \"main\" and \"bin\" must point to actual entry points\n- Test files must import from the correct source paths\n- Config files must reference real directories and patterns\n- The entry point must import modules that exist in the scaffolded structure\n\nThis is where Claude Code excels. When it sees the complete specification,\nit can track these relationships across many files simultaneously and\nensure everything connects properly. This is much harder to do manually\nwhen creating 10+ files at once.\n\n## Common Scaffolding Mistakes\n\n1. **Empty files with no stub code**: Files should have at least an export\n   and a brief comment about their purpose\n2. **Missing configuration details**: Forgetting to specify package.json\n   fields like \"type\": \"module\" or \"bin\" for CLI tools\n3. **Broken cross-references**: Entry point imports from modules that\n   do not exist in the scaffolded structure\n4. **No test setup**: Scaffolding source code without test infrastructure\n5. **Inconsistent module system**: Mixing require() and import in the\n   same project\n\n## Your Exercise\n\nRead the `PROJECT_SPEC.md` file in this workspace. It describes a CLI tool\nproject called 'taskrunner'. The spec includes the complete directory\nstructure, package.json requirements, entry point behavior, and key\nmodule descriptions.\n\nYour task: Use Claude Code to scaffold the complete project structure based\non this specification. Every file in the spec should be created with\nappropriate starter code. Make sure the files reference each other correctly.\n\n## Objectives\n1. Scaffold the directory structure from PROJECT_SPEC.md\n2. Create a valid package.json with correct name, scripts, and bin field\n3. Create the CLI entry point that imports from the correct paths\n4. Create the test configuration and a sample test\n5. Ensure cross-file references are consistent\n"
+      },
+      {
+        "path": "PROJECT_SPEC.md",
+        "content": "# Project Specification: taskrunner\n\nA Node.js CLI tool for running and managing project tasks defined in a\ntaskfile (similar to a simplified Makefile).\n\n## Overview\n- **Name**: taskrunner\n- **Type**: CLI tool (Node.js)\n- **Command**: `taskrunner` or `tr` (short alias)\n- **Tech stack**: Node.js, Commander.js (CLI framework), chalk (colors),\n  yaml (YAML parsing for taskfiles)\n\n## Directory Structure\n\n```\ntaskrunner/\n  src/\n    index.js          - CLI entry point (Commander setup, parse args)\n    commands/\n      run.js          - 'run <task>' command implementation\n      list.js         - 'list' command - shows available tasks\n      init.js         - 'init' command - creates sample taskfile\n    parser/\n      taskfile.js     - Parses taskfile.yml into task objects\n      validator.js    - Validates parsed task definitions\n    runner/\n      executor.js     - Executes a task (runs commands, handles deps)\n      resolver.js     - Resolves task dependency order\n    utils/\n      logger.js       - Colored console output via chalk\n      files.js        - File system helpers (find taskfile, read, etc.)\n  tests/\n    parser/\n      taskfile.test.js   - Tests for taskfile parser\n      validator.test.js  - Tests for validator\n    runner/\n      resolver.test.js   - Tests for dependency resolver\n    fixtures/\n      sample-taskfile.yml - Sample taskfile for tests\n  package.json\n  .gitignore\n  README.md\n```\n\n## package.json Requirements\n- name: \"taskrunner\"\n- version: \"0.1.0\"\n- type: \"module\" (use ES modules)\n- bin: { \"taskrunner\": \"./src/index.js\", \"tr\": \"./src/index.js\" }\n- scripts:\n  - test: runs tests with node --test\n  - lint: placeholder\n- dependencies: commander, chalk, yaml\n- devDependencies: (none required initially)\n\n## Entry Point (src/index.js)\n- Shebang line: #!/usr/bin/env node\n- Import and configure Commander program\n- Register the three commands (run, list, init)\n- Parse process.argv\n\n## Key Behaviors\n- The `run` command finds the nearest taskfile.yml and executes the named task\n- The `list` command shows all tasks with their descriptions\n- The `init` command creates a starter taskfile.yml in the current directory\n- Task dependencies are resolved before execution (topological sort)\n"
+      }
+    ],
+    "cleanBefore": true
+  },
+
+  "objectives": [
+    {
+      "id": "obj-1",
+      "description": "Create the CLI entry point at src/index.js",
+      "type": "file_exists",
+      "target": "src/index.js",
+      "required": true
+    },
+    {
+      "id": "obj-2",
+      "description": "Entry point has shebang line and imports Commander",
+      "type": "file_contains",
+      "target": "src/index.js",
+      "pattern": "#!/usr/bin/env node",
+      "required": true
+    },
+    {
+      "id": "obj-3",
+      "description": "Create the three command files",
+      "type": "file_exists",
+      "target": "src/commands/run.js",
+      "required": true
+    },
+    {
+      "id": "obj-4",
+      "description": "Create the list command file",
+      "type": "file_exists",
+      "target": "src/commands/list.js",
+      "required": true
+    },
+    {
+      "id": "obj-5",
+      "description": "Create the init command file",
+      "type": "file_exists",
+      "target": "src/commands/init.js",
+      "required": true
+    },
+    {
+      "id": "obj-6",
+      "description": "Create parser module files",
+      "type": "file_exists",
+      "target": "src/parser/taskfile.js",
+      "required": true
+    },
+    {
+      "id": "obj-7",
+      "description": "Create runner module files",
+      "type": "file_exists",
+      "target": "src/runner/executor.js",
+      "required": true
+    },
+    {
+      "id": "obj-8",
+      "description": "package.json has correct name and bin field",
+      "type": "file_contains",
+      "target": "package.json",
+      "pattern": "\"taskrunner\"",
+      "required": true
+    },
+    {
+      "id": "obj-9",
+      "description": "package.json specifies ES modules",
+      "type": "file_contains",
+      "target": "package.json",
+      "pattern": "\"type\":\\s*\"module\"",
+      "required": true
+    },
+    {
+      "id": "obj-10",
+      "description": "Entry point registers commands from the commands directory",
+      "type": "file_contains",
+      "target": "src/index.js",
+      "pattern": "import.*commands|import.*run|import.*list|import.*init",
+      "required": true
+    },
+    {
+      "id": "obj-11",
+      "description": "Create test directory with at least one test file",
+      "type": "file_exists",
+      "target": "tests/parser/taskfile.test.js",
+      "required": true
+    }
+  ],
+
+  "bonusObjectives": [
+    {
+      "id": "bonus-1",
+      "description": "Create .gitignore with Node.js defaults",
+      "type": "file_contains",
+      "target": ".gitignore",
+      "pattern": "node_modules",
+      "xpBonus": 25
+    },
+    {
+      "id": "bonus-2",
+      "description": "Create a test fixture file (sample taskfile.yml)",
+      "type": "file_exists",
+      "target": "tests/fixtures/sample-taskfile.yml",
+      "xpBonus": 25
+    },
+    {
+      "id": "bonus-3",
+      "description": "Create dependency resolver module",
+      "type": "file_exists",
+      "target": "src/runner/resolver.js",
+      "xpBonus": 25
+    },
+    {
+      "id": "bonus-4",
+      "description": "package.json includes commander and chalk dependencies",
+      "type": "file_contains",
+      "target": "package.json",
+      "pattern": "commander.*chalk|chalk.*commander",
+      "xpBonus": 25
+    }
+  ],
+
+  "hints": [
+    {
+      "level": 1,
+      "text": "Read PROJECT_SPEC.md carefully first. It has the exact directory structure, file purposes, and package.json requirements. When you prompt Claude Code, reference this file directly: 'Read PROJECT_SPEC.md and scaffold the entire project structure it describes.' This lets Claude Code see the full specification rather than you having to re-describe it.",
+      "xpCost": 15
+    },
+    {
+      "level": 2,
+      "text": "The spec describes both the structure AND the behavior of key files. Make sure your prompt asks for more than empty files. Try: 'Read PROJECT_SPEC.md and scaffold the complete project. For each file, include starter code that reflects its described purpose. Make sure src/index.js imports from the command files, and that the package.json matches the spec exactly (name, bin field, type: module, dependencies).'",
+      "xpCost": 40
+    },
+    {
+      "level": 3,
+      "text": "After scaffolding, verify cross-file consistency: 1) Does src/index.js import from src/commands/*.js? 2) Do command files import from parser/ and runner/? 3) Does package.json bin point to src/index.js? 4) Do test files import from the correct src/ paths? If any references are broken, ask Claude Code to fix the import paths across the project.",
+      "xpCost": 80
+    }
+  ],
+
+  "solution": {
+    "approach": "Point Claude Code at the PROJECT_SPEC.md file and ask it to scaffold the complete structure, ensuring cross-file imports are consistent and package.json matches the specification exactly.",
+    "example": "Prompt: 'Read PROJECT_SPEC.md. Scaffold the complete project structure described in it. Create every file listed with appropriate starter code. Ensure: src/index.js has the shebang and imports commands, package.json has the correct bin/scripts/dependencies, test files import from correct source paths.'",
+    "alternativeApproaches": [
+      "Scaffold in layers: directories first, then config, then source files, then tests",
+      "Copy the spec's directory tree into your prompt and ask Claude Code to create each file",
+      "Start with package.json and entry point, then scaffold the rest incrementally"
+    ]
+  },
+
+  "learningPoints": [
+    "Scaffolding creates project structure; bootstrapping makes it runnable",
+    "A good scaffold prompt includes: project name, tech stack, directory tree, file purposes, and config needs",
+    "Always use custom structure descriptions for production projects rather than relying on convention guessing",
+    "Cross-file consistency (imports, paths, config references) is the hardest part - Claude Code handles this well when it sees the full picture",
+    "Reference a specification file rather than re-describing everything in your prompt"
+  ],
+
+  "nextChallenge": "09-003"
+}
